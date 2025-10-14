@@ -75,3 +75,9 @@ vite.config.ts.timestamp-*
 # PHP / Composer (if used)
 vendor/
 composer.phar
+
+
+node_modules/
+.env
+dist/
+.vite/
