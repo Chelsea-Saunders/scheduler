@@ -1,0 +1,132 @@
+
+* {
+    font-family: var(--bs-body-font);
+}
+.header {
+    text-align: center;
+    margin: 1rem 0;
+    color: navy;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+    color: navy;
+}
+#create-acct-form,
+#login-form,
+#reset-form {
+    display: flex;
+    flex-direction: column;
+    border: none;
+    border-radius: var(--bs-border-radius-medium);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.072);
+    padding: 1rem;
+    margin: 3rem auto;
+    width: 90%;
+    max-width: 320px;
+    background-color: var(--bs-background-color);
+}
+#create-acct-form label, 
+#login-form label, 
+#reset-form label {
+    font-weight: bold;
+    color: navy;
+}
+#create-acct-form input, 
+#login-form input,
+#reset-form input {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: var(--bs-border-radius-medium);
+    width: 100%;
+    box-sizing: border-box;
+}
+/* to make create acct invisible until clicked */
+#create-acct-form {
+    display: none;
+}
+
+#login-email, 
+#login-password, 
+#name, 
+#email, 
+#password, 
+#confirm-password,
+#reset-email {
+    margin-bottom: 1rem;
+    padding: 0.1rem;
+    border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color-light);
+    border-radius: var(--bs-border-radius-medium);
+    font-size: 1rem;
+}
+.c-acct {
+    text-align: center;
+    margin-top: 0.5rem;
+    margin: 2rem 0;
+    color: navy;
+}
+#rs-pwd-p {
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+    color: navy;
+    font-size: 0.9rem;
+}
+#show-create-account,
+#show-login, 
+#forgot-password, 
+#back-to-login {
+    display: inline-block;
+    color: rgb(104, 175, 171);
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+    font-weight: bold;
+    font-size: 1rem !important;
+}
+#show-create-account:hover,
+#show-login:hover,
+#forgot-password:hover,
+#back-to-login:hover {
+    color: rgb(100, 157, 214);
+    transform: translateY(-3px);
+}
+input.error {
+    border: 2xp solid #c62828;
+    outline: none;
+}
+/* submit buttons for login page */
+.submit {
+    align-self: center !important;
+    background: var(--bs-gradient-buttons);
+    box-shadow: var(--bs-box-shadow-buttons);
+    border: var(--bs-button-border);
+    color: var(--bs-text-color-light);
+    padding: 0.2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: var(--bs-border-radius-large);
+    width: 100%;
+    margin: 1rem 0;
+}
+.submit:hover {
+    transform: translateY(-3px);
+    background: var(--bs-gradient-buttons-hover);
+    box-shadow: var(--bs-box-shadow-button-hover);
+}
+.submission-message {
+    position: fixed;
+    inset: auto 1rem 1rem auto;
+    background: #032a5a;
+    color: #fff;
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--bs-border-radius-medium);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+    z-index: 9999;
+}
+#reset-form {
+    display: none;
+}
