@@ -1,7 +1,31 @@
 import { supabase } from '../lib/supabase.mjs';
 
+function showMessage(message, isError = false) {
+    const messageBox = document.getElementById("status-message");
+    messageBox.textContent = message;
+
+    messageBox.classList.remove("hidden");
+    if (isError) {
+        messageBox.classList.add("error");
+    }
+
+    messageBox.classList.add("show");
+
+    // auto hide after 3 seconds
+    setTimeout(() => {
+        messageBox.classList.remove("show");
+        setTimeout(() => messageBox.classList.add("hidden"), 400);
+    }, 3000);
+}
+
 async function loadAppointments() {
-    const { data, error } = await supabase.from('appointments').select('*');
+    const { data, error } = await supabase
+        .from("appointments")
+        .select("id, date, time, label, duration_minutes")
+        .eq("user_id", user.id)
+        .order("date", { ascending: true })
+        .order("time", { ascending: true });
+
     if (error) {
         console.error(error);
     } 
@@ -107,6 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // success...navigate to redirect page
             window.location.assign(redirect);
+
         } catch (error) {
             setMessage("An unexpected error occurred. Please try again.", true);
             console.error(error);
@@ -122,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const password = createForm.querySelector('input[name="password"]').value.trim();
 
         if (!email || !password) {
-            alert("Please enter both email and password.");
+            showMessage("Please enter both email and password.");
             return;
         }
 
@@ -131,16 +156,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (error) {
                 console.error("Error creating account:", error);
-                alert("⚠️ Could not create account. Please try again.");
+                showMessage("⚠️ Could not create account. Please try again.");
             } else {
-                alert("✅ Account created! Please check your email to confirm your account.");
+                showMessage("✅ Account created! Please check your email to confirm your account.");
                 // hide create form and show login form
                 createForm.style.display = "none";
                 loginForm.style.display = "block";
             }
         } catch (error) {
             console.error("Unexpected error:", error);
-            alert("⚠️ Something went wrong. Please try again.");
+            showMessage("⚠️ Something went wrong. Please try again.");
         }
     });
 });

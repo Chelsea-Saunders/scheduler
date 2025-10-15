@@ -1,9 +1,94 @@
 import { supabase } from "../lib/supabase.mjs";
 
-// PROTECTED: if they're not signed in, send them to the login page
-const { data: { user } } = await supabase.auth.getUser();
-if (!user) {
-    window.location.href = `index.html?redirect=scheduler.html`;
+// MY APPOINTMENTS
+async function loadMyAppointments() {
+    const list = document.getElementById("my-appts");
+    list.innerHTML = "Loading...";
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { 
+        list.textContent = "Please sign in."; 
+        return; 
+    }
+
+    const { data, error } = await supabase
+        .from("appointments")
+        .select("id, date, time")
+        .eq("user_id", user.id)
+        .order("date", { ascending: true })
+        .order("time", { ascending: true });
+    
+    if (error) {
+        console.error(error);
+        list.textContent = "⚠️Could not load your appointments.";
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        list.textContent = "You have no upcoming appointments.";
+        return;
+    }
+
+    list.innerHTML = "";
+    data.forEach(row => {
+        const item = document.createElement("div");
+        const when = new Date(row.date + "T12:00:00"); // avoid timezone issues
+        item.className = "appt";
+        item.textContent = `${when.toLocaleDateString()} - ${formatTime(row.time)}`;
+
+        // add cancel button
+        const cancelButton = document.createElement("button");
+        cancelButton.textContent = "Cancel";
+        cancelButton.addEventListener("click", async() => {
+
+            // disable button to prevent double clicking
+            cancelButton.disabled = true;
+            cancelButton.textContent = "Cancelling...";
+            
+            // call supabase to delete
+            const { error: deleteError } = await supabase
+                .from("appointments")
+                .delete()
+                .eq("id", row.id)
+                .eq("user_id", user.id); // ensures user only deletes their own appt
+
+            if (deleteError) {
+                // restor button if something goes wrong
+                cancelButton.disabled = false;
+                cancelButton.textContent = "Cancel";
+                // show error message
+                console.error(deleteError);
+                showMessage("⚠️Could not cancel that appointment. Please try again.");
+                return;
+            }
+            loadMyAppointments();
+            // if you cancelled the current displayed date, refresh slots
+            // find the matching availableDays entry
+            const matchingDay = availableDays.find(
+                day => toHumanYMD(day) === row.date
+            );
+            if (matchingDay) showTimeSlots(matchingDay);
+        });
+        item.appendChild(cancelButton);
+        list.appendChild(item);
+    });
+}
+
+function showMessage(message, isError = false) {
+    const messageBox = document.getElementById("status-message");
+    messageBox.textContent = message;
+
+    // reset classes
+    messageBox.classList.remove("hidden", "error", "show");
+
+    if (isError) messageBox.classList.add("error");
+    messageBox.classList.add("show");
+
+    // auto hide after 3 seconds
+    setTimeout(() => {
+        messageBox.classList.remove("show");
+        setTimeout(() => messageBox.classList.add("hidden"), 400);
+    }, 3000);
 }
 
 // HELPER FUNCTIONS: 
@@ -13,6 +98,12 @@ function toHumanYMD(date) {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
+}
+function formatTime(timeStr) {
+    const [hour, minute] = timeStr.split(":").map(Number);
+    const suffix = hour >=12 ? "PM" : "AM";
+    const displayHour = ((hour + 11) % 12 + 1);
+    return `${displayHour}:${minute.toString().padStart(2, "0")} ${suffix}`;
 }
 
 // GENERATE AVAILABLE SLOTS
@@ -52,40 +143,59 @@ function getNextTuesThurs(weeks = 15) {
 }
 
 // CREATE DATE BUTTONS
-const daysContainer = document.getElementById("pick-a-date");
+const tuesdayContainer = document.getElementById("tuesday-slots");
+const thursdayContainer = document.getElementById("thursday-slots");
 const availableDays = getNextTuesThurs(15); // next 15 days
 const dateButtons = [];
 
 availableDays.forEach(date => {
     const dayButton = document.createElement("button");
-    //visible label
-    dayButton.textContent = date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-    //machine value
+    const label = date.toLocaleDateString("en-US", {
+        weekday: "short", 
+        month: "short", 
+        day: "numeric",
+    });
+    dayButton.textContent = label;
     dayButton.dataset.ymd = toHumanYMD(date);
-    //click handler
+
     dayButton.addEventListener("click", () => {
-        // toggle selected time
-        dateButtons.forEach(button => button.classList.remove("selected"));
+        // clear previous selection
+        dateButtons.forEach(btn => btn.classList.remove("selected"));
         dayButton.classList.add("selected");
-        // show time slots for that date
+
+        // show times for that specific day
         showTimeSlots(date);
     });
-    daysContainer.appendChild(dayButton);
+
+    // add to correct container
+    if (date.getDay() === 2) tuesdayContainer.appendChild(dayButton);
+    else if (date.getDay() === 4) thursdayContainer.appendChild(dayButton);
+
     dateButtons.push(dayButton);
 });
-// preselect first available day on load
-if (availableDays.length > 0) {
-    dateButtons[0].classList.add("selected");
-    showTimeSlots(availableDays[0]);
-}
-loadMyAppointments();
 
 // show available time slots
 async function showTimeSlots(date) {
-    const slotsContainer = document.getElementById("time-slots");
     const ymd = toHumanYMD(date);
+    const slotsContainer = document.getElementById("time-slots");
+    const timeSection = document.getElementById("time-section");
 
-    slotsContainer.innerHTML = ""; // clear previous
+    // hide time slots until date is slected
+    timeSection.classList.remove("active");
+    slotsContainer.innerHTML = "";
+
+    // hide the pick-a-date header
+    document.getElementById("pick-a-date").style.display = "none";
+
+    //  show date header
+    const selectedDateHeader = document.getElementById("selected-dates");
+    selectedDateHeader.textContent = date.toLocaleDateString("en-US", {
+        weekday: "short", 
+        month: "short", 
+        day: "numeric"
+    });
+
+    selectedDateHeader.classList.add("visible");
 
     // fetch booked slots for that date
     const { data: bookedSlots, error } = await supabase 
@@ -102,14 +212,15 @@ async function showTimeSlots(date) {
     const bookedTimes = (bookedSlots ?? []).map(row => row.time);
     const allTimes = generateTimeSlots("09:00", "17:00", 30); // 9am-5pm, every 30 mins
 
+    // show time slots
     allTimes.forEach(time => {
         const timeButton = document.createElement("button");
-        timeButton.textContent = time;
+        timeButton.textContent = formatTime(time);
 
         if (bookedTimes.includes(time)) {
             timeButton.disabled = true;
             timeButton.classList.add("booked");
-            timeButton.setAttribute("aria-disabled", "true");
+            timeButton.textContent = `${formatTime(time)} (Booked)`;
         } else {
             timeButton.addEventListener("click", () => {
                 selectTimeSlot(date, time);
@@ -117,95 +228,134 @@ async function showTimeSlots(date) {
         }
         slotsContainer.appendChild(timeButton);
     });
-
-    slotsContainer.style.display = "block";
+    if (allTimes.length > 0) {
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                timeSection.classList.add("active");
+            }, 150);
+        });
+    }    
 }
+
+// Show more times when toggled
+function setupShowMoreToggle(containerId, buttonId) {
+    const container = document.getElementById(containerId);
+    const button = document.getElementById(buttonId);
+
+    if (!container || !button) return;
+
+    button.addEventListener("click", () => {
+        const isExpanded = container.classList.toggle("expanded");
+        button.textContent = isExpanded ? "Show less" : "Show more";
+    });
+}
+setupShowMoreToggle("tuesday-slots", "show-more-tues");
+setupShowMoreToggle("thursday-slots", "show-more-thurs");
+
 // select/book a time slot
 async function selectTimeSlot(date, time) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        alert("⚠️ You must be logged in to book an appointment.");
+        showMessage("⚠️ You must be logged in to book an appointment.");
         window.location.href = `index.html?redirect=scheduler.html`;
         return;
     }
+    // format date as YYYY-MM-DD
     const ymd = toHumanYMD(date);
 
     // call supabase to book
     try {
         const { error } = await supabase
             .from ("appointments")
-            .insert ({ user_id: user.id, date: ymd, time });
+            .insert ([
+                { 
+                    user_id: user.id, 
+                    date: ymd, 
+                    time,
+                    label: "Consultation",
+                    duration_minutes: 30,
+                },
+            ]);
+            console.log("Insert result:", error);
+
             
         if (error) {
-            // handle duplicates
-            if (error.message?.toLowerCase().includes("duplicate")) {
-                alert("❌ That slot is taken. Please choose another time.")
+            console.error("Insert failed:", error);
+            const msg = error.message?.toLowerCase() || "";
+
+            if (
+                msg.includes("duplicate key value") ||
+                msg.includes("unique constraint")
+            ) {
+                showMessage("❌ That slot is taken. Please choose another time.");
             } else {
-                alert("⚠️Could not book that slot. It may have just been taken. Please try another.");
-                console.error(error);
+                showMessage("⚠️ Could not book that slot. Please try another.");
             }
+
+            const allButtons = document.querySelectorAll("#time-slots button");
+            allButtons.forEach(btn => {
+                if (btn.textContent.includes(formatTime(time))) {
+                    btn.disabled = true;
+                    btn.classList.add("booked");
+                    btn.textContent = `${formatTime(time)} (Booked)`;
+                }
+            });
             return;
+            // // handle duplicates
+            // if (error.message?.toLowerCase().includes("duplicate")) {
+            //     showMessage("❌ That slot is taken. Please choose another time.")
+            // } else {
+            //     showMessage("⚠️Could not book that slot. Please try another.");
+            //     console.error(error);
+            // }
+            // return;
         }
-        alert(`✅ Appointment booked for ${date.toDateString()} at ${time}`);
+        showMessage(`✅ Appointment booked for ${date.toDateString()} at ${formatTime(time)}`);
+
+        // visually disable booked button
+        const bookedButton = [...document.querySelectorAll("#time-slots button")].find(
+            btn => btn.textContent.includes(formatTime(time))
+        );
+        if (bookedButton) {
+            bookedButton.disabled = true;
+            bookedButton.classList.add("booked");
+            bookedButton.textContent = `${formatTime(time)} (Booked)`;
+        }
+
         showTimeSlots(date);
         loadMyAppointments();
 
     } catch (error) {
         console.error("Unexpected error:", error);
-        alert("⚠️Something went wrong. Please try again.");
+        showMessage("⚠️Something went wrong. Please try again.");
     }
 }
-// MY APPOINTMENTS
-async function loadMyAppointments() {
-    const list = document.getElementById("my-appts");
-    list.innerHTML = "Loading...";
 
+document.getElementById("back-to-dates")?.addEventListener("click", () => {
+    // show day selection again
+    document.getElementById("pick-a-date").style.display = "block";
+
+    // hide the time section
+    document.getElementById("time-section").classList.remove("active");
+
+    // fade out the selected date text smoothly
+    const selectedDateHeader = document.getElementById("selected-dates");
+    selectedDateHeader.classList.remove("visible");
+    setTimeout(() => {
+        selectedDateHeader.textContent = "";
+    }, 400);
+
+    // clear any time slot selection
+    document.getElementById("time-slots").innerHTML = "";
+});
+
+document.addEventListener("DOMContentLoaded", async () => {
+    // PROTECTED: if they're not signed in, send them to the login page
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { list.textContent = "Please sign in."; return; }
-
-    const { data, error } = await supabase
-        .from("appointments")
-        .select("id, date, time")
-        .eq("user_id", user.id)
-        .order("date", { ascending: true })
-        .order("time", { ascending: true });
-    
-    if (error) {
-        console.error(error);
-        list.textContent = "⚠️Could not load your appointments.";
-        return;
+    if (!user) {
+        window.location.href = `index.html?redirect=scheduler.html`;
+    } else {
+        // load appts upon page load
+        loadMyAppointments();
     }
-
-    if (!data || data.length === 0) {
-        list.textContent = "You have no upcoming appointments.";
-        return;
-    }
-
-    list.innerHTML = "";
-    data.forEach(row => {
-        const item = document.createElement("div");
-        const when = new Date(row.date + "T12:00:00"); // avoid timezone issues
-        item.className = "appt";
-        item.textContent = `${when.toLocaleDateString()} - ${row.time}`;
-
-        // add cancel button
-        const cancelButton = document.createElement("button");
-        cancelButton.textContent = "Cancel";
-        cancelButton.addEventListener("click", async() => {
-            const { error: deleteError } = await supabase.from("appointments").delete().eq("id", row.id);
-            if (deleteError) {
-                console.error(deleteError);
-                alert("⚠️Could not cancel that appointment. Please try again.");
-                return;
-            }
-            loadMyAppointments();
-            // if you cancelled the current displayed date, refresh slots
-            // find the matching availableDays entry
-            const matchingDay = availableDays.find(day => toHumanYMD(day) === row.date);
-            if (matchingDay) showTimeSlots(matchingDay);
-        });
-
-        item.appendChild(cancelButton);
-        list.appendChild(item);
-    });
-}
+});

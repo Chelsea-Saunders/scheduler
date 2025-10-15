@@ -76,13 +76,44 @@
         </div>
     </header>
     <main>
+        <!-- APPT MESSAGE -->
+         <div id="status-message" class="hidden"></div>
+        <h1>Schedule your cleaning</h1>
         <!-- CALENDAR: upcoming days available -->
-        <div id="pick-a-date"></div>
-        <!-- TIME SLOTS -->
-         <div id="time-slots"></div>
+         <section id="pick-a-date" aria-label="Available dates for scheduling">
+            <h2 class="day">Pick the day</h2>
+            <div class="columns">
+                <!-- TUESDAY SLOTS -->
+                <div class="day-slot tuesday">
+                    <h3>Tuesday</h3>
+                    <div class="times" id="tuesday-slots"></div>
+                    <button class="show-more" id="show-more-tues">Show More</button>
+                </div>
+
+                <!-- THURSDAY SLOTS -->
+                <div class="day-slot thursday">
+                    <h3>Thursday</h3>
+                    <div class="times" id="thursday-slots"></div>
+                    <button class="show-more" id="show-more-thurs">Show More</button>
+                </div>
+            </div>
+         </section>
+
+        <!-- TIME SLOTS show times for selected days-->
+         <section id="time-section" aria-label="Available times for selected date">
+            <h2>Pick a time</h2>
+            <button id="back-to-dates" class="back-to-dates">Back to available days</button>
+            <div id="time-slots"></div>
+         </section>
+
         <!--MY APPOINTMENTS  -->
-        <div id="my-appts"></div>
+        <section id="my-appt-container" aria-label="Your booked appointments">
+            <h2>My Appointments:</h2>
+            <h3 id="selected-dates" class="selected-dates"></h3>
+            <div id="my-appts"></div>
+        </section>
     </main>
+
     <footer>
         <div class="main-footer">
             <div class="footer-left">
