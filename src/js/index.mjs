@@ -64,8 +64,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Where to go after submit
+    // determine the correct base path
+    const base = window.location.hostname.includes("github.io")
+        ? "/scheduler/"
+        : "/";
     const params = new URLSearchParams(window.location.search);
-    const redirect = params.get("redirect") || "schedule.html";
+    const redirect = params.get("redirect") || `${base}schedule.html`;
 
     // login form submit 
     loginForm?.addEventListener("submit", async(event) => {
