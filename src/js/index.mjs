@@ -67,9 +67,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // determine the correct base path
     const base = window.location.hostname.includes("github.io")
         ? "/scheduler/"
-        : "/";
+        : "./";
     const params = new URLSearchParams(window.location.search);
-    const redirect = params.get("redirect") || `${base}schedule.html`;
+    const redirect = params.get("redirect") || `${base}scheduler.html`;
 
     // login form submit 
     loginForm?.addEventListener("submit", async(event) => {

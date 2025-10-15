@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase.mjs";
 // PROTECTED: if they're not signed in, send them to the login page
 const { data: { user } } = await supabase.auth.getUser();
 if (!user) {
-    window.location.href = `/login?redirect=/schedule`;
+    window.location.href = `index.html?redirect=scheduler.html`;
 }
 
 // HELPER FUNCTIONS: 
@@ -125,7 +125,7 @@ async function selectTimeSlot(date, time) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         alert("⚠️ You must be logged in to book an appointment.");
-        window.location.href = `/login?redirect=/schedule`;
+        window.location.href = `index.html?redirect=scheduler.html`;
         return;
     }
     const ymd = toHumanYMD(date);
