@@ -48,10 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginButton = loginForm.querySelector('[type="submit"]');
     const messageDiv = document.querySelector("#login-message");
 
-    const url = new URL(window.location.href);
-    const access_token = url.hash.match(/access_token=([^&]+)/);
+    // const url = new URL(window.location.href);
+    const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
+    const accessToken = tokenMatch ? tokenMatch[1] : null;
 
-    if (access_token) {
+    if (accessToken) {
         // this means the user clicked the password reset link from email
         showMessage("🔒 Please enter your new password below.");
         loginForm.style.display = "none";
