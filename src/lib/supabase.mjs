@@ -7,5 +7,10 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // initialize auth
 export const supabase = createClient(
     SUPABASE_URL, 
-    SUPABASE_ANON_KEY
-);
+    SUPABASE_ANON_KEY, {
+        auth: {
+            persistSession: true,       // keep user logged in on refresh
+            autoRefreshToken: true,   // automatically refresh token
+            detectSessionInUrl: false, // we handle redirect manually
+        },
+    });

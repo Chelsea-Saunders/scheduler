@@ -2,7 +2,6 @@ import { validateForm, showSubmissionMessage } from "./form-utilities.mjs";
 import { supabase } from "../lib/supabase.mjs";
 
 // await supabase.auth.resetPasswordForEmail(email);
-
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("login-form");
     const createForm = document.getElementById("create-acct-form");
