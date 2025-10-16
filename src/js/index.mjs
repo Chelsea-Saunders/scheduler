@@ -25,8 +25,9 @@ async function loadAppointments() {
         console.error("Error fetching user:", userError);
         return;
     }
+    // if not signed in, exit
     if (!user) {
-        console.error("No user logged in");
+        console.warn("No user logged in - skipping appointment load.");
         return;
     }
 
