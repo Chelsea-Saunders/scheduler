@@ -1,17 +1,17 @@
 import { supabase } from '../lib/supabase.mjs';
 
+// guard against redirect spam
+window._isRedirectingToLogin = window._isRedirectingToLogin || false;
+
 function showMessage(message, isError = false) {
     const messageBox = document.getElementById("status-message");
+    if (!messageBox) return;
+
     messageBox.textContent = message;
-
     messageBox.classList.remove("hidden");
-    if (isError) {
-        messageBox.classList.add("error");
-    }
-
+    messageBox.classList.toggle("error", isError);
     messageBox.classList.add("show");
 
-    // auto hide after 3 seconds
     setTimeout(() => {
         messageBox.classList.remove("show");
         setTimeout(() => messageBox.classList.add("hidden"), 400);
@@ -20,47 +20,69 @@ function showMessage(message, isError = false) {
 
 async function loadAppointments() {
     const list = document.getElementById("my-appts");
+    if (!list) return;
     list.innerHTML = "Loading...";
 
-    const { data, error } = await supabase.auth.getUser();
-    const user = data?.user;
+    try {
+        const { data, error } = await supabase.auth.getUser();
+        const user = data?.user;
 
-    if (error) {
-        console.warn("User not logged in or session missing:", error);
-        list.textContent = "Could not varify user. Redirecting to login...";
-        return;
+        if (error) {
+            console.warn("User not logged in or session missing:", error);
+            list.textContent = "Could not varify user. Redirecting to login...";
+
+            if (!window._isRedirectingToLogin) {
+                window._isRedirectingToLogin = true;
+                showMessage("Please sign in. Redirecting to login...", true);
+                setTimeout(() => {
+                    window.location.href = "index.html?redirect=scheduler.html";
+                }, 1200);
+            }
+            return;
+        }
+
+        // if not signed in, exit
+        if (!user) {
+            list.textContent = "Please sign in to view appointments.";
+            if (!window._isRedirectingToLogin) {
+                window._isRedirectingToLogin = true;
+                showMessage("Please sign in. Redirecting to login...", true);
+                setTimeout(() => {
+                    window.location.href = "index.html?redirect=scheduler.html";
+                }, 1200);
+            }
+            return;
+        }
+
+        const { data: appts, error: apptError } = await supabase
+            .from("appointments")
+            .select("id, date, time")
+            .eq("user_id", user.id)
+            .order("date", { ascending: true })
+            .order("time", { ascending: true });
+
+        if (apptError) {
+            console.error("Error loading appointments:", error);
+            list.textContent = "Could not load appointments. Please try again later.";
+            return;
+        } 
+        if (!appts || appts.length === 0) {
+            list.textContent = "You have no upcoming appointments.";
+            return;
+        }
+
+        list.innerHTML = "";
+        appts.forEach(row => {
+            const item = document.createElement("div");
+            const when = new Date(row.date + "T12:00:00"); // noon to avoid timezone issues
+            item.className = "appt";
+            item.textContent = `${when.toLocaleDateString()} - ${row.time}`;
+            list.appendChild(item);
+        });
+    } catch (error) {
+            console.error("Unexpected error loading appointments:", error);
+            list.textContent = "Could not load appointments. Please try again later.";
     }
-    // if not signed in, exit
-    if (!user) {
-        list.textContent = "Please sign in.";
-        return;
-    }
-
-    const { data: appts, error: apptError } = await supabase
-        .from("appointments")
-        .select("id, date, time")
-        .eq("user_id", user.id)
-        .order("date", { ascending: true })
-        .order("time", { ascending: true });
-
-    if (apptError) {
-        console.error("Error loading appointments:", error);
-        list.textContent = "Could not load appointments. Please try again later.";
-        return;
-    } 
-    if (!appts || appts.length === 0) {
-        list.textContent = "You have no upcoming appointments.";
-        return;
-    }
-
-    list.innerHTML = "";
-    appts.forEach(row => {
-        const item = document.createElement("div");
-        const when = new Date(row.date + "T12:00:00"); // noon to avoid timezone issues
-        item.className = "appt";
-        item.textContent = `${when.toLocaleDateString()} - ${row.time}`;
-        list.appendChild(item);
-    });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -81,6 +103,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const accessToken = tokenMatch ? tokenMatch[1] : null;
 
     loadAppointments();
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+            // only load appts when session exists
+            console.log("session restored, loading appts");
+            loadAppointments();
+        } else {
+            // no session; don't spam redirect here - loadAppointments handles it
+            console.log("no session (onAuthStateChange)", _event);
+        }
+    });
 
     if (accessToken) {
         // this means the user clicked the password reset link from email
