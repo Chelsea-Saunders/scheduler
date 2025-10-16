@@ -1,15 +1,8 @@
 
 :root {
-    --bs-body-font: "Inter", "Rubik", Arial, sans-serif;
-    --bs-title-font: "Inconsolata", "Roboto";
+    --bs-body-font: Arial, sans-serif;
+    --bs-title-font: Segoe UI, Tahoma;
     --bs-welcome-font: PT Sans Narrow;
-
-    --bs-body-font-size: 0.9rem;
-    --bs-body-font-weight: 400;
-    --bs-body-line-height: 1;
-    --bs-title-font-size: 1.5rem;
-    --bs-title-font-weight: 700;
-    --bs-title-line-height: 1.2;
 
     --bs-background-color: #FCFFF5;
     --bs-header-background-color: #afbbe6;

@@ -124,9 +124,9 @@ input.error {
     border: 1px solid #f5c6cb;
     padding: 0.5rem;
     border-radius: var(--bs-border-radius-medium);
-    width: 100%;
+    width: 90%;
     text-align: center;
-    
+
 }
 #status-message, 
 .status-message {
