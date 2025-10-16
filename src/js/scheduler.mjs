@@ -106,6 +106,9 @@ function showMessage(message, isError = false) {
     }, 3000);
 }
 
+
+
+
 // HELPER FUNCTIONS: 
 // show date in human format
 function toHumanYMD(date) {
@@ -364,6 +367,8 @@ document.getElementById("back-to-dates")?.addEventListener("click", () => {
     document.getElementById("time-slots").innerHTML = "";
 });
 
+
+
 document.addEventListener("DOMContentLoaded", async () => {
     // PROTECTED: if they're not signed in, send them to the login page
     const { data: { user } } = await supabase.auth.getUser();
@@ -372,5 +377,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
         // load appts upon page load
         loadMyAppointments();
+
+        supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                console.log("session restored, loading appointments");
+                loadMyAppointments();
+            }
+        });
     }
 });
