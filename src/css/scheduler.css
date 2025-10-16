@@ -80,7 +80,7 @@ h2.day {
     font-size: 0.9rem;
     color: navy;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.284);
-    transition: background-color 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s ease;
+    transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
 }
 /* Darken buttons when time is already scheduled */
 #time-slots button.booked {
@@ -89,16 +89,11 @@ h2.day {
     border-color: #999;
     cursor: not-allowed;
     pointer-events: none;
+    font-style: italic;
+    opacity: 0.6;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* #time-slots .columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    justify-items: center;
-    align-items: start;
-} */
 button:hover {
     background-color: var(--bs-hover-background-color);
     color: var(--bs-text-color-light);
@@ -189,6 +184,15 @@ button:hover {
     gap: 0.5rem;
     margin-top: 1rem;
 }
+#time-slots button.booked {
+    background-color: rgba (0, 0, 0, 0.15);
+    color: #666;
+    border-color: #aaa;
+    cursor: not-allowed;
+    pointer-events: none;
+    text-decoration: line-through;
+}
+
 button {
     margin: 0 0 0 0.5rem;
     padding: 0.4rem 1rem;

@@ -209,7 +209,9 @@ async function showTimeSlots(date) {
         return;
     }
 
-    const bookedTimes = (bookedSlots ?? []).map(row => row.time);
+    const bookedTimes = (bookedSlots ?? []).map(row => 
+        row.time.slice(0, 5) // "09:00:00" -> "09:00");
+    );
     const allTimes = generateTimeSlots("09:00", "17:00", 30); // 9am-5pm, every 30 mins
 
     // show time slots
@@ -221,7 +223,13 @@ async function showTimeSlots(date) {
             timeButton.disabled = true;
             timeButton.classList.add("booked");
             timeButton.textContent = `${formatTime(time)} (Booked)`;
+            timeButton.style.opacity = "0.6";
+            timeButton.style.cursor = "not-allowed";
         } else {
+            // available -> normal click behavior
+            timeButton.disabled = false;
+            timeButton.classList.remove("booked");
+            timeButton.textContent = formatTime(time);
             timeButton.addEventListener("click", () => {
                 selectTimeSlot(date, time);
             });
@@ -301,14 +309,6 @@ async function selectTimeSlot(date, time) {
                 }
             });
             return;
-            // // handle duplicates
-            // if (error.message?.toLowerCase().includes("duplicate")) {
-            //     showMessage("❌ That slot is taken. Please choose another time.")
-            // } else {
-            //     showMessage("⚠️Could not book that slot. Please try another.");
-            //     console.error(error);
-            // }
-            // return;
         }
         showMessage(`✅ Appointment booked for ${date.toDateString()} at ${formatTime(time)}`);
 

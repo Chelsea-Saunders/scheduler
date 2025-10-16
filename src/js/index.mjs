@@ -48,6 +48,44 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginButton = loginForm.querySelector('[type="submit"]');
     const messageDiv = document.querySelector("#login-message");
 
+    const url = new URL(window.location.href);
+    const access_token = url.hash.match(/access_token=([^&]+)/);
+
+    if (access_token) {
+        // this means the user clicked the password reset link from email
+        showMessage("🔒 Please enter your new password below.");
+        loginForm.style.display = "none";
+        createForm.style.display = "none";
+        resetForm.style.display = "none";
+
+        // show password update UI
+        const newPasswordForm = document.createElement("form");
+        newPasswordForm.innerHTML = `
+            <h2>Set New Password</h2>
+            <label for="new-password">New Password:</label>
+            <input type="password" id="new-password" name="new-password" required minlength="6" />
+            <button type="submit">Update Password</button>
+            `;
+            document.querySelector("main").appendChile(newPasswordForm);
+
+            newPasswordForm.addEventListener("submit", async(event) => {
+                event.preventDefault();
+                const newPassword = document.getElementById("new-password").value.trim();
+
+                const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+                if (error) {
+                    showMessage("⚠️ Could not update password. Please try again.", true);
+                    console.error(error);
+                } else {
+                    showMessage("✅ Password updated! Please log in with your new password.");
+                    newPasswordForm.remove();
+                    loginForm.style.display = "block";
+                }
+            });
+    }
+    
+
     // CREATE ACCOUNT (SHOW)
     showCreateAccountButton.addEventListener("click", (event) => {
         event.preventDefault();
@@ -72,6 +110,37 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
         resetForm.style.display = "none";
         loginForm.style.display = "block";
+    });
+    // RESET FORM FOR RESETTING PASSWORD
+    resetForm?.addEventListener("submit", async(event) => {
+        event.preventDefault();
+
+        const email = document.getElementById("reset-email").value.trim();
+        if (!email) {
+            showMessage("⚠️ Please enter your email address.");
+            return;
+        }
+
+        // detect current path for redirection
+        let redirectTo;
+        const host = window.location.origin;
+
+        if (host.includes("localhost")) {
+            redirectTo = "https://localhost:5173/index.html";
+        } else {
+            redirectTo = "https://chelseasaunders.github.io/scheduler/index.html";
+        }
+
+        // tell supabase to reset password
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+        if (error) {
+            console.error("Reset password error:", error);
+            showMessage("⚠️ Could not send reset email. Please try again.");
+        } else {
+            showMessage("✅ Please check your email for reset instructions.");
+            resetForm.reset();
+        }
     });
     // MESAGE AND LOADING 
     const setMessage = (text = "", isError = false) => {

@@ -14,7 +14,7 @@
     <title>Northwind Dental, Wasilla, Alaska</title>
     <link rel="icon" href="/favicon.png" sizes="32x32" type="image/png"> <!-- This will be a bookmark icon -->
     <link rel="apple-touch-icon" href="/favicon.png">
-    <link rel="stylesheet" href="./src/css/index.css">
+    <link rel="stylesheet" href="./src/css/logout.css">
     <link rel="stylesheet" href="./src/css/components.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,7 +23,7 @@
     <script async src="https://www.youtube.com/iframe_api"></script>
 
     <script type="module" src="./src/js/header.mjs" defer></script>
-    <script type="module" src="./src/js/index.mjs" defer></script>
+    <script type="module" src="./src/js/logout.mjs" defer></script>
     <script type="module" src="/src/js/auth.mjs" defer></script>
 </head>
 <body>
@@ -66,58 +66,10 @@
         </div>
     </header>
     <main>
-        <!-- LOGIN PAGE -->
-         <form id="login-form" method="POST">
-            <h2 class="header">Login</h2>
-            <label for="login-email">Email:
-                <input type="email" id="login-email" name="email" autocomplete="email" required>
-            </label>
-
-            <label for="login-password">Password:
-                <input type="password" id="login-password" name="password" minlength="8" autocomplete="current-password" required>
-            </label>
-
-            <button type="submit" class="submit">Login</button>
-
-            <!-- LINK: CREATE ACCOUNT -->
-            <p class="c-acct">Click <a href="#" id="show-create-account">here</a>  to create an account</p>
-            <!-- FORGOT PASSWORD -->
-            <p class="c-acct" id="f-password">Forgot your <a href="#" id="forgot-password">password?</a></p>
-
-            <!-- MESSAGE AREA FOR ERRORS UNDER THE FORM -->
-             <div id="login-message" aria-live="polite"></div>
-         </form>
-         <!-- RESET PASSWORD -->
-        <form id="reset-form" style="display: none;">
-            <h2 id="rs-pwd">Reset Password</h2>
-            <p id="rs-pwd-p">Enter your email to reset your password</p>
-
-            <label for="reset-email">Email:</label>
-            <input type="email" id="reset-email" name="email" required autocomplete="email">
-
-            <button type="submit" class="submit">Send Reset Link</button>
-            <p class="c-acct">Remember it? <a href="#" id="back-to-login">Login</a></p>
-        </form>
-
-         <!-- CREATE ACCOUNT -->
-         <form id="create-acct-form">
-
-            <p class="c-acct">Already have an account? <a href="#" id="show-login">Login</a></p>
-
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
-
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required autocomplete="email">
-
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required minlength="8" autocomplete="new-password">
-
-            <label for="confirm-password">Re-Enter Password:</label>
-            <input type="password" name="confirm-password" id="confirm-password" required minlength="8" autocomplete="new-password">
-
-            <button type="submit" class="submit">Create Account</button>
-         </form>
+        <div id="logout" class="logout-container">
+            <h1>Signing you out...</h1>
+            <p>Please wait a moment.</p>
+        </div>
     </main>
     <footer>
         <div class="main-footer">
