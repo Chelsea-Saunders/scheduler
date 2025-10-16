@@ -22,6 +22,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..700&display=swap" rel="stylesheet">
     <script async src="https://www.youtube.com/iframe_api"></script>
 
+    <script>
+    // Redirect to update-password.html if the URL contains a Supabase access token
+    if (window.location.hash.includes("access_token=")) {
+        const hash = window.location.hash;
+        window.location.replace("./update-password.html" + hash);
+    }
+    </script>
+
+
     <script type="module" src="./src/js/header.mjs" defer></script>
     <script type="module" src="./src/js/index.mjs?v=2" defer></script>
     <script type="module" src="./src/js/auth.mjs" defer></script>
