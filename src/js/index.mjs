@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (host.includes("localhost")) {
             redirectTo = "http://localhost:5173/update-password.html";
         } else {
-            redirectTo = "https://Chelsea-Saunders.github.io/scheduler/update-password.html";
+            redirectTo = "https://chelsea-saunders.github.io/scheduler/update-password.html";
         }
 
         // tell supabase to reset password

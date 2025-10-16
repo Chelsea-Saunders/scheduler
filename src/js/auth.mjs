@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {redirectTo });
 
         if (error) {
             console.error(error);
