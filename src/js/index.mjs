@@ -19,6 +19,17 @@ function showMessage(message, isError = false) {
 }
 
 async function loadAppointments() {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError) {
+        console.error("Error fetching user:", userError);
+        return;
+    }
+    if (!user) {
+        console.error("No user logged in");
+        return;
+    }
+
     const { data, error } = await supabase
         .from("appointments")
         .select("id, date, time, label, duration_minutes")
@@ -27,9 +38,8 @@ async function loadAppointments() {
         .order("time", { ascending: true });
 
     if (error) {
-        console.error(error);
-    } 
-    else {
+        console.error("Error loading appointments:", error);
+    } else {
         console.log("Appointments:", data);
     }
 }
@@ -67,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <input type="password" id="new-password" name="new-password" required minlength="6" />
             <button type="submit">Update Password</button>
             `;
-            document.querySelector("main").appendChile(newPasswordForm);
+            document.querySelector("main").appendChild(newPasswordForm);
 
             newPasswordForm.addEventListener("submit", async(event) => {
                 event.preventDefault();

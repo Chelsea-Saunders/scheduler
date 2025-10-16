@@ -62,9 +62,7 @@ form.addEventListener("submit", async (event) => {
     form.style.opacity = "1";
 
         // take us back to the sign in page
-        setTimeout(() => {
-            window.location.href = "index.html";
-        }, 1500);
+        setTimeout(() => window.location.assign("index.html"), 2000);
 });
 
 // auto-focus the new password field

@@ -94,7 +94,7 @@ form {
     transform: translateY(-3px);
 }
 input.error {
-    border: 2xp solid #c62828;
+    border: 2px solid #c62828;
     outline: none;
 }
 /* submit buttons for login page */
@@ -116,19 +116,6 @@ input.error {
     transform: translateY(-3px);
     background: var(--bs-gradient-buttons-hover);
     box-shadow: var(--bs-box-shadow-button-hover);
-}
-.submission-message {
-    position: fixed;
-    inset: auto 1rem 1rem auto;
-    background: #032a5a;
-    color: #fff;
-    padding: 0.6rem 0.9rem;
-    border-radius: var(--bs-border-radius-medium);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
-    z-index: 9999;
-}
-#reset-form {
-    display: none;
 }
 /* "error"/"alert" message box */
 #status-message, 
@@ -162,8 +149,4 @@ input.error {
 }
 .status-message.hidden {
     display: none;
-}
-.status-message.visible {
-    color: darkred;
-    background-color: rgba(255, 230, 230, 0.95);
-}
+} 

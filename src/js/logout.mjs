@@ -38,8 +38,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("try-again").addEventListener("click", async () => {
                 const retry = await supabase.auth.signOut();
                 if (!retry.error) {
-                    showMessage
-                    window.location.href = "index.html";
+                    showMessage("✅ You have been signed out."); 
+
+                    // fade out
+                    logoutDiv.style.transition = "opacity 0.8s ease";
+                    logoutDiv.style.opacity = "0";
+
+                    // small delay for UX
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 1500);
                 } else {
                     showMessage("⚠️ Sign out failed again. Please try refreshing the page.", true);
                 }
@@ -51,6 +59,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             <h1>✅ You’ve been signed out</h1>
             <p>Redirecting to login page...</p>
             `;
+            
+            // fade out
+            logoutDiv.style.transition = "opacity 0.8s ease";
+            logoutDiv.style.opacity = "0";
 
             // small delay for UX
             setTimeout(() => {
