@@ -118,6 +118,13 @@ input.error {
     box-shadow: var(--bs-box-shadow-button-hover);
 }
 /* "error"/"alert" message box */
+#login-message.error {
+    color: darkred;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 0.5rem;
+    border-radius: var(--bs-border-radius-medium);
+}
 #status-message, 
 .status-message {
     position: fixed;
