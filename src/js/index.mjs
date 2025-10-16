@@ -102,8 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;
 
-    loadAppointments();
-
     supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
             // only load appts when session exists
