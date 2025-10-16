@@ -1,4 +1,8 @@
+console.log("✅ update-password.mjs loaded");
+
 import { supabase } from "../lib/supabase.mjs";
+
+console.log("Form element:", form);
 
 document.addEventListener("DOMContentLoaded", () => {
     // parse token from URL hash
