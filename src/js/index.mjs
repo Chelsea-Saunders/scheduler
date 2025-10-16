@@ -22,12 +22,14 @@ async function loadAppointments() {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError) {
-        console.error("Error fetching user:", userError);
+        console.warn("User not logged in:", userError.message);
+        window.location.href = "index.html?redirect=scheduler.html";
         return;
     }
     // if not signed in, exit
     if (!user) {
         console.warn("No user logged in - skipping appointment load.");
+        window.location.href = "index.html?redirect=scheduler.html";
         return;
     }
 
