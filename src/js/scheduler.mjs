@@ -1,13 +1,28 @@
 import { supabase } from "../lib/supabase.mjs";
 
+window._isRedirectingToLogin = window._isRedirectingToLogin || false;
+
 // MY APPOINTMENTS
 async function loadMyAppointments() {
     const list = document.getElementById("my-appts");
     list.innerHTML = "Loading...";
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { 
-        list.textContent = "Please sign in."; 
+
+    if (userError || !user) { 
+        console.warn("User not logged in:", userError?.message);
+
+        list.textContent = "Please sign in to view appointments."; 
+
+        if (!window._isRedirectingToLogin) {
+            window._isRedirectingToLogin = true;
+            showMessage("Please sign in. Redirecting to login...", true);
+
+            // small delay for message visibility
+            setTimeout(() => {
+                window.location.replace("index.html?redirect=scheduler.html");
+            }, 1500);
+        }
         return; 
     }
 
