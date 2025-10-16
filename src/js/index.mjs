@@ -19,34 +19,49 @@ function showMessage(message, isError = false) {
 }
 
 async function loadAppointments() {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const list = document.getElementById("my-appts");
+    list.innerHTML = "Loading...";
 
-    if (userError) {
-        console.warn("User not logged in:", userError.message);
-        window.location.href = "index.html?redirect=scheduler.html";
+    const { data, error } = await supabase.auth.getUser();
+    const user = data?.user;
+
+    if (error) {
+        console.warn("User not logged in or session missing:", error);
+        list.textContent = "Could not varify user. Redirecting to login...";
         return;
     }
     // if not signed in, exit
     if (!user) {
-        console.warn("No user logged in - skipping appointment load.");
-        window.location.href = "index.html?redirect=scheduler.html";
+        list.textContent = "Please sign in.";
         return;
     }
 
-    const { data, error } = await supabase
+    const { data: appts, error: apptError } = await supabase
         .from("appointments")
-        .select("id, date, time, label, duration_minutes")
+        .select("id, date, time")
         .eq("user_id", user.id)
         .order("date", { ascending: true })
         .order("time", { ascending: true });
 
-    if (error) {
+    if (apptError) {
         console.error("Error loading appointments:", error);
-    } else {
-        console.log("Appointments:", data);
+        list.textContent = "Could not load appointments. Please try again later.";
+        return;
+    } 
+    if (!appts || appts.length === 0) {
+        list.textContent = "You have no upcoming appointments.";
+        return;
     }
+
+    list.innerHTML = "";
+    appts.forEach(row => {
+        const item = document.createElement("div");
+        const when = new Date(row.date + "T12:00:00"); // noon to avoid timezone issues
+        item.className = "appt";
+        item.textContent = `${when.toLocaleDateString()} - ${row.time}`;
+        list.appendChild(item);
+    });
 }
-loadAppointments();
 
 document.addEventListener("DOMContentLoaded", () => {
     const showCreateAccountButton = document.getElementById("show-create-account");
@@ -64,6 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // const url = new URL(window.location.href);
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;
+
+    loadAppointments();
 
     if (accessToken) {
         // this means the user clicked the password reset link from email
@@ -140,9 +157,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const host = window.location.origin;
 
         if (host.includes("localhost")) {
-            redirectTo = "https://localhost:5173/update-password.html";
+            redirectTo = "http://localhost:5173/update-password.html";
         } else {
-            redirectTo = "https://chelseasaunders.github.io/scheduler/update-password.html";
+            redirectTo = "https://Chelsea-Saunders.github.io/scheduler/update-password.html";
         }
 
         // tell supabase to reset password
