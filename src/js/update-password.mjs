@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabase.mjs";
 
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ update-password.mjs loaded");
     // parse token from URL hash
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;

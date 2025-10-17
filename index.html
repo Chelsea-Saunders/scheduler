@@ -15,7 +15,6 @@
     <title>Northwind Dental, Wasilla, Alaska</title>
     <link rel="stylesheet" href="./src/css/index.css">
     <link rel="stylesheet" href="./src/css/components.css">
-
     <script>
     //detect supabase redirect type and handle accordingly
     const hash = window.location.hash;
@@ -28,8 +27,6 @@
     }
     //default: the remainder of redirects should go to login page (index)
     </script>
-
-
     <script type="module" src="./src/js/header.mjs" defer></script>
     <script type="module" src="./src/js/index.mjs?v=2" defer></script>
     <script type="module" src="./src/js/auth.mjs" defer></script>
@@ -96,7 +93,7 @@
             <!-- MESSAGE AREA FOR ERRORS UNDER THE FORM -->
              <div id="login-message" aria-live="polite"></div>
          </form>
-         <!-- RESET PASSWORD -->
+         <!-- FORGOT PASSWORD -> RESET PASSWORD -->
         <form id="reset-form" style="display: none;">
             <h2 id="rs-pwd">Reset Password</h2>
             <p id="rs-pwd-p">Enter your email to reset your password</p>
