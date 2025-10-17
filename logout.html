@@ -15,13 +15,6 @@
     <title>Northwind Dental, Wasilla, Alaska</title>
     <link rel="stylesheet" href="./src/css/index.css">
     <link rel="stylesheet" href="./src/css/components.css">
-    <script>
-    // Redirect to update-password.html if the URL contains a Supabase access token
-    if (window.location.hash.includes("access_token=")) {
-        const hash = window.location.hash;
-        window.location.replace("./update-password.html" + hash);
-    }
-    </script>
     <script type="module" src="./src/js/header.mjs" defer></script>
     <script type="module" src="./src/js/logout.mjs" defer></script>
     <script type="module" src="./src/js/auth.mjs" defer></script>

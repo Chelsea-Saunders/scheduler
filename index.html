@@ -17,11 +17,16 @@
     <link rel="stylesheet" href="./src/css/components.css">
 
     <script>
-    // Redirect to update-password.html if the URL contains a Supabase access token
-    if (window.location.hash.includes("access_token=")) {
-        const hash = window.location.hash;
+    //detect supabase redirect type and handle accordingly
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.replace("#", ""));
+    const type = params.get("type");
+
+    // only redirect to update-password.html when it's a password reset link
+    if (type === "recovery") {
         window.location.replace("./update-password.html" + hash);
     }
+    //default: the remainder of redirects should go to login page (index)
     </script>
 
 
