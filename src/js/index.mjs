@@ -101,6 +101,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // const url = new URL(window.location.href);
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;
+    const hashParams = new URLSearchParams(window.location.hash.slick(1));
+    const type = hashParams.get("type");
 
     supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
@@ -113,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    if (accessToken) {
+    if (accessToken && type === "recovery") {
         // this means the user clicked the password reset link from email
         showMessage("🔒 Please enter your new password below.");
         loginForm.style.display = "none";
@@ -124,8 +126,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const newPasswordForm = document.createElement("form");
         newPasswordForm.innerHTML = `
             <h2>Set New Password</h2>
+
             <label for="new-password">New Password:</label>
-            <input type="password" id="new-password" name="new-password" required minlength="6" />
+            <input type="password" id="new-password" name="new-password" required minlength="8" />
+
+            <label for="confirm-password">Confirm Password:</label>
+            <input type="password" id="confirm-password" name="confirm-password" required minlength="8" />
+            
             <button type="submit">Update Password</button>
             `;
             document.querySelector("main").appendChild(newPasswordForm);
@@ -133,6 +140,12 @@ document.addEventListener("DOMContentLoaded", () => {
             newPasswordForm.addEventListener("submit", async(event) => {
                 event.preventDefault();
                 const newPassword = document.getElementById("new-password").value.trim();
+                const confirmPassword = document.getElementById("confirm-password").value.trim();
+
+                if (newPassword !== confirmPassword) {
+                    showMessage("Passwords do not match.", true);
+                    return;
+                }
 
                 const { error } = await supabase.auth.updateUser({ password: newPassword });
 
