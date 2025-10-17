@@ -9,7 +9,7 @@ async function loadMyAppointments() {
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (userError || !user) { 
+    if (!user) { 
         console.warn("User not logged in:", userError?.message);
 
         list.textContent = "Please sign in to view appointments."; 
