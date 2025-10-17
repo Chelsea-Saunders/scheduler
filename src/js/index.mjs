@@ -243,7 +243,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // supabase login
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabase.auth.signInWithPassword({ 
+                email, 
+                password,
+                options: { 
+                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/"
+                } 
+            });
 
             if (error) {
                 // invalid login
@@ -283,7 +289,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const { error } = await supabase.auth.signUp({ email, password });
+            const { error } = await supabase.auth.signUp({ 
+                email, 
+                password,
+                options: {
+                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/"
+                } 
+            });
 
             if (error) {
                 console.error("Error creating account:", error);
