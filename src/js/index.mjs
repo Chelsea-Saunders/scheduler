@@ -280,6 +280,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             // success...navigate to redirect page
+            // window.location.assign(redirect);
+            console.log("redirecting to:", redirect);
             window.location.assign(redirect);
 
         } catch (error) {
