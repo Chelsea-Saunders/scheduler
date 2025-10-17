@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // const url = new URL(window.location.href);
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;
-    const hashParams = new URLSearchParams(window.location.hash.slick(1));
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
     const type = hashParams.get("type");
 
     supabase.auth.onAuthStateChange((_event, session) => {
