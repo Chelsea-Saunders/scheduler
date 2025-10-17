@@ -159,3 +159,13 @@ input.error {
     text-align: center;
 
 }
+
+.link-button {
+    background: none;
+    border: none;
+    color: navy;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0;
+}

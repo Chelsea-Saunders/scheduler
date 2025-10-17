@@ -167,6 +167,35 @@ document.addEventListener("DOMContentLoaded", () => {
         loginForm.style.display = "none";
         createForm.style.display = "block";
     });
+    // RESEND CONFIRMATION LINK (SHOW)
+    const resendLink = document.getElementById("resend-confirmation-link");
+    resendLink?.addEventListener("click", async (event) => {
+        event.preventDefault();
+
+        const email = createForm.querySelector('input[name="email"]').value.trim();
+        if (!email) {
+            showMessage("Please enter your email first.");
+            return;
+        }
+
+        // check if user exits but is unconfirmed
+        const { data, error } = await supabase.auth.resend({
+            type: "signup", 
+            email,
+            options: { 
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/"
+            },
+        });
+
+        if (error) {
+            console.error("resend failed:", error);
+            showMessage("Could not resend confirmation email. Try again later.", ture);
+        } else {
+            showMessage("Confirmation email resent! Please check your inbox.");
+            resendLink.disabled = true;
+            resendLink.textContent = "Email Sent";
+        }
+    });
     // LOGIN (SHOW)
     showLoginButton.addEventListener("click", (event) => {
         event.preventDefault();

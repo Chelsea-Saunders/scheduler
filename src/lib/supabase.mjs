@@ -11,6 +11,6 @@ export const supabase = createClient(
         auth: {
             persistSession: true,       // keep user logged in on refresh
             autoRefreshToken: true,   // automatically refresh token
-            detectSessionInUrl: true, // we handle redirect manually
+            detectSessionInUrl: true, // will handle redirect 
         },
     });
