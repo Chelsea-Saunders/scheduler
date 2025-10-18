@@ -360,6 +360,53 @@ async function selectTimeSlot(date, time) {
     }
 }
 
+async function showTimeSlots(date) {
+    const ymd = toHumanYMD(date);
+    const slotsContainer = document.getElementById("time-slots");
+    const timeSection = document.getElementById("time-section");
+
+    // hide time slots until date is selected
+    timeSection.classList.remove("active");
+    slotsContainer.innerHTML = "";
+
+    document.getElementById("pick-a-date").style.display = "none";
+
+
+    const selectedDateHeader = document.getElementById("selected-dates");
+    selectedDateHeader.textContent = date.toLocaleDateString("en-US", {
+        weekday: "short", 
+        month: "short", 
+        day: "numeric"
+    });
+    selectedDateHeader.classList.add("visible");
+
+    // use cached data instead of fetching again
+
+    const bookedTimes = bookedTimesCache || [];
+    
+    const allTimes = generateTimeSlots("09:00", "17:00", 30);
+    allTimes.forEach(time => {
+        const timeButton = document.createElement("button");
+        timeButton.textContent = formatTime(time);
+
+        if (bookedTimes.includes(time.slice(0, 5))) {
+            timeButton.disabled = true;
+            timeButton.classList.add("booked");
+            timeButton.textContent = `${formatTime(time)} (Booked)`;
+        } else {
+            timeButton.addEventListener("click", () => selectTimeSlot(date, time));
+        }
+
+        slotsContainer.appendChild(timeButton);
+    });
+
+    if (allTimes.length > 0) {
+        requestAnimationFrame(() => {
+            setTimeout(() => timeSection.classList.add("active"), 150);
+        });
+    }
+}
+
 document.getElementById("back-to-dates")?.addEventListener("click", () => {
     // show day selection again
     document.getElementById("pick-a-date").style.display = "block";
