@@ -298,7 +298,6 @@ async function showTimeSlots(date) {
 
     document.getElementById("pick-a-date").style.display = "none";
 
-
     const selectedDateHeader = document.getElementById("selected-dates");
     selectedDateHeader.textContent = date.toLocaleDateString("en-US", {
         weekday: "short", 
@@ -308,10 +307,10 @@ async function showTimeSlots(date) {
     selectedDateHeader.classList.add("visible");
 
     // use cached data instead of fetching again
-
-    const bookedTimes = bookedTimesCache || [];
+    const bookedTimes = await refreshBookedSlots(date);
     
     const allTimes = generateTimeSlots("09:00", "17:00", 30);
+
     allTimes.forEach(time => {
         const timeButton = document.createElement("button");
         timeButton.textContent = formatTime(time);
@@ -323,10 +322,9 @@ async function showTimeSlots(date) {
         } else {
             timeButton.addEventListener("click", () => selectTimeSlot(date, time));
         }
-
         slotsContainer.appendChild(timeButton);
     });
-
+    
     if (allTimes.length > 0) {
         requestAnimationFrame(() => {
             setTimeout(() => timeSection.classList.add("active"), 150);
