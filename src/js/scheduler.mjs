@@ -123,6 +123,13 @@ function formatTime(timeStr) {
     const displayHour = ((hour + 11) % 12 + 1);
     return `${displayHour}:${minute.toString().padStart(2, "0")} ${suffix}`;
 }
+function normalizeHHMM(timeString) {
+    const match = String(timeString || "").trim().match(/^(\d{1,2}):(\d{2})/);
+    if (!match) return null;
+    const hh = match[1].padStart(2, "0");
+    const mm = match[2];
+    return `${hh}:${mm}`;
+}
 
 // GENERATE AVAILABLE SLOTS
 function generateTimeSlots(start, end, intervalMinutes) {
@@ -224,10 +231,11 @@ async function refreshBookedSlots(date) {
     }
 
     // normalize times for easy to read
-    bookedTimesCache = data.map(row => {
-        const raw = String(row.time || "").trim();
-        return raw.length > 5 ? raw.slice(0, 5) : raw;
-    });
+    bookedTimesCache = (data ?? [])
+        .map(row => normalizeHHMM(row.time))
+        .filter(Boolean);
+
+    console.log("bookedTimesCache:", ymd, bookedTimesCache);    
     return bookedTimesCache;
 }
 
@@ -310,21 +318,21 @@ async function showTimeSlots(date) {
     const bookedTimes = await refreshBookedSlots(date);
     
     const allTimes = generateTimeSlots("09:00", "17:00", 30);
-
     allTimes.forEach(time => {
+        const normalized = normalizeHHMM(time);
         const timeButton = document.createElement("button");
-        timeButton.textContent = formatTime(time);
+        timeButton.textContent = formatTime(normalized);
 
-        if (bookedTimes.includes(time.slice(0, 5))) {
+        if (bookedTimes.includes(normalized)) {
             timeButton.disabled = true;
             timeButton.classList.add("booked");
-            timeButton.textContent = `${formatTime(time)} (Booked)`;
+            timeButton.textContent = `${formatTime(normalized)} (Booked)`;
         } else {
-            timeButton.addEventListener("click", () => selectTimeSlot(date, time));
+            timeButton.addEventListener("click", () => selectTimeSlot(date, normalized));
         }
         slotsContainer.appendChild(timeButton);
     });
-    
+
     if (allTimes.length > 0) {
         requestAnimationFrame(() => {
             setTimeout(() => timeSection.classList.add("active"), 150);
