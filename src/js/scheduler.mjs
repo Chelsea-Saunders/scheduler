@@ -208,7 +208,7 @@ setupShowMoreToggle("tuesday-slots", "show-more-tues");
 setupShowMoreToggle("thursday-slots", "show-more-thurs");
 
 // refresh list of booked time slots for a given date
-let bookedTimesCache = {};
+let bookedTimesCache = [];
 
 async function refreshBookedSlots(date) {
     const ymd = toHumanYMD(date);
