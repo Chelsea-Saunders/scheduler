@@ -196,9 +196,9 @@ button:hover {
 }
 /* appointment buttons */
 #my-appt-container {
-    margin-top: 1rem;
-    background-color: var(--bs-background-color);
-    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.072); */
+    margin: 1rem 0;
+    background-color: rgba(220, 223, 242, 0.55);
+    padding: 1rem 0;
 }
 #my-appts {
     display: flex;
