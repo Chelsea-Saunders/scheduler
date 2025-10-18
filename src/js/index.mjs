@@ -106,13 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
-            // only load appts when session exists
-            console.log("session restored, loading appts");
             loadAppointments();
-        } else {
-            // no session; don't spam redirect here - loadAppointments handles it
-            console.log("no session (onAuthStateChange)", _event);
-        }
+        } 
     });
 
     if (accessToken && type === "recovery") {
@@ -309,8 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             // success...navigate to redirect page
-            // window.location.assign(redirect);
-            console.log("redirecting to:", redirect);
             window.location.assign(redirect);
 
         } catch (error) {

@@ -254,7 +254,7 @@ async function showTimeSlots(date) {
             });
         }
         slotsContainer.appendChild(timeButton);
-        
+
     });
     if (allTimes.length > 0) {
         requestAnimationFrame(() => {
@@ -301,7 +301,6 @@ async function refreshBookedSlots(date) {
         const raw = String(row.time || "").trim();
         return raw.length > 5 ? raw.slice(0, 5) : raw;
     });
-    console.log("refreshed bookedTimes:", bookedTimesCache);
     return bookedTimesCache;
 }
 
@@ -329,7 +328,6 @@ async function selectTimeSlot(date, time) {
                     duration_minutes: 30,
                 },
             ]);
-            console.log("Insert result:", error);
 
             // handle duplicate / conflict (409)
             if (status === 409 || (error && error.message?.includes("duplicate"))) {
@@ -393,7 +391,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
-                console.log("session restored, loading appointments");
                 loadMyAppointments();
             }
         });
