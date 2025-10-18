@@ -227,9 +227,23 @@ async function showTimeSlots(date) {
         return;
     }
 
-    const bookedTimes = (bookedSlots ?? []).map(row => 
-        row.time.slice(0, 5) // "09:00:00" -> "09:00");
-    );
+
+    // TESTING ONLY: 
+        console.log("Booked slots for", ymd, bookedSlots);
+
+
+
+    const bookedTimes = (bookedSlots ?? []).map(row => {
+        const raw = String(row.time || "").trim();
+        // normalize both 09:00 and 09:00:00
+        return raw.length > 5 ? raw.slice(0, 5) : raw;
+    });
+
+    // TESTING ONLY:
+    console.log("normalized bookedTimes:", bookedTimes);
+
+
+    
     const allTimes = generateTimeSlots("09:00", "17:00", 30); // 9am-5pm, every 30 mins
 
     // show time slots
@@ -237,7 +251,7 @@ async function showTimeSlots(date) {
         const timeButton = document.createElement("button");
         timeButton.textContent = formatTime(time);
 
-        if (bookedTimes.includes(time)) {
+        if (bookedTimes.includes(time.slice(0, 5))) {
             timeButton.disabled = true;
             timeButton.classList.add("booked");
             timeButton.textContent = `${formatTime(time)} (Booked)`;
@@ -253,6 +267,15 @@ async function showTimeSlots(date) {
             });
         }
         slotsContainer.appendChild(timeButton);
+
+
+
+        // test these:
+        slotsContainer.offsetHeight;// trigger reflow
+        timeSection.classList.add("acitve");
+
+
+
     });
     if (allTimes.length > 0) {
         requestAnimationFrame(() => {
@@ -328,7 +351,7 @@ async function selectTimeSlot(date, time) {
             });
             return;
         }
-        showMessage(`✅ Appointment booked for ${date.toDateString()} at ${formatTime(time)}`);
+        showMessage(`Appointment booked for ${date.toDateString()} at ${formatTime(time)}`);
 
         // visually disable booked button
         const bookedButton = [...document.querySelectorAll("#time-slots button")].find(
@@ -340,8 +363,12 @@ async function selectTimeSlot(date, time) {
             bookedButton.textContent = `${formatTime(time)} (Booked)`;
         }
 
-        showTimeSlots(date);
-        loadMyAppointments();
+        // small delay so supabase catches up
+        await new Promise(res => setTimeout(res, 600));
+
+        // now refresh data from supabase
+        await showTimeSlots(date);
+        // await loadMyAppointments(); 
 
     } catch (error) {
         console.error("Unexpected error:", error);
