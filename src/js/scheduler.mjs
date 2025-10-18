@@ -216,34 +216,21 @@ async function showTimeSlots(date) {
     selectedDateHeader.classList.add("visible");
 
     // fetch booked slots for that date
-    const { data: bookedSlots, error } = await supabase 
+    const { error } = await supabase 
         .from("appointments")
         .select("time")
         .eq("date", ymd);
 
     if (error) {
         console.error(error);
-        slotsContainer.textContent = "⚠️Could not load time slots. Please try again.";
+        slotsContainer.textContent = "Could not load time slots. Please try again.";
         return;
     }
 
+    // refresh booked slots cache
+    await refreshBookedSlots(date);
+    const bookedTimes = bookedTimesChache;
 
-    // TESTING ONLY: 
-        console.log("Booked slots for", ymd, bookedSlots);
-
-
-
-    const bookedTimes = (bookedSlots ?? []).map(row => {
-        const raw = String(row.time || "").trim();
-        // normalize both 09:00 and 09:00:00
-        return raw.length > 5 ? raw.slice(0, 5) : raw;
-    });
-
-    // TESTING ONLY:
-    console.log("normalized bookedTimes:", bookedTimes);
-
-
-    
     const allTimes = generateTimeSlots("09:00", "17:00", 30); // 9am-5pm, every 30 mins
 
     // show time slots
@@ -267,15 +254,7 @@ async function showTimeSlots(date) {
             });
         }
         slotsContainer.appendChild(timeButton);
-
-
-
-        // test these:
-        slotsContainer.offsetHeight;// trigger reflow
-        timeSection.classList.add("acitve");
-
-
-
+        
     });
     if (allTimes.length > 0) {
         requestAnimationFrame(() => {
@@ -301,11 +280,36 @@ function setupShowMoreToggle(containerId, buttonId) {
 setupShowMoreToggle("tuesday-slots", "show-more-tues");
 setupShowMoreToggle("thursday-slots", "show-more-thurs");
 
+// refresh list of booked time slots for a given date
+let bookedTimesCache = {};
+
+async function refreshBookedSlots(date) {
+    const ymd = toHumanYMD(date);
+
+    const { data, error } = await supabase
+        .from("appointments")
+        .select("time")
+        .eq("date", ymd);
+
+    if (error) {
+        console.error("Error fetching booked times:", error);
+        return;
+    }
+
+    // normalize times for easy to read
+    bookedTimesCache = data.map(row => {
+        const raw = String(row.time || "").trim();
+        return raw.length > 5 ? raw.slice(0, 5) : raw;
+    });
+    console.log("refreshed bookedTimes:", bookedTimesCache);
+    return bookedTimesCache;
+}
+
 // select/book a time slot
 async function selectTimeSlot(date, time) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        showMessage("⚠️ You must be logged in to book an appointment.");
+        showMessage("You must be logged in to book an appointment.");
         window.location.href = `index.html?redirect=scheduler.html`;
         return;
     }
@@ -314,7 +318,7 @@ async function selectTimeSlot(date, time) {
 
     // call supabase to book
     try {
-        const { error } = await supabase
+        const { data, error, status } = await supabase
             .from ("appointments")
             .insert ([
                 { 
@@ -327,52 +331,34 @@ async function selectTimeSlot(date, time) {
             ]);
             console.log("Insert result:", error);
 
+            // handle duplicate / conflict (409)
+            if (status === 409 || (error && error.message?.includes("duplicate"))) {
+                showMessage("That time slot is already booked. Please choose another time.", true);
+                await refreshBookedSlots(date);
+                await showTimeSlots(date);
+                return;
+            }
             
-        if (error) {
-            console.error("Insert failed:", error);
-            const msg = error.message?.toLowerCase() || "";
-
-            if (
-                msg.includes("duplicate key value") ||
-                msg.includes("unique constraint")
-            ) {
-                showMessage("❌ That slot is taken. Please choose another time.");
-            } else {
-                showMessage("⚠️ Could not book that slot. Please try another.");
+            // any other errors
+            if (error) {
+                console.error("Insert failed:", error);
+                showMessage("Could not book that time slot. Please try again.", true);
+                return;
             }
 
-            const allButtons = document.querySelectorAll("#time-slots button");
-            allButtons.forEach(btn => {
-                if (btn.textContent.includes(formatTime(time))) {
-                    btn.disabled = true;
-                    btn.classList.add("booked");
-                    btn.textContent = `${formatTime(time)} (Booked)`;
-                }
-            });
-            return;
-        }
-        showMessage(`Appointment booked for ${date.toDateString()} at ${formatTime(time)}`);
+            // Success message
+            showMessage(`Appointment booked for ${date.toDateString()} at ${formatTime(time)}`);
 
-        // visually disable booked button
-        const bookedButton = [...document.querySelectorAll("#time-slots button")].find(
-            btn => btn.textContent.includes(formatTime(time))
-        );
-        if (bookedButton) {
-            bookedButton.disabled = true;
-            bookedButton.classList.add("booked");
-            bookedButton.textContent = `${formatTime(time)} (Booked)`;
-        }
+            // small delay so supabase catches up
+            await new Promise(res => setTimeout(res, 600));
 
-        // small delay so supabase catches up
-        await new Promise(res => setTimeout(res, 600));
-
-        // now refresh data from supabase
-        await showTimeSlots(date);
-        // await loadMyAppointments(); 
+            // always refresh from live data after booking
+            await refreshBookedSlots(date);
+            await showTimeSlots(date);
 
     } catch (error) {
         console.error("Unexpected error:", error);
-        showMessage("⚠️Something went wrong. Please try again.");
+        showMessage("Something went wrong. Please try again.");
     }
 }
 
