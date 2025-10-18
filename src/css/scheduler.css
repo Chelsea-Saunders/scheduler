@@ -156,9 +156,9 @@ button:hover {
 }
 /* Darken buttons when time is already scheduled */
 #time-slots button.booked {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: #ccc;
     color: #666;
-    border-color: #999;
+    border-color: #aaa;
     cursor: not-allowed;
     pointer-events: none;
     text-decoration: line-through;

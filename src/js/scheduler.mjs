@@ -227,7 +227,8 @@ async function refreshBookedSlots(date) {
 
     if (error) {
         console.error("Error fetching booked times:", error);
-        return;
+        bookedTimesCache = [];
+        return bookedTimesCache;
     }
 
     // normalize times for easy to read
@@ -235,7 +236,7 @@ async function refreshBookedSlots(date) {
         .map(row => normalizeHHMM(row.time))
         .filter(Boolean);
 
-    console.log("bookedTimesCache:", ymd, bookedTimesCache);    
+    console.log("bookedTimesCache:", ymd,  "→", bookedTimesCache);    
     return bookedTimesCache;
 }
 
@@ -315,7 +316,14 @@ async function showTimeSlots(date) {
     selectedDateHeader.classList.add("visible");
 
     // use cached data instead of fetching again
-    const bookedTimes = await refreshBookedSlots(date);
+    const bookedTimes = (await refreshBookedSlots(date)) ?? [];
+    console.log("Normalized bookedTimes:", bookedTimes);
+
+
+    // ---------------TEST------------------
+    console.log("For date:", ymd, "Booked times:", bookedTimes);
+
+
     
     const allTimes = generateTimeSlots("09:00", "17:00", 30);
     allTimes.forEach(time => {
