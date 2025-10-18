@@ -26,8 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // RESET PASSWORD submit
     resetForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
         if (!validateForm(resetForm)) {
-            event.preventDefault();
             showSubmissionMessage("Please correct the highlighted fields.");
             return;
         }
@@ -36,6 +37,16 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!email) {
             showSubmissionMessage("Please enter a valid email address.");
             return;
+        }
+
+        // detect current path for redirect email
+        let redirectTo;
+        const host = window.location.origin;
+
+        if (host.includes("localhost")) {
+            redirectTo = "http://localhost:5173/update-password.html";
+        } else {
+            redirectTo = "https://chelsea-saunders.github.io/scheduler/update-password.html";
         }
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {redirectTo });

@@ -196,9 +196,8 @@ button:hover {
 }
 /* appointment buttons */
 #my-appt-container {
-    margin: 1rem 0;
-    background-color: rgba(220, 223, 242, 0.55);
-    padding: 1rem 0;
+    margin: 1rem 0 2rem 0;
+    padding: 0 0.5rem;
 }
 #my-appts {
     display: flex;
@@ -208,6 +207,8 @@ button:hover {
     background-color: white;
     border: none;
     align-items: center;
+    /* padding: 1rem; */
+    border-radius: var(--bs-border-radius-medium);
 }
 #my-appts .appt {
     display: flex;
@@ -266,4 +267,10 @@ button:hover {
     .appt {
         padding: 2rem;
     }
+}
+@media (min-width: 400px) {
+    /* appointment buttons */
+#my-appt-container {
+    padding: 0;
+}
 }
