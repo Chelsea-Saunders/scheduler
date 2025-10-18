@@ -28,24 +28,25 @@ async function loadMyAppointments() {
 
     const { data, error } = await supabase
         .from("appointments")
-        .select("id, date, time")
-        .eq("user_id", user.id)
+        .select("id, date, time, user_id")
         .order("date", { ascending: true })
         .order("time", { ascending: true });
     
     if (error) {
         console.error(error);
-        list.textContent = "⚠️Could not load your appointments.";
+        list.textContent = "Could not load your appointments.";
         return;
     }
 
-    if (!data || data.length === 0) {
+    const myAppointments = (data ?? []).filter(row => row.user_id === user.id);
+
+    if (!myAppointments.length) {
         list.textContent = "You have no upcoming appointments.";
         return;
     }
 
     list.innerHTML = "";
-    data.forEach(row => {
+    myAppointments.forEach(row => {
         const item = document.createElement("div");
         const when = new Date(row.date + "T12:00:00"); // avoid timezone issues
         item.className = "appt";
@@ -297,6 +298,10 @@ async function selectTimeSlot(date, time) {
 }
 
 async function showTimeSlots(date) {
+
+    console.log("✅ showTimeSlots called for:", toHumanYMD(date));
+
+
     const ymd = toHumanYMD(date);
     const slotsContainer = document.getElementById("time-slots");
     const timeSection = document.getElementById("time-section");
@@ -324,22 +329,61 @@ async function showTimeSlots(date) {
     console.log("For date:", ymd, "Booked times:", bookedTimes);
 
 
-    
+        // ------------TEST----------------
+    console.group("🕓 DEBUG booked slot comparison for " + toHumanYMD(date));
+    console.log("Logged-in user ID:", (await supabase.auth.getUser()).data.user?.id || "Not logged in");
+
+    // Check what Supabase actually returned
+    const { data: rawData } = await supabase
+        .from("appointments")
+        .select("user_id, time, date")
+        .eq("date", toHumanYMD(date));
+    console.table(rawData);
+
+    // Check normalization
+    const normalizedDebug = rawData.map(row => ({
+        raw_time: row.time,
+        normalized: normalizeHHMM(row.time),
+        user_id: row.user_id
+    }));
+    console.table(normalizedDebug);
+
+    // Compare what is considered booked
+    console.log("bookedTimesCache:", bookedTimes);
+
+    // Verify how each button compares
     const allTimes = generateTimeSlots("09:00", "17:00", 30);
     allTimes.forEach(time => {
         const normalized = normalizeHHMM(time);
-        const timeButton = document.createElement("button");
-        timeButton.textContent = formatTime(normalized);
-
-        if (bookedTimes.includes(normalized)) {
-            timeButton.disabled = true;
-            timeButton.classList.add("booked");
-            timeButton.textContent = `${formatTime(normalized)} (Booked)`;
-        } else {
-            timeButton.addEventListener("click", () => selectTimeSlot(date, normalized));
-        }
-        slotsContainer.appendChild(timeButton);
+        const isBooked = bookedTimes.includes(normalized);
+        console.log(`${normalized} => ${isBooked ? "BOOKED" : "available"}`);
     });
+
+    console.groupEnd();
+
+
+
+// ------------------END TEST------------------
+
+
+
+
+
+    // const allTimes = generateTimeSlots("09:00", "17:00", 30);
+    // allTimes.forEach(time => {
+    //     const normalized = normalizeHHMM(time);
+    //     const timeButton = document.createElement("button");
+    //     timeButton.textContent = formatTime(normalized);
+
+    //     if (bookedTimes.includes(normalized)) {
+    //         timeButton.disabled = true;
+    //         timeButton.classList.add("booked");
+    //         timeButton.textContent = `${formatTime(normalized)} (Booked)`;
+    //     } else {
+    //         timeButton.addEventListener("click", () => selectTimeSlot(date, normalized));
+    //     }
+    //     slotsContainer.appendChild(timeButton);
+    // });
 
     if (allTimes.length > 0) {
         requestAnimationFrame(() => {
