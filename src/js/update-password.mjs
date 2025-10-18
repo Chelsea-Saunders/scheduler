@@ -48,7 +48,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (error) {
             console.error("Password update failed:", error);
-            showMessage("⚠️ Could not update password. Please try again.", true);
+
+            // handle specific error messages from supabase
+            if (error.message && error.message.includes("different from the old password")) {
+                showMessage("Your new password must be different from your current password.", true);
+            }
+            // handle other errors: invalid token, expired link...
+            else if (error.message && error.message.includes("invalid or expired")) {
+                showMessage("The reset link has expired. Please request a new password reset.", true);
+            }
+            // fallback for all other errors
+            else {
+                showMessage("Could not update password. Please try again.", true);
+            }
 
             // re-enable button
             submitButton.disabled = false;
