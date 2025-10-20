@@ -39,23 +39,30 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // detect current path for redirect email
-        let redirectTo;
-        const host = window.location.origin;
+        try {
+            // use PHP mailer on server
+            const res = await fetch("backend/sendmail_scheduler.php", {
+                method: "POST", 
+                headers: { 
+                    "Content-Type": "application/x-www-form-urlencoded" 
+                }, 
+                body: new URLSearchParams({
+                    type: "recovery", 
+                    email: email
+                })
+            });
 
-        if (host.includes("localhost")) {
-            redirectTo = "http://localhost:5173/update-password.html";
-        } else {
-            redirectTo = "https://chelsea-saunders.github.io/scheduler/update-password.html";
-        }
+            const result = await res.json();
 
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {redirectTo });
-
-        if (error) {
-            console.error(error);
-            showSubmissionMessage("⚠️ Could not send reset email. Please try again.");
-        } else {
-            showSubmissionMessage("✅ Check your email for reset instructions.");
+            if (result.ok) {
+                showSubmissionMessage("Check your email for reset instructions.");
+            } else {
+                console.error(result.error);
+                showSubmissionMessage("Could not send reset password email. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error sending reset password email", error);
+            showSubmissionMessage("Something went wrong. Please try again later.");
         }
     });
 });

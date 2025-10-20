@@ -210,37 +210,8 @@ document.addEventListener("DOMContentLoaded", () => {
         resetForm.style.display = "none";
         loginForm.style.display = "block";
     });
-    // RESET FORM FOR RESETTING PASSWORD
-    resetForm?.addEventListener("submit", async(event) => {
-        event.preventDefault();
-
-        const email = document.getElementById("reset-email").value.trim();
-        if (!email) {
-            showMessage("⚠️ Please enter your email address.");
-            return;
-        }
-
-        // detect current path for redirection
-        let redirectTo;
-        const host = window.location.origin;
-
-        if (host.includes("localhost")) {
-            redirectTo = "http://localhost:5173/update-password.html";
-        } else {
-            redirectTo = "https://chelsea-saunders.github.io/scheduler/update-password.html";
-        }
-
-        // tell supabase to reset password
-        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
-
-        if (error) {
-            console.error("Reset password error:", error);
-            showMessage("⚠️ Could not send reset email. Please try again.");
-        } else {
-            showMessage("✅ Please check your email for reset instructions.");
-            resetForm.reset();
-        }
-    });
+    // RESET FORM FOR RESETTING PASSWORD NOW RESIDES IN AUTH.MJS
+    
     // MESAGE AND LOADING 
     const setMessage = (text = "", isError = false) => {
         if (!messageDiv) return;
@@ -327,27 +298,33 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const { error } = await supabase.auth.signUp({ 
-                email, 
-                password,
-                options: {
-                    data: { name: fullName }, // saves their name in metadata for welcome message
-                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/"
-                } 
-            });
+            // save name locally in case supabase metadata fails
+            localStorage.setItem("fullName", fullName);
 
-            if (error) {
-                console.error("Error creating account:", error);
-                showMessage("⚠️ Could not create account. Please try again.");
-            } else {
-                showMessage(`Welcome aboard ${fullName}! Your account has been created. Please check your email to confirm your account.`);
-                // hide create form and show login form
+            // use PHP mailer on server
+            const res = await fetch("backend/sendmail_scheduler.php", {
+                method: "POST", 
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
+                body: new URLSearchParams({
+                    type: "signup", 
+                    name: fullName,
+                    email: email,
+                    password: password
+                })
+            });
+            const result = await res.json();
+
+            if (result.ok) {
+                showMessage(`Welcome aboard ${fullName}! Please check your email to confirm your account.`);
                 createForm.style.display = "none";
                 loginForm.style.display = "block";
+            } else {
+                console.error(result.error);
+                showMessage("Could not create an account at this time. Please try again.");
             }
         } catch (error) {
             console.error("Unexpected error:", error);
-            showMessage("⚠️ Something went wrong. Please try again.");
+            showMessage("Something went wrong. Please try again.");
         }
     });
 });

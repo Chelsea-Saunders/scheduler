@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase.mjs";
 
+window.supabase = supabase; // for debugging
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
 
 // MY APPOINTMENTS
@@ -442,6 +443,17 @@ document.getElementById("back-to-dates")?.addEventListener("click", () => {
     // clear any time slot selection
     document.getElementById("time-slots").innerHTML = "";
 });
+function applyGreeting(user) {
+    const heading = document.getElementById("welcome-heading");
+    const displayName = 
+        user.user_metadata?.name ||
+        user.user_metadata?.full_name ||
+        user.email?.split("@")[0] ||
+        "Friend";
+
+    heading.textContent = `Welcome ${displayName}! Let's schedule your 6-month cleaning!`;
+    loadMyAppointments();
+}
 
 
 
@@ -452,20 +464,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.location.href = `index.html?redirect=scheduler.html`;
         return;
     } 
-    
-    // personalize greeting
-    const heading = document.getElementById("welcome-heading");
-
-    // pull name from metadata (set when account was created)
-    const displayName = 
-        user.user_metadata?.name ||
-        user.email?.split("@")[0] || 
-        "Friend";
-    
-    heading.textContent = `Welcome ${displayName}! Let's schedule your 6-month cleaning!`;
-
-    // load their appointments
-    loadMyAppointments();
+    // one-time repair if metadata didn't stick at sign up
+    if (!user.user_metadata?.name) {
+        const cached = localStorage.getItem("fullName");
+        if (cached) {
+            await supabase.auth.updateUser({ data: { name: cached } });
+            // refetch fresh user after update
+            const refreshed = (await supabase.auth.getUser()).data.user;
+            applyGreeting(refreshed);
+            return;
+        }
+    }
+    applyGreeting(user);
 
     supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
