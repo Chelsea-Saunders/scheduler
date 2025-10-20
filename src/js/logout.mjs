@@ -1,5 +1,13 @@
 import { supabase } from "../lib/supabase.mjs";
 
+
+// when user session changes logout/login
+supabase.auth.onAuthStateChange((_event, session) => {
+    if (!session?.user) {
+        // redirect to your actual login page
+        window.location.replace("index.html");
+    }
+});
 // reusable message box
 function showMessage(message, isError = false) {
     let box = document.getElementById("status-message");

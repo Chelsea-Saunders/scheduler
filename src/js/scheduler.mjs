@@ -29,6 +29,7 @@ async function loadMyAppointments() {
     const { data, error } = await supabase
         .from("appointments")
         .select("id, date, time, user_id")
+        .eq("user_id", user.id)
         .order("date", { ascending: true })
         .order("time", { ascending: true });
     
@@ -38,15 +39,22 @@ async function loadMyAppointments() {
         return;
     }
 
-    const myAppointments = (data ?? []).filter(row => row.user_id === user.id);
+    // --------------TEST----------------
+    console.group("🧩 loadMyAppointments() DEBUG");
+    console.table(data);
+    console.log("Current user ID:", user.id);
+    console.groupEnd();
+    // --------------END TEST----------------
 
-    if (!myAppointments.length) {
+    // const myAppointments = (data ?? []).filter(row => row.user_id === user.id);
+
+    if (!data || data.length === 0) {
         list.textContent = "You have no upcoming appointments.";
         return;
     }
 
     list.innerHTML = "";
-    myAppointments.forEach(row => {
+    data.forEach(row => {
         const item = document.createElement("div");
         const when = new Date(row.date + "T12:00:00"); // avoid timezone issues
         item.className = "appt";
@@ -77,7 +85,7 @@ async function loadMyAppointments() {
                 showMessage("⚠️Could not cancel that appointment. Please try again.");
                 return;
             }
-            loadMyAppointments();
+            await loadMyAppointments();
             // if you cancelled the current displayed date, refresh slots
             // find the matching availableDays entry
             const matchingDay = availableDays.find(
@@ -185,6 +193,8 @@ availableDays.forEach(date => {
     dayButton.dataset.ymd = toHumanYMD(date);
 
     dayButton.addEventListener("click", () => {
+        console.log("Day clicked:", date);
+
         // clear previous selection
         dateButtons.forEach(btn => btn.classList.remove("selected"));
         dayButton.classList.add("selected");
@@ -221,6 +231,7 @@ let bookedTimesCache = [];
 async function refreshBookedSlots(date) {
     const ymd = toHumanYMD(date);
 
+    // fetch all booked times for this date (not just this user)
     const { data, error } = await supabase
         .from("appointments")
         .select("time")
@@ -312,6 +323,7 @@ async function showTimeSlots(date) {
 
     document.getElementById("pick-a-date").style.display = "none";
 
+    // header
     const selectedDateHeader = document.getElementById("selected-dates");
     selectedDateHeader.textContent = date.toLocaleDateString("en-US", {
         weekday: "short", 
@@ -320,48 +332,35 @@ async function showTimeSlots(date) {
     });
     selectedDateHeader.classList.add("visible");
 
-    // use cached data instead of fetching again
+    // get booked times from supabase
     const bookedTimes = (await refreshBookedSlots(date)) ?? [];
     console.log("Normalized bookedTimes:", bookedTimes);
 
 
-    // ---------------TEST------------------
-    console.log("For date:", ymd, "Booked times:", bookedTimes);
-
-
         // ------------TEST----------------
-    console.group("🕓 DEBUG booked slot comparison for " + toHumanYMD(date));
-    console.log("Logged-in user ID:", (await supabase.auth.getUser()).data.user?.id || "Not logged in");
+    if (window.DEBUG_SCHEDULER) {
+        console.group("🕓 DEBUG booked slot comparison for " + toHumanYMD(date));
+        const { data: rawData } = await supabase
+            .from("appointments")
+            .select("user_id, time, date")
+            .eq("date", toHumanYMD(date));
+        console.table(rawData);
 
-    // Check what Supabase actually returned
-    const { data: rawData } = await supabase
-        .from("appointments")
-        .select("user_id, time, date")
-        .eq("date", toHumanYMD(date));
-    console.table(rawData);
+        const normalizedDebug = rawData.map(row => ({
+            raw_time: row.time,
+            normalized: normalizeHHMM(row.time),
+            user_id: row.user_id
+        }));
+        console.table(normalizedDebug);
 
-    // Check normalization
-    const normalizedDebug = rawData.map(row => ({
-        raw_time: row.time,
-        normalized: normalizeHHMM(row.time),
-        user_id: row.user_id
-    }));
-    console.table(normalizedDebug);
-
-    // Compare what is considered booked
-    console.log("bookedTimesCache:", bookedTimes);
-
-    // Verify how each button compares
-    const allTimes = generateTimeSlots("09:00", "17:00", 30);
-    allTimes.forEach(time => {
-        const normalized = normalizeHHMM(time);
-        const isBooked = bookedTimes.includes(normalized);
-        console.log(`${normalized} => ${isBooked ? "BOOKED" : "available"}`);
-    });
-
-    console.groupEnd();
-
-
+        const allTimesDebug = generateTimeSlots("09:00", "17:00", 30);
+        allTimesDebug.forEach(time => {
+            const normalized = normalizeHHMM(time);
+            const isBooked = bookedTimes.includes(normalized);
+            console.log(`${normalized} => ${isBooked ? "BOOKED" : "available"}`);
+        });
+        console.groupEnd();
+    }
 
 // ------------------END TEST------------------
 
@@ -369,21 +368,25 @@ async function showTimeSlots(date) {
 
 
 
-    // const allTimes = generateTimeSlots("09:00", "17:00", 30);
-    // allTimes.forEach(time => {
-    //     const normalized = normalizeHHMM(time);
-    //     const timeButton = document.createElement("button");
-    //     timeButton.textContent = formatTime(normalized);
+    // create time slot buttons
+    const allTimes = generateTimeSlots("09:00", "17:00", 30);
+    allTimes.forEach(time => {
+        const normalized = normalizeHHMM(time);
+        const timeButton = document.createElement("button");
+        timeButton.textContent = formatTime(normalized);
 
-    //     if (bookedTimes.includes(normalized)) {
-    //         timeButton.disabled = true;
-    //         timeButton.classList.add("booked");
-    //         timeButton.textContent = `${formatTime(normalized)} (Booked)`;
-    //     } else {
-    //         timeButton.addEventListener("click", () => selectTimeSlot(date, normalized));
-    //     }
-    //     slotsContainer.appendChild(timeButton);
-    // });
+        if (bookedTimes.includes(normalized)) {
+            timeButton.disabled = true;
+            timeButton.classList.add("booked");
+            timeButton.textContent = `${formatTime(normalized)} (Booked)`;
+        } else {
+            timeButton.addEventListener("click", () => selectTimeSlot(date, normalized));
+        }
+        slotsContainer.appendChild(timeButton);
+    });
+
+    console.log("✅ allTimes currently:", allTimes);
+
 
     if (allTimes.length > 0) {
         requestAnimationFrame(() => {
