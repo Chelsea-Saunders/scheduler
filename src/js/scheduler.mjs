@@ -233,28 +233,16 @@ async function refreshBookedSlots(date) {
 
     // get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-    if (userError) {
-        console.error("Error getting user:", userError);
-        showMessage("Could not verify user login. Please try again.", true);
-        bookedTimesCache = [];
-        return bookedTimesCache;
+    if (userError || !user) {
+        console.warn("No logged in user, show only global bookings.");
+        showMessage("You must be logged in to view your booked slots.", true);
     }
 
-    // if user is not logged in, exit
-    if (!user) {
-        console.warn("User not logged in.");
-        showMessage("You must be logged in to view booked slots.", true);
-        bookedTimesCache = [];
-        return bookedTimesCache;
-    }
-
-    // fetch only this users booked times
-    const { data, error } = await supabase
-        .from("appointments")
-        .select("time")
-        .eq("date", ymd)
-        .eq("user_id", user.id); // show only the users' booked times
+    // get all booked times for that date (share calendar)
+    const { data: allBookings, error } = await supabase
+        .from ("appointments")
+        .select("time, user_id")
+        .eq("date", ymd);
 
     if (error) {
         console.error("Error fetching booked times:", error);
@@ -262,13 +250,44 @@ async function refreshBookedSlots(date) {
         return bookedTimesCache;
     }
 
-    // normalize times for easy to read
-    bookedTimesCache = (data ?? [])
+    // show lost of all booked times
+    const allBoked = (allBookings ?? [])
         .map(row => normalizeHHMM(row.time))
-        .filter(Boolean);
+        .fileter(Boolean);
 
-    console.log("bookedTimesCache:", ymd,  "→", bookedTimesCache);    
+    // store which ones bleong to the current user (for cancel buttons)
+    const myBooked = (allBookings ?? [])
+        .filter(row => user && row.user_id === user.id)
+        .map(row => normalizeHHMM(row.time));
+
+    bookedTimesCache = allBooked;
+    window._myBookedTimes = myBooked; 
+
+    console.log("BookedTimesCache (all users):", ymd, "→", bookedTimesCache);
+    console.log("myBookedTimes:", myBooked);
+
     return bookedTimesCache;
+
+    // // fetch only this users booked times
+    // const { data, error } = await supabase
+    //     .from("appointments")
+    //     .select("time")
+    //     .eq("date", ymd)
+    //     .eq("user_id", user.id); // show only the users' booked times
+
+    // if (error) {
+    //     console.error("Error fetching booked times:", error);
+    //     bookedTimesCache = [];
+    //     return bookedTimesCache;
+    // }
+
+    // // normalize times for easy to read
+    // bookedTimesCache = (data ?? [])
+    //     .map(row => normalizeHHMM(row.time))
+    //     .filter(Boolean);
+
+    // console.log("bookedTimesCache:", ymd,  "→", bookedTimesCache);    
+    // return bookedTimesCache;
 }
 
 // select/book a time slot
@@ -394,14 +413,21 @@ async function showTimeSlots(date) {
         const timeButton = document.createElement("button");
         timeButton.textContent = formatTime(normalized);
 
+        // if this time slot is booked by anyone (global calendar)
         if (bookedTimes.includes(normalized)) {
             timeButton.disabled = true;
             timeButton.classList.add("booked");
-            timeButton.textContent = `${formatTime(normalized)} (Booked)`;
+            timeButton.textContent += " (Booked)";
+
+            // but if it's booked by current user, allow cancel
+            if (window._myBookedTimes?.includes(normalized)) {
+                timeButton.classList.remove("booked");
+                timeButton.classList.add("mine");
+                timeButton.textContent = `${formatTime(normalized)} (Your booking)`;
+            }
         } else {
-            timeButton.addEventListener("click", () => selectTimeSlot(date, normalized));
+            timeButton.addEventListener("click", () => selectTimeSlot(date, time));
         }
-        slotsContainer.appendChild(timeButton);
     });
 
     console.log("✅ allTimes currently:", allTimes);
