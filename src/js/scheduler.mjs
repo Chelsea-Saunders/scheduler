@@ -343,10 +343,14 @@ async function showTimeSlots(date) {
     // header
     const selectedDateHeader = document.getElementById("selected-dates");
     selectedDateHeader.textContent = date.toLocaleDateString("en-US", {
-        weekday: "short", 
-        month: "short", 
-        day: "numeric"
+        weekday: "long", 
+        month: "long", 
+        day: "numeric",
+        year: "numeric"
     });
+    // make visible in css
+    selectedDateHeader.style.display = "block";
+    // triggers fade-in in css
     selectedDateHeader.classList.add("visible");
 
     // get booked times from supabase
@@ -458,7 +462,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         user.email?.split("@")[0] || 
         "Friend";
     
-    heading.textContent = `Welcome ${displayName}, let's schedule your 6-month cleaning!`;
+    heading.textContent = `Welcome ${displayName}! Let's schedule your 6-month cleaning!`;
 
     // load their appointments
     loadMyAppointments();

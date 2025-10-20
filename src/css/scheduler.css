@@ -136,14 +136,14 @@ button:hover {
     font-style: italic;
 }
 
-#selected-dates {
+.selected-dates {
     text-align: center;
     color: navy;
-    font-weight: 600;
     font-size: 1rem;
-    margin-top: 0.25rem;
+    font-weight: 600;
+    margin: 1rem 0;
     opacity: 0;
-    transition: opacity 0.6s ease-in;
+    transition: opacity 0.6s ease;
 }
 .selected-dates.visible {
     opacity: 1;
