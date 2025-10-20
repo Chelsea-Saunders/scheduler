@@ -1,5 +1,6 @@
+import { showSubmissionMessage } from "./form-utilities.mjs";
 
-// function to toggle header visibility
+// toggles menu open/close
 export function toggleMenuHandler() {
     const toggleButton = document.querySelector("#toggle-menu");
     const nav = document.querySelector("#global-nav");
@@ -20,5 +21,56 @@ export function toggleMenuHandler() {
     toggleButton.classList.toggle("open", next);
     header.classList.toggle("menu-open", next);
 }
-// // run dom
-document.getElementById("toggle-menu")?.addEventListener("click", toggleMenuHandler);
+
+document.addEventListener("DOMContentLoaded", async () => {
+    // attach menu toggle
+    document.getElementById("toggle-menu")?.addEventListener("click", toggleMenuHandler);
+
+    // handle supabase auth link visibility
+    const loginLink = document.querySelector(".login-link");
+    const logoutLink = document.querySelector(".logout-link");
+
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+            // logged in === hide login
+            if (loginLink) loginLink.style.display = "none";
+            if (logoutLink) logoutLink.style.display = "block";
+
+            // show message if user clicks anyway
+            if (loginLink) {
+                loginLink.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    showSubmissionMessage("You're already logged in.");
+                });
+            }
+        } else {
+            // not logged in === hide logout
+            if (loginLink) loginLink.style.display = "inline-block";
+            if (logoutLink) logoutLink.style.display = "none";
+        }
+
+        // handle logout 
+        if (logoutLink) {
+            logoutLink.addEventListener("click", async (event) => {
+                event.preventDefault();
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error("Logout failed:", error);
+                    showSubmissionMessage("Logout failed. Please try again.", true);
+                    return;
+                }
+                showSubmissionMessage("Log out successful. Redirecting...");
+                // redirect to home after logout
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1500);
+            });
+        }
+    } catch (error) {
+        console.error("Error checking Supabase session:", error);
+    }
+    // live update header with auth changes
+    supabase.auth.onAuthStateChanges(() => location.reload());
+});
