@@ -57,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const resultText = await res.text();
-            console.log("Raw response text:", resultText);
 
             let result = {};
             try {

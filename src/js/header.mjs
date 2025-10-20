@@ -74,7 +74,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     // live update header with auth changes
     supabase.auth.onAuthStateChange((event) => {
-        console.log("auth event:", event);
         if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
             // reload only once when logged in or out
             location.reload();

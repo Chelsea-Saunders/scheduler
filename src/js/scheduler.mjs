@@ -191,7 +191,6 @@ availableDays.forEach(date => {
     dayButton.dataset.ymd = toHumanYMD(date);
 
     dayButton.addEventListener("click", () => {
-        console.log("Day clicked:", date);
 
         // clear previous selection
         dateButtons.forEach(btn => btn.classList.remove("selected"));
@@ -261,9 +260,6 @@ async function refreshBookedSlots(date) {
     bookedTimesCache = allBooked;
     window._myBookedTimes = myBooked; 
 
-    console.log("BookedTimesCache (all users):", ymd, "→", bookedTimesCache);
-    console.log("myBookedTimes:", myBooked);
-
     return bookedTimesCache;
 }
 
@@ -326,9 +322,6 @@ async function selectTimeSlot(date, time) {
 
 async function showTimeSlots(date) {
 
-    console.log("✅ showTimeSlots called for:", toHumanYMD(date));
-
-
     const ymd = toHumanYMD(date);
     const slotsContainer = document.getElementById("time-slots");
     const timeSection = document.getElementById("time-section");
@@ -354,33 +347,32 @@ async function showTimeSlots(date) {
 
     // get booked times from supabase
     const bookedTimes = (await refreshBookedSlots(date)) ?? [];
-    console.log("Normalized bookedTimes:", bookedTimes);
 
 
         // ------------TEST----------------
-    if (window.DEBUG_SCHEDULER) {
-        console.group("🕓 DEBUG booked slot comparison for " + toHumanYMD(date));
-        const { data: rawData } = await supabase
-            .from("appointments")
-            .select("user_id, time, date")
-            .eq("date", toHumanYMD(date));
-        console.table(rawData);
+    // if (window.DEBUG_SCHEDULER) {
+    //     console.group("🕓 DEBUG booked slot comparison for " + toHumanYMD(date));
+    //     const { data: rawData } = await supabase
+    //         .from("appointments")
+    //         .select("user_id, time, date")
+    //         .eq("date", toHumanYMD(date));
+    //     console.table(rawData);
 
-        const normalizedDebug = rawData.map(row => ({
-            raw_time: row.time,
-            normalized: normalizeHHMM(row.time),
-            user_id: row.user_id
-        }));
-        console.table(normalizedDebug);
+    //     const normalizedDebug = rawData.map(row => ({
+    //         raw_time: row.time,
+    //         normalized: normalizeHHMM(row.time),
+    //         user_id: row.user_id
+    //     }));
+    //     console.table(normalizedDebug);
 
-        const allTimesDebug = generateTimeSlots("09:00", "17:00", 30);
-        allTimesDebug.forEach(time => {
-            const normalized = normalizeHHMM(time);
-            const isBooked = bookedTimes.includes(normalized);
-            console.log(`${normalized} => ${isBooked ? "BOOKED" : "available"}`);
-        });
-        console.groupEnd();
-    }
+    //     const allTimesDebug = generateTimeSlots("09:00", "17:00", 30);
+    //     allTimesDebug.forEach(time => {
+    //         const normalized = normalizeHHMM(time);
+    //         const isBooked = bookedTimes.includes(normalized);
+    //         console.log(`${normalized} => ${isBooked ? "BOOKED" : "available"}`);
+    //     });
+    //     console.groupEnd();
+    // }
 
 // ------------------END TEST------------------
 
@@ -413,9 +405,6 @@ async function showTimeSlots(date) {
         }
         slotsContainer.appendChild(timeButton);
     });
-
-    console.log("✅ allTimes currently:", allTimes);
-
 
     if (allTimes.length > 0) {
         requestAnimationFrame(() => {
