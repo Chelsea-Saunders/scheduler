@@ -231,7 +231,25 @@ let bookedTimesCache = [];
 async function refreshBookedSlots(date) {
     const ymd = toHumanYMD(date);
 
-    // fetch all booked times for this date (not just this user)
+    // get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError) {
+        console.error("Error getting user:", userError);
+        showMessage("Could not verify user login. Please try again.", true);
+        bookedTimesCache = [];
+        return bookedTimesCache;
+    }
+
+    // if user is not logged in, exit
+    if (!user) {
+        console.warn("User not logged in.");
+        showMessage("You must be logged in to view booked slots.", true);
+        bookedTimesCache = [];
+        return bookedTimesCache;
+    }
+
+    // fetch only this users booked times
     const { data, error } = await supabase
         .from("appointments")
         .select("time")
