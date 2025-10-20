@@ -33,21 +33,13 @@ async function loadMyAppointments() {
         .eq("user_id", user.id)
         .order("date", { ascending: true })
         .order("time", { ascending: true });
+        
     
     if (error) {
         console.error(error);
         list.textContent = "Could not load your appointments.";
         return;
     }
-
-    // --------------TEST----------------
-    console.group("🧩 loadMyAppointments() DEBUG");
-    console.table(data);
-    console.log("Current user ID:", user.id);
-    console.groupEnd();
-    // --------------END TEST----------------
-
-    // const myAppointments = (data ?? []).filter(row => row.user_id === user.id);
 
     if (!data || data.length === 0) {
         list.textContent = "You have no upcoming appointments.";
@@ -86,13 +78,18 @@ async function loadMyAppointments() {
                 showMessage("⚠️Could not cancel that appointment. Please try again.");
                 return;
             }
+
+            showMessage("Appointment cancelled.");
+
             await loadMyAppointments();
             // if you cancelled the current displayed date, refresh slots
             // find the matching availableDays entry
             const matchingDay = availableDays.find(
                 day => toHumanYMD(day) === row.date
             );
-            if (matchingDay) showTimeSlots(matchingDay);
+            if (matchingDay) 
+            await showTimeSlots(matchingDay);
+            await refreshBookedSlots(matchingDay);
         });
         item.appendChild(cancelButton);
         list.appendChild(item);
@@ -317,6 +314,7 @@ async function selectTimeSlot(date, time) {
             await new Promise(res => setTimeout(res, 600));
 
             // always refresh from live data after booking
+            await loadMyAppointments();
             await refreshBookedSlots(date);
             await showTimeSlots(date);
 
