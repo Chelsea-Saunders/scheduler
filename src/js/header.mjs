@@ -1,4 +1,5 @@
 import { showSubmissionMessage } from "./form-utilities.mjs";
+import { supabase } from "../lib/supabase.mjs";
 
 // toggles menu open/close
 export function toggleMenuHandler() {
