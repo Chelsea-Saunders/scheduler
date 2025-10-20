@@ -159,7 +159,6 @@ input.error {
     text-align: center;
 
 }
-
 .link-button {
     background: none;
     border: none;
@@ -168,4 +167,11 @@ input.error {
     cursor: pointer;
     font-size: 0.9rem;
     padding: 0;
+}
+
+/* welcome heading when signed in to see appts */
+#welcome-heading {
+    font-size: 1.3rem;
+    color: navy;
+    margin-bottom: 1rem;
 }

@@ -106,6 +106,35 @@ button:hover {
 #time-section.active h2 {
     display: block;
 }
+.slot-button {
+    display: inline-block;
+    margin: 0,5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+/* hover effect */
+slot-button:hover:not(:disabled) {
+    background-color: #e2e6ea;
+}
+/* for booked slots */
+.slot-button.booked {
+    background-color: #eee;
+    color: #666;
+    text-decoration: line-through;
+    font-style: italic;
+}
+/* for user's own bookings */
+slot-button.mine {
+    background-color: #c9e9ff;
+    color: #007bff;
+    color: #003a70;
+    font-weight: 600;
+}
+
 #selected-dates {
     text-align: center;
     color: navy;

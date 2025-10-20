@@ -317,11 +317,12 @@ document.addEventListener("DOMContentLoaded", () => {
     createForm?.addEventListener("submit", async(event) => {
         event.preventDefault();
 
+        const fullName = createForm.querySelector('input[name="name"]').value.trim();
         const email = createForm.querySelector('input[name="email"]').value.trim();
         const password = createForm.querySelector('input[name="password"]').value.trim();
 
-        if (!email || !password) {
-            showMessage("Please enter both email and password.");
+        if (!fullName || !email || !password) {
+            showMessage("Please enter your name, email, and password.");
             return;
         }
 
@@ -330,6 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 email, 
                 password,
                 options: {
+                    data: { name: fullName }, // saves their name in metadata for welcome message
                     emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/"
                 } 
             });
@@ -338,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error("Error creating account:", error);
                 showMessage("⚠️ Could not create account. Please try again.");
             } else {
-                showMessage("✅ Account created! Please check your email to confirm your account.");
+                showMessage(`Welcome aboard ${fullName}! Your account has been created. Please check your email to confirm your account.`);
                 // hide create form and show login form
                 createForm.style.display = "none";
                 loginForm.style.display = "block";

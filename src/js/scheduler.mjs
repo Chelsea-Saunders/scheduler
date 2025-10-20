@@ -251,9 +251,9 @@ async function refreshBookedSlots(date) {
     }
 
     // show lost of all booked times
-    const allBoked = (allBookings ?? [])
+    const allBooked = (allBookings ?? [])
         .map(row => normalizeHHMM(row.time))
-        .fileter(Boolean);
+        .filter(Boolean);
 
     // store which ones bleong to the current user (for cancel buttons)
     const myBooked = (allBookings ?? [])
@@ -267,27 +267,6 @@ async function refreshBookedSlots(date) {
     console.log("myBookedTimes:", myBooked);
 
     return bookedTimesCache;
-
-    // // fetch only this users booked times
-    // const { data, error } = await supabase
-    //     .from("appointments")
-    //     .select("time")
-    //     .eq("date", ymd)
-    //     .eq("user_id", user.id); // show only the users' booked times
-
-    // if (error) {
-    //     console.error("Error fetching booked times:", error);
-    //     bookedTimesCache = [];
-    //     return bookedTimesCache;
-    // }
-
-    // // normalize times for easy to read
-    // bookedTimesCache = (data ?? [])
-    //     .map(row => normalizeHHMM(row.time))
-    //     .filter(Boolean);
-
-    // console.log("bookedTimesCache:", ymd,  "→", bookedTimesCache);    
-    // return bookedTimesCache;
 }
 
 // select/book a time slot
@@ -411,6 +390,7 @@ async function showTimeSlots(date) {
     allTimes.forEach(time => {
         const normalized = normalizeHHMM(time);
         const timeButton = document.createElement("button");
+        timeButton.classList.add("slot-button");
         timeButton.textContent = formatTime(normalized);
 
         // if this time slot is booked by anyone (global calendar)
@@ -465,14 +445,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         window.location.href = `index.html?redirect=scheduler.html`;
-    } else {
-        // load appts upon page load
-        loadMyAppointments();
+        return;
+    } 
+    
+    // personalize greeting
+    const heading = document.getElementById("welcome-heading");
 
-        supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
-                loadMyAppointments();
-            }
-        });
-    }
+    // pull name from metadata (set when account was created)
+    const displayName = 
+        user.user_metadata?.name ||
+        user.email?.split("@")[0] || 
+        "Friend";
+    
+    heading.textContent = `Welcome ${displayName}, let's schedule your 6-month cleaning!`;
+
+    // load their appointments
+    loadMyAppointments();
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+            loadMyAppointments();
+        }
+    });
 });
