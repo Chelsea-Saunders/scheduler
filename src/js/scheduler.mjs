@@ -235,7 +235,8 @@ async function refreshBookedSlots(date) {
     const { data, error } = await supabase
         .from("appointments")
         .select("time")
-        .eq("date", ymd);
+        .eq("date", ymd)
+        .eq("user_id", user.id); // show only the users' booked times
 
     if (error) {
         console.error("Error fetching booked times:", error);
