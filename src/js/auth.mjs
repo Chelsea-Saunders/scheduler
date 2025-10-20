@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             // use PHP mailer on server
-            const res = await fetch("backend/sendmail_scheduler.php", {
+            const res = await fetch("https://rsceb.org/backend/sendmail_scheduler.php", {
                 method: "POST", 
                 headers: { 
                     "Content-Type": "application/x-www-form-urlencoded" 
