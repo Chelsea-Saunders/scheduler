@@ -73,5 +73,5 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Error checking Supabase session:", error);
     }
     // live update header with auth changes
-    supabase.auth.onAuthStateChange(() => location.reload());
+    // supabase.auth.onAuthStateChange(() => location.reload());
 });
