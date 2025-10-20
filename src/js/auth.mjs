@@ -39,30 +39,48 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        // get a reference to button
+        const resetButton = resetForm.querySelector("button[type='submit']");
+        
         try {
-            // use PHP mailer on server
+            // disable and update text while sending
+            resetButton.disabled = true;
+            resetButton.textContent = "Sending...";
+
             const res = await fetch("https://rsceb.org/backend/sendmail_scheduler.php", {
                 method: "POST", 
-                headers: { 
-                    "Content-Type": "application/x-www-form-urlencoded" 
-                }, 
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
                 body: new URLSearchParams({
                     type: "recovery", 
                     email: email
                 })
             });
 
-            const result = await res.json();
+            const resultText = await res.text();
+            console.log("Raw response text:", resultText);
+
+            let result = {};
+            try {
+                result = JSON.parse(resultText);
+            } catch {
+                console.warn("Non-JSON response (using fallback)");
+            }
 
             if (result.ok) {
                 showSubmissionMessage("Check your email for reset instructions.");
+            } else if (result.error) {
+                console.error("Server error:", result.error);
+                showSubmissionMessage("WARNING: " + result.error, true);
             } else {
-                console.error(result.error);
-                showSubmissionMessage("Could not send reset password email. Please try again.");
+                showSubmissionMessage("Request sent! Please check your email.", false);
             }
         } catch (error) {
-            console.error("Error sending reset password email", error);
-            showSubmissionMessage("Something went wrong. Please try again later.");
+            console.error("Network or fetch error", error);
+            showSubmissionMessage("Network error:  please try again later.", true);
+        } finally {
+            // re-enable button and restore text
+            resetButton.disabled = false;
+            resetButton.textContent = "Send Reset Link";
         }
     });
 });
