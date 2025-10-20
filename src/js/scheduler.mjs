@@ -255,7 +255,7 @@ async function refreshBookedSlots(date) {
         .map(row => normalizeHHMM(row.time))
         .filter(Boolean);
 
-    // store which ones bleong to the current user (for cancel buttons)
+    // store which ones belong to the current user (for cancel buttons)
     const myBooked = (allBookings ?? [])
         .filter(row => user && row.user_id === user.id)
         .map(row => normalizeHHMM(row.time));
@@ -408,6 +408,7 @@ async function showTimeSlots(date) {
         } else {
             timeButton.addEventListener("click", () => selectTimeSlot(date, time));
         }
+        slotsContainer.appendChild(timeButton);
     });
 
     console.log("✅ allTimes currently:", allTimes);

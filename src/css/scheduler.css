@@ -108,7 +108,7 @@ button:hover {
 }
 .slot-button {
     display: inline-block;
-    margin: 0,5rem;
+    margin: 0.5rem;
     padding: 0.75rem 1rem;
     border: 1px solid #ccc;
     border-radius: 0.5rem;
@@ -117,22 +117,23 @@ button:hover {
     transition: background-color 0.3s ease;
 }
 /* hover effect */
-slot-button:hover:not(:disabled) {
+.slot-button:hover:not(:disabled) {
     background-color: #e2e6ea;
 }
 /* for booked slots */
 .slot-button.booked {
-    background-color: #eee;
+    background-color: #b3babd;
     color: #666;
     text-decoration: line-through;
     font-style: italic;
 }
 /* for user's own bookings */
-slot-button.mine {
-    background-color: #c9e9ff;
-    color: #007bff;
+.slot-button.mine {
+    background-color: #c0ced8 !important;
     color: #003a70;
     font-weight: 600;
+    /* text-decoration: line-through; */
+    font-style: italic;
 }
 
 #selected-dates {
