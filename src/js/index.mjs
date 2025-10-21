@@ -161,15 +161,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const input = button.previousElementSibling;
             const isPassword = input.type === "password";
             const eye = button.querySelector(".icon-eye");
-            const eyeSlash = button.querySelector(".icon-eye-slash");
+            const eyeHidden = button.querySelector(".icon-eye-hidden");
 
             input.type = isPassword ? "text" : "password";
 
             // toggle icons
             eye.style.display = isPassword ? "none" : "inline";
-            eyeSlash.style.display = isPassword ? "inline" : "none";
+            eyeHidden.style.display = isPassword ? "inline" : "none";
 
-            button.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
+            button.setAttribute(
+                "aria-label", 
+                isPassword ? "Hide password" : "Show password"
+            );
         });
     });
 

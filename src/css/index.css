@@ -267,9 +267,9 @@ input:focus::placeholder {
 }
 /* eye icon (svg) */
 .show-password svg {
-    width: 1rem;
-    height: 1rem;
-    fill: 9rgba(78, 78, 109, 0.7);
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: navy;
     transition: transform 0.2s ease, fill 0.2s ease;
 }
 /* hover effect */
@@ -279,4 +279,7 @@ input:focus::placeholder {
 }
 .icon-eye-slash {
     display: none; 
+}
+.icon-eye-hidden {
+    display: none;
 }
