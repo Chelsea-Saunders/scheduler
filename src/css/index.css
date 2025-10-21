@@ -83,6 +83,7 @@ form {
 #password, 
 #confirm-password,
 #reset-email {
+    width: 100%;
     margin-bottom: 1rem;
     padding: 0.1rem;
     border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color-light);
