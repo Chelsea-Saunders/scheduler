@@ -256,7 +256,7 @@ input:focus::placeholder {
     position: absolute;
     right: 0.8rem;
     top: 50%;
-    transform: translatteY(-50%);
+    transform: translateY(-90%);
     background: transparent;
     border: none;
     cursor: pointer;
