@@ -155,16 +155,20 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
     
-    // toggle view password icon
+    // VIEW PASSWORD (SVG) ICON
     document.querySelectorAll(".show-password").forEach((button) => {
         button.addEventListener("click", () => {
-            const input = button.previousElementSibling; 
-            const icon = button.querySelector("i");
+            const input = button.previousElementSibling;
             const isPassword = input.type === "password";
+            const eye = button.querySelector(".icon-eye");
+            const eyeSlash = button.querySelector(".icon-eye-slash");
 
             input.type = isPassword ? "text" : "password";
-            icon.classList.toggle("fa-eye", !isPassword);
-            icon.classList.toggle("fa-eye-slash", isPassword);
+
+            // toggle icons
+            eye.style.display = isPassword ? "none" : "inline";
+            eyeSlash.style.display = isPassword ? "inline" : "none";
+
             button.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
         });
     });
