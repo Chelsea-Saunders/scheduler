@@ -175,3 +175,58 @@ input.error {
     color: navy;
     margin-bottom: 1rem;
 }
+
+/* Password field layout */
+.password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: visible;
+}
+.password-container input {
+    width: 100%;
+    padding-right: 2.5rem;
+    box-sizing: border-box;
+}
+/* icon button */
+.password-container .show-password {
+    position: absolute;
+    right: 0.6rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: navy;
+    padding: 0;
+}
+.password-container .show-password:hover i {
+    color: navy;
+    transform: scale(1.1);
+    transition: 0.2s;
+}
+.show-password i {
+    color: red !important;
+    font-size: 1.2rem;
+    z-index: 5 !important;
+}
+/* placeholder style */
+input::placeholder {
+    color: rgba(128, 125, 125, 0.586);
+    font-style: italic;
+    opacity: 1;
+    font-size: 0.8rem;
+}
+input:focus::placeholder {
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+}
+/* old browser support */
+::-webkit-input-placeholder {
+    color: #52527799;
+}
+:-ms-input-placeholder {
+    color: #52527799;
+}
+::-ms-input-placeholder {
+    color: #52527799;
+}

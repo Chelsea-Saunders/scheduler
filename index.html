@@ -15,6 +15,12 @@
     <title>Northwind Dental, Wasilla, Alaska</title>
     <link rel="stylesheet" href="./src/css/index.css">
     <link rel="stylesheet" href="./src/css/components.css">
+    <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css"
+    integrity="sha384-1Dqu3N1yXcF9YbU60l9W0u/0j3imZKx3iT76x19MOWlZ4OKzM1emv+5K5dHPtK/e"
+    crossorigin="anonymous"
+    />
     <script>
     //detect supabase redirect type and handle accordingly
     const hash = window.location.hash;
@@ -76,12 +82,28 @@
          <form id="login-form" method="POST">
             <h2 class="header">Login</h2>
             <label for="login-email">Email:
-                <input type="email" id="login-email" name="email" autocomplete="email" required>
+                <input type="email" id="login-email" name="email" placeholder="email@email.com" autocomplete="email" required>
             </label>
 
-            <label for="login-password">Password:
-                <input type="password" id="login-password" name="password" minlength="8" autocomplete="current-password" required>
-            </label>
+            <label for="login-password">Password:</label>
+            <div class="password-container">
+                <input 
+                    type="password" 
+                    id="login-password" 
+                    name="password" 
+                    minlength="8" 
+                    autocomplete="current-password" 
+                    placeholder="required length: 8"
+                    required
+                >
+                <button
+                    type="button"
+                    class="show-password"
+                    aria-label="Show password"
+                >
+                    <i class="fa-solid fa-eye"></i>
+            </button>
+            </div>
 
             <button type="submit" class="submit">Login</button>
 

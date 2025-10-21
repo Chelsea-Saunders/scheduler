@@ -155,6 +155,20 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
     
+    // toggle view password icon
+    document.querySelectorAll(".show-password").forEach((button) => {
+        button.addEventListener("click", () => {
+            const input = button.previousElementSibling; 
+            const icon = button.querySelector("i");
+            const isPassword = input.type === "password";
+
+            input.type = isPassword ? "text" : "password";
+            icon.classList.toggle("fa-eye", !isPassword);
+            icon.classList.toggle("fa-eye-slash", isPassword);
+            button.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
+        });
+    });
+
 
     // CREATE ACCOUNT (SHOW)
     showCreateAccountButton.addEventListener("click", (event) => {
