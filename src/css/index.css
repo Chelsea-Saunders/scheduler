@@ -193,7 +193,7 @@ input.error {
     position: absolute;
     right: 0.8rem;
     top: 50%;
-    transform: translateY(50%);
+    transform: translateY(-60%);
     background: transparent;
     border: none;
     cursor: pointer;
