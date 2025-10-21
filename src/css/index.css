@@ -202,10 +202,10 @@ input.error {
     line-height: 1.4rem;
     transition: opacity 0.4s ease;
 }
-#resend-wrapper.hidden {
+/* #resend-wrapper.hidden {
     opacity: 0;
     pointer-events: none;
-}
+} */
 /* style the underlined clickable button */
 #resend-wrapper .link-button {
     background: none;
@@ -240,29 +240,6 @@ input.error {
     line-height: 1.4rem;
     min-width: 0;
 }
-/* icon button */
-.password-container .show-password {
-    position: absolute;
-    right: 0.8rem;
-    top: 50%;
-    transform: translateY(-90%);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: rgba(78, 78, 109, 0.599);
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.password-container .show-password:hover i {
-    color: rgb(0, 0, 128);
-    transform: scale(1.1);
-    transition: 0.2s;
-    font-size: 1.1rem;
-}
-
 /* placeholder style */
 input::placeholder {
     color: rgba(128, 125, 125, 0.586);
@@ -274,13 +251,32 @@ input:focus::placeholder {
     opacity: 0.3;
     transition: opacity 0.3s ease;
 }
-/* old browser support */
-::-webkit-input-placeholder {
-    color: #52527799;
+/* icon button */
+.password-container .show-password {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translatteY(-90%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
 }
-:-ms-input-placeholder {
-    color: #52527799;
+/* eye icon (svg) */
+.show-password svg {
+    width: 1rem;
+    height: 1rem;
+    fill: 9rgba(78, 78, 109, 0.7);
+    transition: transform 0.2s ease, fill 0.2s ease;
 }
-::-ms-input-placeholder {
-    color: #52527799;
+/* hover effect */
+.show-password:hover sve {
+    fill: navy;
+    transform: scale(1.1);
+}
+.icon-eye-slash {
+    display: none; 
 }
