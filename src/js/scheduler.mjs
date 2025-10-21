@@ -196,7 +196,7 @@ availableDays.forEach(date => {
     // skip hoidays
     if (holidays.includes(ymd)) {
         const dayButton = document.createElement("button");
-        dayButton.textContent = `${date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} (Closed)`;
+        dayButton.textContent = `${date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} (Holiday)`;
         dayButton.disabled = true;
         dayButton.classList.add("holiday");
         if (date.getDay() === 2) tuesdayContainer.appendChild(dayButton);
