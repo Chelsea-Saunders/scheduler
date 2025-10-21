@@ -193,19 +193,19 @@ input.error {
     position: absolute;
     right: 0.8rem;
     top: 50%;
-    transform: translateY(-60%);
+    transform: translateY(-70%);
     background: transparent;
     border: none;
     cursor: pointer;
     font-size: 0.9rem;
-    color: rgba(0, 0, 128, 0.596);
+    color: rgb(0, 0, 128);
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 .password-container .show-password:hover i {
-    color: rgba(0, 0, 128, 0.596);
+    color: rgb(0, 0, 128);
     transform: scale(1.1);
     transition: 0.2s;
     font-size: 1.1rem;
