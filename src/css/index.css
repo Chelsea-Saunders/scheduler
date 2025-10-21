@@ -90,6 +90,22 @@ form {
     border-radius: var(--bs-border-radius-medium);
     font-size: 1rem;
 }
+form label {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.7rem;
+}
+form input[type="text"], 
+form input[type="email"], 
+form input[type="password"] {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
 .c-acct {
     text-align: center;
     margin-top: 0.5rem;
