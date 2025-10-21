@@ -3,6 +3,19 @@ import { supabase } from "../lib/supabase.mjs";
 window.supabase = supabase; // for debugging
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
 
+const holidays = [
+    "2025-10-13", // Columbus Day
+    "2025-11-11", // Veterans Day
+    "2025-11-27", // Thanksgiving
+    "2025-12-25", // Christmas
+    "2026-01-01", // New Year's Day
+    "2026-01-19", // Martin Luther King Jr. Day
+    "2026-02-16", // Presidents' Day
+    "2026-05-25", // Memorial Day
+    "2026-07-03", // Independence Day (observed)
+    "2026-09-07", // Labor Day
+];
+
 // MY APPOINTMENTS
 async function loadMyAppointments() {
     const list = document.getElementById("my-appts");
@@ -160,9 +173,7 @@ function generateTimeSlots(start, end, intervalMinutes) {
 function getNextTuesThurs(weeks = 15) {
     const out = [];
     const today = new Date();
-    // start from tomorrow at noon to avoid timezone issues
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 0, 0);
-
     const needed = weeks * 2; // 2 days per week
     let day = new Date(start);
 
@@ -181,6 +192,17 @@ const availableDays = getNextTuesThurs(15); // next 15 days
 const dateButtons = [];
 
 availableDays.forEach(date => {
+    const ymd = toHumanYMD(date);
+    // skip hoidays
+    if (holidays.includes(ymd)) {
+        const dayButton = document.createElement("button");
+        dayButton.textContent = `${date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} (Closed)`;
+        dayButton.disabled = true;
+        dayButton.classList.add("holiday");
+        if (date.getDay() === 2) tuesdayContainer.appendChild(dayButton);
+        else if (date.getDay() === 4) thursdayContainer.appendChild(dayButton);
+        return;
+    }
     const dayButton = document.createElement("button");
     const label = date.toLocaleDateString("en-US", {
         weekday: "short", 
