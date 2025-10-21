@@ -193,7 +193,7 @@ input.error {
     position: absolute;
     right: 0.8rem;
     top: 50%;
-    transform: translateY(-70%);
+    transform: translateY(-90%);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -210,11 +210,7 @@ input.error {
     transition: 0.2s;
     font-size: 1.1rem;
 }
-/* .show-password i {
-    color: navy !important;
-    font-size: 1.2rem;
-    z-index: 5 !important;
-} */
+
 /* placeholder style */
 input::placeholder {
     color: rgba(128, 125, 125, 0.586);
