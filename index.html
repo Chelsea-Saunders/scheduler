@@ -24,6 +24,7 @@
     // only redirect to update-password.html when it's a password reset link
     if (type === "recovery") {
         window.location.replace("./update-password.html" + hash);
+        window.location.hash = "";
     }
     //default: the remainder of redirects should go to login page (index)
     </script>
