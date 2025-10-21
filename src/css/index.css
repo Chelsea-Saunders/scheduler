@@ -123,7 +123,7 @@ form input[type="password"] {
 #forgot-password, 
 #back-to-login {
     display: inline-block;
-    color: rgb(104, 175, 171);
+    color: #1b2474;
     cursor: pointer;
     text-decoration: none;
     transition: transform 0.3s ease;
@@ -134,8 +134,9 @@ form input[type="password"] {
 #show-login:hover,
 #forgot-password:hover,
 #back-to-login:hover {
-    color: rgb(100, 157, 214);
+    color: #0b6460;
     transform: translateY(-3px);
+    text-decoration: underline;
 }
 h2 {
     color: navy;
@@ -242,7 +243,7 @@ input.error {
 }
 /* placeholder style */
 input::placeholder {
-    color: rgba(128, 125, 125, 0.586);
+    color: gray;
     font-style: italic;
     opacity: 1;
     font-size: 0.8rem;
