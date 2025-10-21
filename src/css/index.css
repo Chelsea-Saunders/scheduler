@@ -176,6 +176,22 @@ input.error {
     color: navy;
     margin-bottom: 1rem;
 }
+#resent-form .c-acct {
+    text-align: center;
+    font-size: 0.9rem;
+    color: gray;
+    margin-top: 1rem;
+}
+#resent-form .c-acct a {
+    color: navy;
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+#reset-form .c-acct a:hover  {
+    color: rgb(0, 111, 128);
+    text-decoration: none;
+}
 
 /* Password field layout */
 .password-container {
