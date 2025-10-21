@@ -140,10 +140,38 @@
             <input type="email" id="email" name="email" required autocomplete="email">
 
             <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required minlength="8" autocomplete="new-password">
+            <div class="password-container">
+                <input 
+                    type="password" 
+                    name="password" 
+                    id="password" 
+                    required 
+                    minlength="8" 
+                    autocomplete="new-password"
+                    placeholder="required length: 8 characters"
+                >
+                <button type="button" class="show-password" aria-label="Show password">
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+            </div>
+            
 
             <label for="confirm-password">Re-Enter Password:</label>
-            <input type="password" name="confirm-password" id="confirm-password" required minlength="8" autocomplete="new-password">
+            <div class="password-container">
+                <input 
+                    type="password" 
+                    name="confirm-password" 
+                    id="confirm-password" 
+                    minlength="8" 
+                    autocomplete="new-password"
+                    placeholder="required length: 8 characters"
+                    required 
+                >
+                <button type="button" class="show-password" aria-label="Show password">
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+            </div>
+            
 
             <button type="submit" class="submit">Create Account</button>
 
