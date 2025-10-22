@@ -21,39 +21,43 @@ function showMessage(message, isError = false) {
 async function loadAppointments() {
     const list = document.getElementById("my-appts");
     if (!list) return;
-    list.innerHTML = "Loading...";
+    list.textContent = "Loading...";
 
     try {
-        const { data, error } = await supabase.auth.getUser();
-        const user = data?.user;
+        // check local session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const user = sessionData?.session?.user;
 
-        if (error) {
-            console.warn("User not logged in or session missing:", error);
-            list.textContent = "Could not varify user. Redirecting to login...";
+        // handle session error gracefully
+        if (sessionError) {
+            console.warn("Session error:", sessionError.message);
 
             if (!window._isRedirectingToLogin) {
                 window._isRedirectingToLogin = true;
-                showMessage("Please sign in. Redirecting to login...", true);
+                list.textContent = "Session expired. Redirecting to login...";
+                showMessage("Please sign in again.", true);
                 setTimeout(() => {
                     window.location.href = "index.html?redirect=scheduler.html";
-                }, 1200);
+                }, 1500);
             }
             return;
         }
 
         // if not signed in, exit
         if (!user) {
+            console.log("No active session - user must log in first.");
             list.textContent = "Please sign in to view appointments.";
             if (!window._isRedirectingToLogin) {
                 window._isRedirectingToLogin = true;
                 showMessage("Please sign in. Redirecting to login...", true);
                 setTimeout(() => {
                     window.location.href = "index.html?redirect=scheduler.html";
-                }, 1200);
+                }, 1500);
             }
             return;
         }
 
+        // user is signed in - load appointments
         const { data: appts, error: apptError } = await supabase
             .from("appointments")
             .select("id, date, time")
@@ -62,7 +66,7 @@ async function loadAppointments() {
             .order("time", { ascending: true });
 
         if (apptError) {
-            console.error("Error loading appointments:", error);
+            console.error("Error loading appointments:", apptError);
             list.textContent = "Could not load appointments. Please try again later.";
             return;
         } 
@@ -71,6 +75,7 @@ async function loadAppointments() {
             return;
         }
 
+        // render appointments
         list.innerHTML = "";
         appts.forEach(row => {
             const item = document.createElement("div");
