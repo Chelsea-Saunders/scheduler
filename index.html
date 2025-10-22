@@ -16,22 +16,33 @@
     <link rel="stylesheet" href="./src/css/index.css">
     <link rel="stylesheet" href="./src/css/components.css">
     <script>
-    // Detect Supabase redirect type safely
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.replace("#", ""));
-    const type = params.get("type");
+    // Handle Supabase redirect links (signup & recovery)
+    window.addEventListener("load", () => {
+        const hash = window.location.hash;
+        const params = new URLSearchParams(hash.replace("#", ""));
+        const type = params.get("type");
 
-    console.log("Full hash:", hash);
-    console.log("Redirect type:", type);
+        console.log("Full hash:", hash);
+        console.log("Redirect type:", type);
 
-    // Prevent loops — only redirect if the type is *specifically* "recovery"
-    if (type === "recovery") {
+        // Password reset redirect
+        if (type === "recovery") {
         console.log("Password recovery redirect detected → update-password.html");
         window.location.replace("./update-password.html" + hash);
-    } else {
-        // Do nothing for signup or null
+        return;
+        }
+
+        // Signup confirmation redirect (loop fix)
+        if (type === "signup") {
+        console.log("Signup confirmation detected — clearing hash to stop loop.");
+        // Replace the URL to remove the #token and prevent Supabase loop
+        history.replaceState(null, "", window.location.pathname);
+        return;
+        }
+
+        // Default: no redirect needed
         console.log("No redirect needed.");
-    }
+    });
     </script>
     <script type="module" src="./src/js/header.mjs" defer></script>
     <script type="module" src="./src/js/index.mjs?v=2" defer></script>
