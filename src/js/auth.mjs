@@ -16,11 +16,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // CREATE ACCOUNT submit
-    createForm?.addEventListener("submit", (event) => {
+    createForm?.addEventListener("submit", async (event) => {
         event.preventDefault();
         if (!validateForm(createForm)) {
-            event.preventDefault();
             showSubmissionMessage("Please correct the highlighted fields.");
+            return;
+        }
+        const email = createForm.querySelector('input[name="email"]').value.trim();
+        const password = createForm.querySelector('input[name="password"]').value.trim();
+
+        if (!email || !password) {
+            showSubmissionMessage("Please enter both email and password.");
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email, 
+                password, 
+                options: {
+                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
+                },
+            });
+
+            if (error) {
+                console.error("Sign up error:", error);
+                showSubmissionMessage("Signup failed: " + error.message, true);
+            } else {
+                showSubmissionMessage("Signup successful! Check your inbox for confirmation link.");
+                createForm.reset();
+            }
+        } catch (error) {
+            console.error("Unexpected signup error:", error);
+            showSubmissionMessage("Something went wrong. Please try again later.", true);
         }
     });
 
