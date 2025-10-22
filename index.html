@@ -16,19 +16,21 @@
     <link rel="stylesheet" href="./src/css/index.css">
     <link rel="stylesheet" href="./src/css/components.css">
     <script>
-
-    //detect supabase redirect type and handle accordingly
+    // Detect Supabase redirect type safely
     const hash = window.location.hash;
     const params = new URLSearchParams(hash.replace("#", ""));
     const type = params.get("type");
 
-    // *****DEBUG*****
+    console.log("Full hash:", hash);
     console.log("Redirect type:", type);
 
-    // only redirect to update-password.html when it's a password reset link
+    // Prevent loops — only redirect if the type is *specifically* "recovery"
     if (type === "recovery") {
+        console.log("Password recovery redirect detected → update-password.html");
         window.location.replace("./update-password.html" + hash);
-        window.location.hash = "";
+    } else {
+        // Do nothing for signup or null
+        console.log("No redirect needed.");
     }
     </script>
     <script type="module" src="./src/js/header.mjs" defer></script>
