@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase.mjs";
+import { showMessage } from "../lib/ui.mjs";
 
 window.supabase = supabase; // for debugging
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
@@ -16,120 +17,148 @@ const holidays = [
     "2026-09-07", // Labor Day
 ];
 
-// MY APPOINTMENTS
-async function loadMyAppointments() {
-    const list = document.getElementById("my-appts");
-    list.innerHTML = "Loading...";
+function setupDateButtons() {
+    const tuesdayContainer = document.getElementById("tuesday-slots");
+    const thursdayContainer = document.getElementById("thursday-slots");
+    const availableDays = getNextTuesThurs(15); // next 15 days
+    const dateButtons = [];
 
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) { 
-        console.warn("User not logged in:", userError?.message);
-
-        list.textContent = "Please sign in to view appointments."; 
-
-        if (!window._isRedirectingToLogin) {
-            window._isRedirectingToLogin = true;
-            showMessage("Please sign in. Redirecting to login...", true);
-
-            // small delay for message visibility
-            setTimeout(() => {
-                window.location.replace("index.html?redirect=scheduler.html");
-            }, 1500);
-        }
-        return; 
-    }
-
-    const { data, error } = await supabase
-        .from("appointments")
-        .select("id, date, time, user_id")
-        .eq("user_id", user.id)
-        .order("date", { ascending: true })
-        .order("time", { ascending: true });
-        
-    
-    if (error) {
-        console.error(error);
-        list.textContent = "Could not load your appointments.";
-        return;
-    }
-
-    if (!data || data.length === 0) {
-        list.textContent = "You have no upcoming appointments.";
-        return;
-    }
-
-    list.innerHTML = "";
-    data.forEach(row => {
-        const item = document.createElement("div");
-        const when = new Date(row.date + "T12:00:00"); // avoid timezone issues
-        item.className = "appt";
-        item.textContent = `${when.toLocaleDateString()} - ${formatTime(row.time)}`;
-
-        // add cancel button
-        const cancelButton = document.createElement("button");
-        cancelButton.textContent = "Cancel";
-        cancelButton.addEventListener("click", async() => {
-
-            // disable button to prevent double clicking
-            cancelButton.disabled = true;
-            cancelButton.textContent = "Cancelling...";
-            
-            // call supabase to delete
-            const { error: deleteError } = await supabase
-                .from("appointments")
-                .delete()
-                .eq("id", row.id)
-                .eq("user_id", user.id); // ensures user only deletes their own appt
-
-            if (deleteError) {
-                // restor button if something goes wrong
-                cancelButton.disabled = false;
-                cancelButton.textContent = "Cancel";
-                // show error message
-                console.error(deleteError);
-                showMessage("⚠️Could not cancel that appointment. Please try again.");
-                return;
-            }
-
-            showMessage("Appointment cancelled.");
-
-            await loadMyAppointments();
-            // if you cancelled the current displayed date, refresh slots
-            // find the matching availableDays entry
-            const matchingDay = availableDays.find(
-                day => toHumanYMD(day) === row.date
-            );
-            if (matchingDay) 
-            await showTimeSlots(matchingDay);
-            await refreshBookedSlots(matchingDay);
+    availableDays.forEach(date => {
+        const ymd = toHumanYMD(date); // machine friendly
+        const label = date.toLocaleDateString("en-US", {  //human friendly
+            weekday: "short", 
+            month: "short", 
+            day: "numeric",
         });
-        item.appendChild(cancelButton);
-        list.appendChild(item);
+        const button = document.createElement("button");
+        button.textContent = label; // user sees "Tue, Oct 24"
+        button.dataset.ymd = ymd;   // dataset holds "2025-10-24"
+
+        // skip holidays
+        if (holidays.includes(ymd)) {
+            button.textContent += " (Holiday)";
+            button.disabled = true; 
+            button.classList.add("holiday");
+        }
+
+        button.addEventListener("click", () => {
+            dateButtons.forEach(btn => btn.classList.remove("selected"));
+            button.classList.add("selected");
+            showTimeSlots(date);
+        });
+        if (date.getDay() === 2) tuesdayContainer.appendChild(button);
+        else if (date.getDay() === 4) thursdayContainer.appendChild(button);
+        dateButtons.push(button);
     });
 }
+        
 
-function showMessage(message, isError = false) {
-    const messageBox = document.getElementById("status-message");
-    messageBox.textContent = message;
+// MY APPOINTMENTS
+async function loadAppointments() {
+    const list = document.getElementById("my-appts");
+    if (!list) return;
+    list.innerHTML = "Loading...";
 
-    // reset classes
-    messageBox.classList.remove("hidden", "error", "show");
+    try {
+        // check current supabase session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const user = sessionData?.session?.user;
 
-    if (isError) messageBox.classList.add("error");
-    messageBox.classList.add("show");
+        if (sessionError) {
+            console.warn("Session error:", sessionError);
+            list.textContent = "Session expired. Please sign in again.";
+            showMessage("Please sign in again.", true);
 
-    // auto hide after 3 seconds
-    setTimeout(() => {
-        messageBox.classList.remove("show");
-        setTimeout(() => messageBox.classList.add("hidden"), 400);
-    }, 3000);
+            setTimeout(() => {
+                window.location.href = "index.html?redirect=scheduler.html";
+            }, 1500);
+            return;
+        }
+
+        if (!user) { 
+            console.warn("User not logged in:");
+            setListMessage(list, "Please sign in to view appointments.", true); 
+
+            if (!window._isRedirectingToLogin) {
+                window._isRedirectingToLogin = true;
+                showMessage("Please sign in. Redirecting to login...", true);
+
+                setTimeout(() => {
+                    window.location.replace("index.html?redirect=scheduler.html");
+                }, 1500);
+            }
+            return; 
+        }
+
+        // fetch appointments for user
+        const { data, error } = await supabase
+            .from("appointments")
+            .select("id, date, time, user_id")
+            .eq("user_id", user.id)
+            .order("date", { ascending: true })
+            .order("time", { ascending: true });
+        
+        if (error) {
+            console.error(error);
+            setListMessage(list, "Could not load your appointments.", true);
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            setListMessage(list, "You have no upcoming appointments.", true);
+            return;
+        }
+
+        // show appointments list
+        list.innerHTML = "";
+        data.forEach(row => {
+            const item = document.createElement("div");
+            const when = new Date(row.date + "T12:00:00"); // avoid timezone issues
+            item.className = "appt";
+            item.textContent = `${when.toLocaleDateString()} - ${formatTime(row.time)}`;
+
+            // add cancel button
+            const cancelButton = document.createElement("button");
+            cancelButton.textContent = "Cancel";
+            cancelButton.addEventListener("click", async() => {
+
+                // disable button to prevent double clicking
+                cancelButton.disabled = true;
+                cancelButton.textContent = "Cancelling...";
+                
+                // call supabase to delete
+                const { error: deleteError } = await supabase
+                    .from("appointments")
+                    .delete()
+                    .eq("id", row.id)
+                    .eq("user_id", user.id); // ensures user only deletes their own appt
+
+                if (deleteError) {
+                    // restor button if something goes wrong
+                    cancelButton.disabled = false;
+                    cancelButton.textContent = "Cancel";
+                    // show error message
+                    console.error(deleteError);
+                    showMessage("⚠️Could not cancel that appointment. Please try again.");
+                    return;
+                }
+
+                showMessage("Appointment cancelled.");
+                await loadAppointments();
+                const matchingDay = new Date(row.date + "T12:00:00");
+                await refreshBookedSlots(matchingDay);
+                await showTimeSlots(matchingDay);
+            });
+
+            item.appendChild(cancelButton);
+            list.appendChild(item);
+        });
+    } catch (error) {
+        console.error("Unexpected error loading appointments:", error);
+        list.textContent = "Could not load your appointments. Please try again.";
+    }
 }
 
-
-
-
-// HELPER FUNCTIONS: 
 // show date in human format
 function toHumanYMD(date) {
     const year = date.getFullYear();
@@ -184,50 +213,6 @@ function getNextTuesThurs(weeks = 15) {
     }
     return out;
 }
-
-// CREATE DATE BUTTONS
-const tuesdayContainer = document.getElementById("tuesday-slots");
-const thursdayContainer = document.getElementById("thursday-slots");
-const availableDays = getNextTuesThurs(15); // next 15 days
-const dateButtons = [];
-
-availableDays.forEach(date => {
-    const ymd = toHumanYMD(date);
-    // skip hoidays
-    if (holidays.includes(ymd)) {
-        const dayButton = document.createElement("button");
-        dayButton.textContent = `${date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} (Holiday)`;
-        dayButton.disabled = true;
-        dayButton.classList.add("holiday");
-        if (date.getDay() === 2) tuesdayContainer.appendChild(dayButton);
-        else if (date.getDay() === 4) thursdayContainer.appendChild(dayButton);
-        return;
-    }
-    const dayButton = document.createElement("button");
-    const label = date.toLocaleDateString("en-US", {
-        weekday: "short", 
-        month: "short", 
-        day: "numeric",
-    });
-    dayButton.textContent = label;
-    dayButton.dataset.ymd = toHumanYMD(date);
-
-    dayButton.addEventListener("click", () => {
-
-        // clear previous selection
-        dateButtons.forEach(btn => btn.classList.remove("selected"));
-        dayButton.classList.add("selected");
-
-        // show times for that specific day
-        showTimeSlots(date);
-    });
-
-    // add to correct container
-    if (date.getDay() === 2) tuesdayContainer.appendChild(dayButton);
-    else if (date.getDay() === 4) thursdayContainer.appendChild(dayButton);
-
-    dateButtons.push(dayButton);
-});
 
 // Show more times when toggled
 function setupShowMoreToggle(containerId, buttonId) {
@@ -332,7 +317,7 @@ async function selectTimeSlot(date, time) {
             await new Promise(res => setTimeout(res, 600));
 
             // always refresh from live data after booking
-            await loadMyAppointments();
+            await loadAppointments();
             await refreshBookedSlots(date);
             await showTimeSlots(date);
 
@@ -344,7 +329,6 @@ async function selectTimeSlot(date, time) {
 
 async function showTimeSlots(date) {
 
-    const ymd = toHumanYMD(date);
     const slotsContainer = document.getElementById("time-slots");
     const timeSection = document.getElementById("time-section");
 
@@ -369,38 +353,6 @@ async function showTimeSlots(date) {
 
     // get booked times from supabase
     const bookedTimes = (await refreshBookedSlots(date)) ?? [];
-
-
-        // ------------TEST----------------
-    // if (window.DEBUG_SCHEDULER) {
-    //     console.group("🕓 DEBUG booked slot comparison for " + toHumanYMD(date));
-    //     const { data: rawData } = await supabase
-    //         .from("appointments")
-    //         .select("user_id, time, date")
-    //         .eq("date", toHumanYMD(date));
-    //     console.table(rawData);
-
-    //     const normalizedDebug = rawData.map(row => ({
-    //         raw_time: row.time,
-    //         normalized: normalizeHHMM(row.time),
-    //         user_id: row.user_id
-    //     }));
-    //     console.table(normalizedDebug);
-
-    //     const allTimesDebug = generateTimeSlots("09:00", "17:00", 30);
-    //     allTimesDebug.forEach(time => {
-    //         const normalized = normalizeHHMM(time);
-    //         const isBooked = bookedTimes.includes(normalized);
-    //         console.log(`${normalized} => ${isBooked ? "BOOKED" : "available"}`);
-    //     });
-    //     console.groupEnd();
-    // }
-
-// ------------------END TEST------------------
-
-
-
-
 
     // create time slot buttons
     const allTimes = generateTimeSlots("09:00", "17:00", 30);
@@ -461,34 +413,74 @@ function applyGreeting(user) {
         "Friend";
 
     heading.textContent = `Welcome ${displayName}! Let's schedule your 6-month cleaning!`;
-    loadMyAppointments();
+    loadAppointments();
 }
 
+// ensure user is logged in
+async function checkUserOrRedirect() {
+    let { data: { session } } = await supabase.auth.getUser();
+    let user = session?.user;
 
+    // retry for up to 2 seconds if supabase hasn't loaded the session yet
+    let tries = 0;
+    while (!user && tries < 10) {
+        await new Promise(res => setTimeout(res, 200));
+        ({ data: { session } } = await supabase.auth.getSession());
+        user = session?.user;
+        tries ++;
+    }
 
-document.addEventListener("DOMContentLoaded", async () => {
-    // PROTECTED: if they're not signed in, send them to the login page
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+        console.warn("No user session found, redirecting to login.");
         window.location.href = `index.html?redirect=scheduler.html`;
-        return;
-    } 
-    // one-time repair if metadata didn't stick at sign up
+        return null;
+    }
+    console.log("Session confirmed for user:", user.email);
+    return user;
+}
+
+// fills metadata name if not saved at signup
+async function updateMissingNameMetadata(user) {
     if (!user.user_metadata?.name) {
         const cached = localStorage.getItem("fullName");
         if (cached) {
             await supabase.auth.updateUser({ data: { name: cached } });
-            // refetch fresh user after update
             const refreshed = (await supabase.auth.getUser()).data.user;
-            applyGreeting(refreshed);
-            return;
+            return refreshed;
         }
     }
-    applyGreeting(user);
+    return user;
+}
 
+// ensure appointments refresh automatically when supabase detects a new session
+function initAuthListener() {
     supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
-            loadMyAppointments();
+            console.log("Session active -> staying on page.");
+            loadAppointments();
+        } else {
+            console.log("Session lost -> redirecting to login.");
+            window.location.href = "index.html?redirect=scheduler.html";
         }
     });
+}
+
+// clearing textContent on lists
+function setListMessage(list, message, isError = false) {
+    list.textContent = message;
+    list.classList.toggle("error", isError);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    let user = await checkUserOrRedirect();
+    if (!user) return;
+
+    user = await updateMissingNameMetadata(user);
+
+    applyGreeting(user);
+    initAuthListener();
+    setupDateButtons();
+
+    // load their appointments once on page load
+    await loadAppointments();
 });

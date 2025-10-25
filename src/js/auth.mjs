@@ -1,27 +1,57 @@
 import { validateForm, showSubmissionMessage } from "./form-utilities.mjs";
 import { supabase } from "../lib/supabase.mjs";
 
-// await supabase.auth.resetPasswordForEmail(email);
-document.addEventListener("DOMContentLoaded", () => {
-    const loginForm = document.getElementById("login-form");
-    const createForm = document.getElementById("create-acct-form");
-    const resetForm = document.getElementById("reset-form");
+function setupLoginForm(loginForm) {
+    loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-    // LOGIN submit
-    loginForm?.addEventListener("submit", (event) => {
         if (!validateForm(loginForm)) {
             event.preventDefault();
             showSubmissionMessage("Please correct the highlighted fields.");
         }
-    });
 
-    // CREATE ACCOUNT submit
-    createForm?.addEventListener("submit", async (event) => {
+        const email = loginForm.querySelector('input[name="email"]').value.trim();
+        const password = loginForm.querySelector('input[name="password"]').value.trim();
+
+        if (!email || !password) {
+            showSubmissionMessage("Please enter both email and password.");
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email, 
+                password, 
+                options: {
+                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
+                },
+            });
+
+            if (error) {
+                console.error("Login error:", error);
+                showSubmissionMessage("Login failed: " + error.message, true);
+                return;
+            }
+
+            if (data?.user) {
+                showSubmissionMessage("Login successful! Redirecting...");
+                window.location.href = "scheduler.html";
+            }
+        } catch (error) {
+            console.error("Unexpected login error:", error);
+            showSubmissionMessage("Something went wrong. Please try again later.", true);
+        }
+    });
+}
+function setupCreateAccountForm(createForm) {
+    createForm.addEventListener("sibmit", async (event) => {
         event.preventDefault();
+
         if (!validateForm(createForm)) {
             showSubmissionMessage("Please correct the highlighted fields.");
             return;
         }
+
         const email = createForm.querySelector('input[name="email"]').value.trim();
         const password = createForm.querySelector('input[name="password"]').value.trim();
 
@@ -51,9 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
             showSubmissionMessage("Something went wrong. Please try again later.", true);
         }
     });
-
-    // RESET PASSWORD submit
-    resetForm?.addEventListener("submit", async (event) => {
+}
+function setupResetForm(resetForm) {
+    resetForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         if (!validateForm(resetForm)) {
@@ -62,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const email = resetForm.querySelector('input[name="email"]').value.trim();
+
         if (!email) {
             showSubmissionMessage("Please enter a valid email address.");
             return;
@@ -110,4 +141,15 @@ document.addEventListener("DOMContentLoaded", () => {
             resetButton.textContent = "Send Reset Link";
         }
     });
+}
+
+// await supabase.auth.resetPasswordForEmail(email);
+document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.getElementById("login-form");
+    const createForm = document.getElementById("create-acct-form");
+    const resetForm = document.getElementById("reset-form");
+
+    if (loginForm) setupLoginForm(loginForm);
+    if (createForm) setupCreateAccountForm(createForm);
+    if (resetForm) setupResetForm(resetForm);
 });

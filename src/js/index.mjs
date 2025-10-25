@@ -1,131 +1,220 @@
 import { supabase } from '../lib/supabase.mjs';
+import { showMessage } from '../lib/ui.mjs';
 
 // guard against redirect spam
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
 
-function showMessage(message, isError = false) {
-    const messageBox = document.getElementById("status-message");
-    if (!messageBox) return;
+// function showMessage(message, isError = false) {
+//     const messageBox = document.getElementById("status-message");
+//     if (!messageBox) return;
 
-    messageBox.textContent = message;
-    messageBox.classList.remove("hidden");
-    messageBox.classList.toggle("error", isError);
-    messageBox.classList.add("show");
+//     messageBox.textContent = message;
+//     messageBox.classList.remove("hidden");
+//     messageBox.classList.toggle("error", isError);
+//     messageBox.classList.add("show");
 
-    setTimeout(() => {
-        messageBox.classList.remove("show");
-        setTimeout(() => messageBox.classList.add("hidden"), 400);
-    }, 3000);
+//     setTimeout(() => {
+//         messageBox.classList.remove("show");
+//         setTimeout(() => messageBox.classList.add("hidden"), 400);
+//     }, 3000);
+// }
+
+function togglePasswordVisibility(button) {
+    const input = button.previousElementSibling;
+    const isPassword = input.type === "password";
+    const eye = button.querySelector(".icon-eye");
+    const eyeHidden = button.querySelector(".icon-eye-hidden");
+
+    input.type = isPassword ? "text" : "password";
+    eye.style.display = isPassword ? "none" : "inline";
+    eyeHidden.style.display = isPassword ? "inline" : "none";
+
+    button.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
 }
 
-async function loadAppointments() {
-    const list = document.getElementById("my-appts");
-    if (!list) return;
-    list.textContent = "Loading...";
+// function showMessage(message, isError = false) {
+//     const messageDiv = document.querySelector("#login-message");
+//     if (!messageDiv) return;
+//     messageDiv.textContent = message;
+//     messageDiv.classList.toggle("error", !!isError);
+// }
+function setLoading(button, isLoading) {
+    if (!button) return;
+    button.disabled = isLoading;
+    button.setAttribute("aria-busy", isLoading ? "true" : "false");
+}
+function showCreateAccount(loginForm, createForm) {
+    loginForm.style.display = "none";
+    createForm.style.display = "block";
+}
+function showLogin(createForm, loginForm) {
+    createForm.style.display = "none";
+    loginForm.style.display = "block";
+}
+function showResetPassword(loginForm, createForm, resetForm) {
+    loginForm.style.display = "none";
+    createForm.style.display = "none";
+    resetForm.style.display = "block";
+}
+function backToLogin(resetForm, loginForm) {
+    resetForm.style.display = "none";
+    loginForm.style.display = "block";
+}
+//  **** Message and loading ****
+function setMessage(messageDiv, text = "", isError = false) {
+    if (!messageDiv) return;
+    messageDiv.textContent = text;
+    messageDiv.classList.toggle("error", !!isError);
+}
+// ****Resend confirmation email ****
+async function resendConfirmationEmail(resendButton) {
+    const email = createForm.querySelector('input[name="email"]')?.value.trim();
+    if (!email) {
+        showMessage("Please enter your email first.");
+        return;
+    }
 
     try {
-        // check local session
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        const user = sessionData?.session?.user;
-
-        // handle session error gracefully
-        if (sessionError) {
-            console.warn("Session error:", sessionError.message);
-
-            if (!window._isRedirectingToLogin) {
-                window._isRedirectingToLogin = true;
-                list.textContent = "Session expired. Redirecting to login...";
-                showMessage("Please sign in again.", true);
-                setTimeout(() => {
-                    window.location.href = "index.html?redirect=scheduler.html";
-                }, 1500);
-            }
-            return;
-        }
-
-        // if not signed in, exit
-        if (!user) {
-            console.log("No active session - user must log in first.");
-            list.textContent = "Please sign in to view appointments.";
-            if (!window._isRedirectingToLogin) {
-                window._isRedirectingToLogin = true;
-                showMessage("Please sign in. Redirecting to login...", true);
-                setTimeout(() => {
-                    window.location.href = "index.html?redirect=scheduler.html";
-                }, 1500);
-            }
-            return;
-        }
-
-        // user is signed in - load appointments
-        const { data: appts, error: apptError } = await supabase
-            .from("appointments")
-            .select("id, date, time")
-            .eq("user_id", user.id)
-            .order("date", { ascending: true })
-            .order("time", { ascending: true });
-
-        if (apptError) {
-            console.error("Error loading appointments:", apptError);
-            list.textContent = "Could not load appointments. Please try again later.";
-            return;
-        } 
-        if (!appts || appts.length === 0) {
-            list.textContent = "You have no upcoming appointments.";
-            return;
-        }
-
-        // render appointments
-        list.innerHTML = "";
-        appts.forEach(row => {
-            const item = document.createElement("div");
-            const when = new Date(row.date + "T12:00:00"); // noon to avoid timezone issues
-            item.className = "appt";
-            item.textContent = `${when.toLocaleDateString()} - ${row.time}`;
-            list.appendChild(item);
+        const { error } = await supabase.auth.resend({ 
+            type: "signup", 
+            email,
+            options: {
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
+            },
         });
+
+        if (error) {
+            console.error("resend failed:", error);
+            showMessage("Could not resend confirmation email. Try again later.", true);
+            return;
+        }
+
+        showMessage("Confirmation email resent! Please check your inbox.");
+        resendButton.disabled = true;
+        resendButton.textContent = "Email Sent";
     } catch (error) {
-            console.error("Unexpected error loading appointments:", error);
-            list.textContent = "Could not load appointments. Please try again later.";
+        console.error("Unexpected resend error:", error);
+        showMessage("Could not resend confirmation email. Try again later.", true);
     }
 }
+// ***** Login form submission *****
+async function handleLogin(event, loginForm, loginButton, messageDiv, redirect) {
+    event.preventDefault();
+    setMessage(messageDiv);
+    setLoading(loginButton, true);
 
-document.addEventListener("DOMContentLoaded", () => {
-    const showCreateAccountButton = document.getElementById("show-create-account");
-    const showLoginButton = document.getElementById("show-login");
-    const forgotPasswordLink = document.getElementById("forgot-password");
-    const backToLoginLink = document.getElementById("back-to-login");
+    try {
+        const email = loginForm.email?.value?.trim();
+        const password = loginForm.password?.value ?? "";
 
-    const loginForm = document.getElementById("login-form");
-    const createForm = document.getElementById("create-acct-form");
-    const resetForm = document.getElementById("reset-form");
+        if (!email || !password) {
+            setMessage(messageDiv, "Please enter both email and password.", true);
+            return;
+        }
+        
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email, 
+            password, 
+            options: {
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/", 
+            },
+        });
 
-    const loginButton = loginForm.querySelector('[type="submit"]');
-    const messageDiv = document.querySelector("#login-message");
+        if (error) {
+            setMessage(messageDiv, error.message || "Login failed. Please try again.", true);
+            loginForm.password.value = "";
+            loginForm.password?.focus();
+            return;
+        }
 
-    // const url = new URL(window.location.href);
+        if (!data?.user || !data?.session) {
+            setMessage(messageDiv, "Login incomplete. Please try again.", true);
+            return;
+        }
+
+        window.location.assign(redirect);
+    } catch (error) {
+        setMessage(messageDiv, "An unexpected error occurred. Please try again.", true);
+        console.error(error);
+    } finally {
+        setLoading(loginButton, false);
+    }
+}
+// ***** Create account submission *****
+async function handleCreateAccount(event, createForm, loginForm) {
+    event.preventDefault();
+    const fullName = createForm.querySelector('input[name="name"]').value.trim();
+    const email = createForm.querySelector('input[name="email"]').value.trim();
+    const password = createForm.querySelector('input[name="password"]').value.trim();
+
+    if (!fullName || !email || !password) {
+        showMessage("Please enter your name, email and password.");
+        return;
+    }
+
+    try {
+        localStorage.setItem("fullName", fullName);
+
+        const res = await fetch("https://rsceb.org/backend/sendmail_scheduler.php", {
+            method: "POST", 
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                type: "signup", 
+                name: fullName, 
+                email, 
+                password,
+            }),
+        });
+
+        const result = await res.json();
+
+        if (result.ok) {
+            showMessage(`Welcome aboard ${fullName}! Please check your inbox to confirm your account.`);
+            createForm.style.display = "none";
+            loginForm.style.display = "block";
+        } else {
+            console.error(result.error);
+            showMessage("Could not create an account at this time. Please try again.");
+        }
+    } catch (error) {
+        console.error("Unexpected error:", error);
+        showMessage("Something went wrong. Please try again.");
+    }
+}
+function handleSupabaseRedirect() {
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
     const type = hashParams.get("type");
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-        if (session?.user) {
-            loadAppointments();
-        } 
-    });
+    if (!accessToken) return;
 
-    if (accessToken && type === "recovery") {
-        // this means the user clicked the password reset link from email
-        showMessage("🔒 Please enter your new password below.");
-        loginForm.style.display = "none";
-        createForm.style.display = "none";
-        resetForm.style.display = "none";
+    // clear hash from URL
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
 
-        // show password update UI
-        const newPasswordForm = document.createElement("form");
-        newPasswordForm.innerHTML = `
-            <h2>Set New Password</h2>
+        // if session is established, redirect to user
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (sessio?.user) {
+                const base = window.location.hostname.includes("github.io") ? "/scheduler/" : "./";
+                const params = new URLSearchParams(window.location.search);
+                const redirect = params.get("redirect") || `${base}scheduler.html`;
+
+                if (!window.location.pathname.includes("scheduler.html")) {
+                    window.location.assign(redirect);
+                }
+            }
+        });
+
+        // handle password recovery
+        if (accessToken && type === "recovery") {
+            showPasswordUpdateForm(loginForm);
+        }
+}
+// show password update form
+function showPasswordUpdateForm(loginForm) {
+    const newPasswordForm = document.createElement("form");
+    newPasswordForm.innerHTML = `
+        <h2>Set New Password</h2>
 
             <label for="new-password">New Password:</label>
             <input type="password" id="new-password" name="new-password" required minlength="8" />
@@ -134,131 +223,48 @@ document.addEventListener("DOMContentLoaded", () => {
             <input type="password" id="confirm-password" name="confirm-password" required minlength="8" />
             
             <button type="submit">Update Password</button>
-            `;
-            document.querySelector("main").appendChild(newPasswordForm);
+        `;
 
-            newPasswordForm.addEventListener("submit", async(event) => {
-                event.preventDefault();
-                const newPassword = document.getElementById("new-password").value.trim();
-                const confirmPassword = document.getElementById("confirm-password").value.trim();
+        const main = document.querySelector("main");
+        main.innerHTML = "";
+        main.appendChild(newPasswordForm);
 
-                if (newPassword !== confirmPassword) {
-                    showMessage("Passwords do not match.", true);
-                    return;
-                }
+        newPasswordForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const newPassword = document.getElementById("new-password").value.trim();
+            const confirmPassword = document.getElementById("confirm-password").value.trim();
 
-                const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (newPassword !== confirmPassword) {
+                showMessage("Passwords do not match.", true);
+                return;
+            }
 
-                if (error) {
-                    showMessage("⚠️ Could not update password. Please try again.", true);
-                    console.error(error);
-                } else {
-                    showMessage("✅ Password updated! Please log in with your new password.");
-                    newPasswordForm.remove();
-                    loginForm.style.display = "block";
-                }
-            });
-    }
-    
-    // VIEW PASSWORD (SVG) ICON
-    document.querySelectorAll(".show-password").forEach((button) => {
-        button.addEventListener("click", () => {
-            const input = button.previousElementSibling;
-            const isPassword = input.type === "password";
-            const eye = button.querySelector(".icon-eye");
-            const eyeHidden = button.querySelector(".icon-eye-hidden");
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
 
-            input.type = isPassword ? "text" : "password";
-
-            // toggle icons
-            eye.style.display = isPassword ? "none" : "inline";
-            eyeHidden.style.display = isPassword ? "inline" : "none";
-
-            button.setAttribute(
-                "aria-label", 
-                isPassword ? "Hide password" : "Show password"
-            );
+            if (error) {
+                showMessage("Could not update password. Please try again.", true);
+                console.error(error);
+            } else {
+                showMessage("Password updated! Please login with your new password.");
+                newPasswordForm.remove();
+                loginForm.style.display = "block";
+            }
         });
-    });
+}
 
-
-    // CREATE ACCOUNT (SHOW)
-    showCreateAccountButton.addEventListener("click", (event) => {
-        event.preventDefault();
-        loginForm.style.display = "none";
-        createForm.style.display = "block";
-    });
-    // RESEND CONFIRMATION LINK (SHOW)
+document.addEventListener("DOMContentLoaded", () => {
+    const showCreateAccountButton = document.getElementById("show-create-account");
+    const showLoginButton = document.getElementById("show-login");
+    const forgotPasswordLink = document.getElementById("forgot-password");
+    const backToLoginLink = document.getElementById("back-to-login");
     const resendButton = document.getElementById("resend-confirmation-email");
-    resendButton?.addEventListener("click", async (event) => {
-        event.preventDefault();
 
-        const email = createForm.querySelector('input[name="email"]')?.value.trim();
-        if (!email) {
-            showMessage("Please enter your email first.");
-            return;
-        }
+    const loginForm = document.getElementById("login-form");
+    const createForm = document.getElementById("create-acct-form");
+    const resetForm = document.getElementById("reset-form");
+    const messageDiv = document.querySelector("#login-message");
+    const loginButton = loginForm.querySelector('[type="submit"]');
 
-        // check if user exits but is unconfirmed
-        try {
-            const { error } = await supabase.auth.resend({
-            type: "signup", 
-            email,
-            options: { 
-                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/"
-            },
-        });
-
-        if (error) {
-            console.error("resend failed:", error);
-            showMessage("Could not resend confirmation email. Try again later.", true);
-            return;
-        } 
-
-            showMessage("Confirmation email resent! Please check your inbox.");
-            resendButton.disabled = true;
-            resendButton.textContent = "Email Sent";
-        } catch (error) {
-            console.error("Unexpected resend error:", error);
-            showMessage("Could not resend confirmation email. Try again later.", true);
-        }
-    });
-    // LOGIN (SHOW)
-    showLoginButton.addEventListener("click", (event) => {
-        event.preventDefault();
-        createForm.style.display = "none";
-        loginForm.style.display = "block";
-    });
-    // RESET PASSWORD (SHOW)
-    forgotPasswordLink.addEventListener("click", (event) => {
-        event.preventDefault();
-        loginForm.style.display = "none";
-        createForm.style.display = "none";
-        resetForm.style.display = "block";
-    });
-    // BACK TO LOGIN (SHOW)
-    backToLoginLink.addEventListener("click", (event) => {
-        event.preventDefault();
-        resetForm.style.display = "none";
-        loginForm.style.display = "block";
-    });
-    // RESET FORM FOR RESETTING PASSWORD NOW RESIDES IN AUTH.MJS
-    
-    // MESAGE AND LOADING 
-    const setMessage = (text = "", isError = false) => {
-        if (!messageDiv) return;
-        messageDiv.textContent = text;
-        messageDiv.classList.toggle("error", !!isError);
-    };
-
-    const setLoading = (isLoading) => {
-        if (loginButton) {
-            loginButton.disabled = isLoading;
-            loginButton.setAttribute("aria-busy", isLoading ? "true" : "false");
-        }
-    };
-
-    // Where to go after submit
     // determine the correct base path
     const base = window.location.hostname.includes("github.io")
         ? "/scheduler/"
@@ -266,97 +272,58 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     const redirect = params.get("redirect") || `${base}scheduler.html`;
 
-    // login form submit 
-    loginForm?.addEventListener("submit", async(event) => {
+    // show create account form
+    showCreateAccountButton?.addEventListener("click", (event) => {
         event.preventDefault();
-        setMessage();
-        setLoading(true);
-
-        try {
-            const email = loginForm.email?.value?.trim();
-            const password = loginForm.password?.value ?? "";
-
-            // light, client-side validation
-            if (!email || !password) {
-                setMessage("Please enter both email and password.", true);
-                return;
-            }
-
-            // supabase login
-            const { data, error } = await supabase.auth.signInWithPassword({ 
-                email, 
-                password,
-                options: { 
-                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/"
-                } 
-            });
-
-            if (error) {
-                // invalid login
-                setMessage(error.message || "Login failed. Please try again.", true);
-                // clear password field
-                loginForm.password.value = "";
-                loginForm.password?.focus();
-                return;
-            }
-
-            // safeguard: ensure we have a user before redirecting
-            if (!data?.user || !data?.session) {
-                setMessage("Login incomplete. Please try again.", true);
-                return;
-            }
-            
-            // success...navigate to redirect page
-            window.location.assign(redirect);
-
-        } catch (error) {
-            setMessage("An unexpected error occurred. Please try again.", true);
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
+        showCreateAccount(loginForm, createForm);
     });
-    // CREATE ACCOUNT (SUBMIT)
-    createForm?.addEventListener("submit", async(event) => {
+
+    // show login form
+    showLoginButton?.addEventListener("click", (event) => {
         event.preventDefault();
+        showLogin(createForm, loginForm);
+    });
 
-        const fullName = createForm.querySelector('input[name="name"]').value.trim();
-        const email = createForm.querySelector('input[name="email"]').value.trim();
-        const password = createForm.querySelector('input[name="password"]').value.trim();
+    // show forgot password form
+    forgotPasswordLink?.addEventListener("click", (event) => {
+        event.preventDefault();
+        showResetPassword(loginForm, createForm, resetForm);
+    });
 
-        if (!fullName || !email || !password) {
-            showMessage("Please enter your name, email, and password.");
-            return;
-        }
+    // back to login from reset form
+    backToLoginLink?.addEventListener("click", (event) => {
+        event.preventDefault();
+        backToLogin(resetForm, loginForm);
+    });
 
-        try {
-            // save name locally in case supabase metadata fails
-            localStorage.setItem("fullName", fullName);
+    // resend password button
+    resendButton?.addEventListener("click", async (event) => {
+        event.preventDefault();
+        resendConfirmationEmail(createForm, resendButton);
+    });
 
-            // use PHP mailer on server
-            const res = await fetch("https://rsceb.org/backend/sendmail_scheduler.php", {
-                method: "POST", 
-                headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
-                body: new URLSearchParams({
-                    type: "signup", 
-                    name: fullName,
-                    email: email,
-                    password: password
-                })
-            });
-            const result = await res.json();
+    // login form submission
+    loginForm?.addEventListener("submit", (event) => 
+        handleLogin(event, loginForm, loginButton, messageDiv, redirect)
+    );
 
-            if (result.ok) {
-                showMessage(`Welcome aboard ${fullName}! Please check your email to confirm your account.`);
-                createForm.style.display = "none";
-                loginForm.style.display = "block";
-            } else {
-                console.error(result.error);
-                showMessage("Could not create an account at this time. Please try again.");
-            }
-        } catch (error) {
-            console.error("Unexpected error:", error);
-            showMessage("Something went wrong. Please try again.");
+    // create account form submission
+    createForm?.addEventListener("submit", (event) => 
+        handleCreateAccount(event, createForm, loginForm)
+    );
+
+        // show/hide password
+    document.querySelectorAll(".show-password").forEach(button => {
+        button.addEventListener("click", () => togglePasswordVisibility(button));
+    }); 
+
+    // handle supabase redirect 
+    handleSupabaseRedirect();
+
+    // auto-redirect logged-in users to scheduler
+    supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user && !window.location.pathname.includes("scheduler.html")) {
+            window.location.assign(redirect);
         }
     });
 });

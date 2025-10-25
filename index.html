@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="./src/css/components.css">
     <script>
     // Handle Supabase redirect links (signup & recovery)
-    window.addEventListener("load", () => {
+    window.addEventListener("load", async () => {
         const hash = window.location.hash;
         const params = new URLSearchParams(hash.replace("#", ""));
         const type = params.get("type");
@@ -88,7 +88,7 @@
         </div>
     </header>
     <main>
-        <div id="status-message" class="status-message hidden"></div>
+        <div id="status-message" class="status-message hidden" aria-live="polite"></div>
         <!-- LOGIN PAGE -->
          <form id="login-form" method="POST">
             <h2 class="header">Login</h2>
@@ -129,9 +129,6 @@
             <p class="c-acct">Click <a href="#" id="show-create-account">here</a>  to create an account</p>
             <!-- FORGOT PASSWORD -->
             <p class="c-acct" id="f-password">Forgot your <a href="#" id="forgot-password">password?</a></p>
-
-            <!-- MESSAGE AREA FOR ERRORS UNDER THE FORM -->
-             <div id="login-message" aria-live="polite"></div>
          </form>
          <!-- FORGOT PASSWORD -> RESET PASSWORD -->
         <form id="reset-form" style="display: none;">

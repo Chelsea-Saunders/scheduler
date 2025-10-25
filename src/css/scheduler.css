@@ -86,6 +86,12 @@ button:hover {
     border: solid 1px var(--bs-border-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.072);
 }
+button.selected {
+    background-color: gray;
+    color: white;
+    border-color: rgb(0, 94, 128);
+    animation: pulse 0.25s ease;
+}
 #time-section {
     opacity: 0;
     max-height: 0;
@@ -174,7 +180,7 @@ button:hover {
     transition: max-height 0.3s ease;
 }
 .times.expanded {
-    max-height: 1000px;
+    max-height: 3000px;
 }
 /* pick a time section */
 #time-slots {
@@ -281,7 +287,21 @@ button:hover {
 .hidden {
     display: none;
 }
-
+/* for holiday buttons */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+    }
+}
 @media (min-width: 350px) {
     #my-appt-container {
         padding: 0 0.5rem;

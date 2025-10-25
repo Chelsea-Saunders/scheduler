@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase.mjs";
+import { showMessage } from "../lib/ui.mjs";
 
 document.addEventListener("DOMContentLoaded", () => {
     // parse token from URL hash
@@ -14,12 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("update-password-form");
     const messageBox = document.getElementById("status-message");
 
-    // message function
-    function showMessage(message, isError = false) {
-        messageBox.textContent = message;
-        messageBox.classList.toggle("error", isError);
-        messageBox.classList.remove("hidden");
-    }
+    // // message function
+    // function showMessage(message, isError = false) {
+    //     messageBox.textContent = message;
+    //     messageBox.classList.toggle("error", isError);
+    //     messageBox.classList.remove("hidden");
+    // }
 
     // form submission
     form.addEventListener("submit", async (event) => {
