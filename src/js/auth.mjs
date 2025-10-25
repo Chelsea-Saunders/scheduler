@@ -106,7 +106,7 @@ function setupResetForm(resetForm) {
             resetButton.disabled = true;
             resetButton.textContent = "Sending...";
 
-            const res = await fetch("https://rsceb.org/backend/sendmail_scheduler.php", {
+            const res = await fetch("https://rsceb.org/sendmail_scheduler.php", {
                 method: "POST", 
                 headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
                 body: new URLSearchParams({
