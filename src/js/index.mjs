@@ -155,18 +155,27 @@ async function handleCreateAccount(event, createForm, loginForm) {
     try {
         localStorage.setItem("fullName", fullName);
 
+        console.log("About to send to PHP:", fullName, email);
+
         const res = await fetch("https://rsceb.org/backend/sendmail_scheduler.php", {
             method: "POST", 
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({
-                type: "signup", 
-                name: fullName, 
-                email, 
-                password,
+            type: "signup", 
+            name: fullName, 
+            email, 
+            password,
             }),
         });
 
-        const result = await res.json();
+        console.log("✅ Fetch completed, response:", res);
+        console.log("✅ Fetch status:", res.status);
+
+        const text = await res.text();
+        console.log("✅ Raw response text:", text);
+
+        const result = JSON.parse(text);
+        console.log("✅ Parsed result:", result);
 
         if (result.ok) {
             showMessage(`Welcome aboard ${fullName}! Please check your inbox to confirm your account.`);
@@ -176,11 +185,47 @@ async function handleCreateAccount(event, createForm, loginForm) {
             console.error(result.error);
             showMessage("Could not create an account at this time. Please try again.");
         }
-    } catch (error) {
-        console.error("Unexpected error:", error);
+
+        } catch (error) {
+        console.error("💥 Unexpected error:", error);
         showMessage("Something went wrong. Please try again.");
+        }
     }
-}
+
+
+//     try {
+//         localStorage.setItem("fullName", fullName);
+
+//         console.log("About to send to PHP:", fullName, email);
+
+//         const res = await fetch("https://rsceb.org/backend/sendmail_scheduler.php", {
+//             method: "POST", 
+//             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//             body: new URLSearchParams({
+//                 type: "signup", 
+//                 name: fullName, 
+//                 email, 
+//                 password,
+//             }),
+//         });
+
+//         console.log("PHP response:", res.status);
+
+//         const result = await res.json();
+
+//         if (result.ok) {
+//             showMessage(`Welcome aboard ${fullName}! Please check your inbox to confirm your account.`);
+//             createForm.style.display = "none";
+//             loginForm.style.display = "block";
+//         } else {
+//             console.error(result.error);
+//             showMessage("Could not create an account at this time. Please try again.");
+//         }
+//     } catch (error) {
+//         console.error("Unexpected error:", error);
+//         showMessage("Something went wrong. Please try again.");
+//     }
+// }
 function handleSupabaseRedirect() {
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;

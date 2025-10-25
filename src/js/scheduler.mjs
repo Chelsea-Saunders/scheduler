@@ -533,6 +533,14 @@ async function checkUserOrRedirect() {
     }
 
     if (!user) {
+        const userResults = await supabase.auth.getUser();
+        user = userResults.data?.user;
+        // console.warn("No user session found, redirecting to login.");
+        // window.location.href = `index.html?redirect=scheduler.html`;
+        // return null;
+    }
+
+    if (!user) {
         console.warn("No user session found, redirecting to login.");
         window.location.href = `index.html?redirect=scheduler.html`;
         return null;
@@ -555,33 +563,33 @@ async function updateMissingNameMetadata(user) {
 }
 
 // ensure appointments refresh automatically when supabase detects a new session
-function initAuthListener() {
-    let authReady = false;
+// function initAuthListener() {
+//     let authReady = false;
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-        // if (!session && !authReady) return;
-        // authReady = true;
+//     supabase.auth.onAuthStateChange((_event, session) => {
+//         // if (!session && !authReady) return;
+//         // authReady = true;
     
-        if (session?.user && !authReady) {
-            authReady = true;
-            console.log("Session active -> staying on page.");
-            // loadAppointments();
-            return;
-        } 
-        authReady = true;
-        if (session?.user) {
-            console.log("Session active -> staying on page.");
-            loadAppointments();
-        } else {
-            console.log("Session lost -> redirecting to login.");
-            window.location.href = "index.html?redirect=scheduler.html";
-        }
-        // else {
-        //     console.log("Session lost -> redirecting to login.");
-        //     window.location.href = "index.html?redirect=scheduler.html";
-        // }
-    });
-}
+//         if (session?.user && !authReady) {
+//             authReady = true;
+//             console.log("Session active -> staying on page.");
+//             // loadAppointments();
+//             return;
+//         } 
+//         authReady = true;
+//         if (session?.user) {
+//             console.log("Session active -> staying on page.");
+//             loadAppointments();
+//         } else {
+//             console.log("Session lost -> redirecting to login.");
+//             window.location.href = "index.html?redirect=scheduler.html";
+//         }
+//         // else {
+//         //     console.log("Session lost -> redirecting to login.");
+//         //     window.location.href = "index.html?redirect=scheduler.html";
+//         // }
+//     });
+// }
 
 // clearing textContent on lists
 function setListMessage(list, message, isError = false) {
@@ -596,9 +604,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     user = await updateMissingNameMetadata(user);
 
     applyGreeting(user);
-    initAuthListener();
+    // initAuthListener();
     setupDateButtons();
 
-    // // load their appointments once on page load
-    // await loadAppointments();
+    // load their appointments once on page load
+    await loadAppointments();
+
+    // this listener is only for logouts/future changes.
+    initAuthListener();
 });
+
+function initAuthListener() {
+    supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+            console.log("Session active -> staying on page.");
+            loadAppointments();
+        } else {
+            console.log("Session lost -> redirecting to login.");
+            window.location.href = "index.html?redirect=scheduler.html";
+        }
+    });
+}
