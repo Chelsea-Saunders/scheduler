@@ -516,7 +516,6 @@ function applyGreeting(user) {
         "Friend";
 
     heading.textContent = `Welcome ${displayName}! Let's schedule your 6-month cleaning!`;
-    loadAppointments();
 }
 
 // ensure user is logged in
@@ -560,9 +559,16 @@ function initAuthListener() {
     let authReady = false;
 
     supabase.auth.onAuthStateChange((_event, session) => {
-        if (!session && !authReady) return;
-        authReady = true;
+        // if (!session && !authReady) return;
+        // authReady = true;
     
+        if (session?.user && !authReady) {
+            authReady = true;
+            console.log("Session active -> staying on page.");
+            // loadAppointments();
+            return;
+        } 
+        authReady = true;
         if (session?.user) {
             console.log("Session active -> staying on page.");
             loadAppointments();
@@ -570,6 +576,10 @@ function initAuthListener() {
             console.log("Session lost -> redirecting to login.");
             window.location.href = "index.html?redirect=scheduler.html";
         }
+        // else {
+        //     console.log("Session lost -> redirecting to login.");
+        //     window.location.href = "index.html?redirect=scheduler.html";
+        // }
     });
 }
 
@@ -589,6 +599,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     initAuthListener();
     setupDateButtons();
 
-    // load their appointments once on page load
-    await loadAppointments();
+    // // load their appointments once on page load
+    // await loadAppointments();
 });
