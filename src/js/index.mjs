@@ -321,9 +321,11 @@ document.addEventListener("DOMContentLoaded", () => {
     handleSupabaseRedirect();
 
     // auto-redirect logged-in users to scheduler
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user && !window.location.pathname.includes("scheduler.html")) {
             window.location.assign(redirect);
         }
+        const { data: sessionData } = await supabase.auth.getSession();
+        console.log("Session after login:", sessionData);
     });
 });

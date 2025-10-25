@@ -3,6 +3,36 @@ import { showMessage } from "../lib/ui.mjs";
 
 window.supabase = supabase; // for debugging
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
+// window.addEventListener("load", async () => {
+//   console.log("Checking Supabase session…");
+//   let tries = 0;
+//   let session = null;
+//   let error = null;
+
+//   // Wait up to 3 seconds total, retrying every 500ms
+//   while (tries < 6 && !session) {
+//     const result = await supabase.auth.getSession();
+//     session = result.data?.session;
+//     error = result.error;
+//     if (session) break;
+//     await new Promise(r => setTimeout(r, 500));
+//     tries++;
+//   }
+
+//   if (error) {
+//     console.warn("Session check error:", error);
+//     showMessage("Could not verify login. Please sign in again.", true);
+//     window.location.href = "index.html?redirect=scheduler.html";
+//     return;
+//   }
+
+//   if (!session?.user) {
+//     console.warn("No active session found → redirecting");
+//     window.location.href = "index.html?redirect=scheduler.html";
+//   } else {
+//     console.log("User authenticated:", session.user.email);
+//   }
+// });
 
 const holidays = [
     "2025-10-13", // Columbus Day
@@ -61,38 +91,17 @@ async function loadAppointments() {
 
     try {
         // check current supabase session
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        const user = sessionData?.session?.user;
+        const { data: { user } } = await supabase.auth.getUser();
 
-        if (sessionError) {
-            console.warn("Session error:", sessionError);
-            list.textContent = "Session expired. Please sign in again.";
-            showMessage("Please sign in again.", true);
-
-            setTimeout(() => {
-                window.location.href = "index.html?redirect=scheduler.html";
-            }, 1500);
+        // if no user, exit. don't redirect
+        if (!user) {
+            setListMessage(list, "Please sign in to view appointments.", true);
             return;
         }
-
-        if (!user) { 
-            console.warn("User not logged in:");
-            setListMessage(list, "Please sign in to view appointments.", true); 
-
-            if (!window._isRedirectingToLogin) {
-                window._isRedirectingToLogin = true;
-                showMessage("Please sign in. Redirecting to login...", true);
-
-                setTimeout(() => {
-                    window.location.replace("index.html?redirect=scheduler.html");
-                }, 1500);
-            }
-            return; 
-        }
-
-        // fetch appointments for user
+        
+        // fetch appointments for user 
         const { data, error } = await supabase
-            .from("appointments")
+            .from ("appointments")
             .select("id, date, time, user_id")
             .eq("user_id", user.id)
             .order("date", { ascending: true })
@@ -157,6 +166,100 @@ async function loadAppointments() {
         console.error("Unexpected error loading appointments:", error);
         list.textContent = "Could not load your appointments. Please try again.";
     }
+
+    //     if (sessionError) {
+    //         console.warn("Session error:", sessionError);
+    //         list.textContent = "Session expired. Please sign in again.";
+    //         showMessage("Please sign in again.", true);
+
+    //         setTimeout(() => {
+    //             window.location.href = "index.html?redirect=scheduler.html";
+    //         }, 1500);
+    //         return;
+    //     }
+
+    //     if (!user) { 
+    //         console.warn("User not logged in:");
+    //         setListMessage(list, "Please sign in to view appointments.", true); 
+
+    //         if (!window._isRedirectingToLogin) {
+    //             window._isRedirectingToLogin = true;
+    //             showMessage("Please sign in. Redirecting to login...", true);
+
+    //             setTimeout(() => {
+    //                 window.location.replace("index.html?redirect=scheduler.html");
+    //             }, 1500);
+    //         }
+    //         return; 
+    //     }
+
+    //     // fetch appointments for user
+    //     const { data, error } = await supabase
+    //         .from("appointments")
+    //         .select("id, date, time, user_id")
+    //         .eq("user_id", user.id)
+    //         .order("date", { ascending: true })
+    //         .order("time", { ascending: true });
+        
+    //     if (error) {
+    //         console.error(error);
+    //         setListMessage(list, "Could not load your appointments.", true);
+    //         return;
+    //     }
+
+    //     if (!data || data.length === 0) {
+    //         setListMessage(list, "You have no upcoming appointments.", true);
+    //         return;
+    //     }
+
+    //     // show appointments list
+    //     list.innerHTML = "";
+    //     data.forEach(row => {
+    //         const item = document.createElement("div");
+    //         const when = new Date(row.date + "T12:00:00"); // avoid timezone issues
+    //         item.className = "appt";
+    //         item.textContent = `${when.toLocaleDateString()} - ${formatTime(row.time)}`;
+
+    //         // add cancel button
+    //         const cancelButton = document.createElement("button");
+    //         cancelButton.textContent = "Cancel";
+    //         cancelButton.addEventListener("click", async() => {
+
+    //             // disable button to prevent double clicking
+    //             cancelButton.disabled = true;
+    //             cancelButton.textContent = "Cancelling...";
+                
+    //             // call supabase to delete
+    //             const { error: deleteError } = await supabase
+    //                 .from("appointments")
+    //                 .delete()
+    //                 .eq("id", row.id)
+    //                 .eq("user_id", user.id); // ensures user only deletes their own appt
+
+    //             if (deleteError) {
+    //                 // restor button if something goes wrong
+    //                 cancelButton.disabled = false;
+    //                 cancelButton.textContent = "Cancel";
+    //                 // show error message
+    //                 console.error(deleteError);
+    //                 showMessage("⚠️Could not cancel that appointment. Please try again.");
+    //                 return;
+    //             }
+
+    //             showMessage("Appointment cancelled.");
+    //             await loadAppointments();
+    //             const matchingDay = new Date(row.date + "T12:00:00");
+    //             await refreshBookedSlots(matchingDay);
+    //             await showTimeSlots(matchingDay);
+    //         });
+
+    //         item.appendChild(cancelButton);
+    //         list.appendChild(item);
+    //     });
+    // } catch (error) {
+    //     console.error("Unexpected error loading appointments:", error);
+    //     list.textContent = "Could not load your appointments. Please try again.";
+    // }
 }
 
 // show date in human format
@@ -418,15 +521,15 @@ function applyGreeting(user) {
 
 // ensure user is logged in
 async function checkUserOrRedirect() {
-    let { data: { session } } = await supabase.auth.getUser();
-    let user = session?.user;
+    let sessionResults = await supabase.auth.getUser();
+    let user = sessionResults.data?.session?.user;
 
     // retry for up to 2 seconds if supabase hasn't loaded the session yet
     let tries = 0;
     while (!user && tries < 10) {
         await new Promise(res => setTimeout(res, 200));
-        ({ data: { session } } = await supabase.auth.getSession());
-        user = session?.user;
+        sessionResults = await supabase.auth.getSession();
+        user = sessionResults.data?.session?.user;
         tries ++;
     }
 
@@ -454,7 +557,12 @@ async function updateMissingNameMetadata(user) {
 
 // ensure appointments refresh automatically when supabase detects a new session
 function initAuthListener() {
+    let authReady = false;
+
     supabase.auth.onAuthStateChange((_event, session) => {
+        if (!session && !authReady) return;
+        authReady = true;
+    
         if (session?.user) {
             console.log("Session active -> staying on page.");
             loadAppointments();
