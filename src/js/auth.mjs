@@ -44,7 +44,7 @@ function setupLoginForm(loginForm) {
     });
 }
 function setupCreateAccountForm(createForm) {
-    createForm.addEventListener("sibmit", async (event) => {
+    createForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         if (!validateForm(createForm)) {
@@ -65,7 +65,7 @@ function setupCreateAccountForm(createForm) {
                 email, 
                 password, 
                 options: {
-                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
+                    emailRedirectTo: "https://chelsea-saunders.github.io/update-password.html/",
                 },
             });
 
@@ -143,7 +143,6 @@ function setupResetForm(resetForm) {
     });
 }
 
-// await supabase.auth.resetPasswordForEmail(email);
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("login-form");
     const createForm = document.getElementById("create-acct-form");

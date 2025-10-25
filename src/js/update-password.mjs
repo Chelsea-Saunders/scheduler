@@ -15,13 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("update-password-form");
     const messageBox = document.getElementById("status-message");
 
-    // // message function
-    // function showMessage(message, isError = false) {
-    //     messageBox.textContent = message;
-    //     messageBox.classList.toggle("error", isError);
-    //     messageBox.classList.remove("hidden");
-    // }
-
     // form submission
     form.addEventListener("submit", async (event) => {
         event.preventDefault();

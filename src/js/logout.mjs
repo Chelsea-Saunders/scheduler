@@ -9,24 +9,6 @@ supabase.auth.onAuthStateChange((_event, session) => {
         window.location.replace("index.html");
     }
 });
-// // reusable message box
-// function showMessage(message, isError = false) {
-//     let box = document.getElementById("status-message");
-//     if (!box) {
-//         box = document.createElement("div");
-//         box.id = "status-message";
-//         box.className = "status-message";
-//         document.body.prepend(box);
-//     }
-
-//     box.textContent = message;
-//     box.classList.toggle("error", isError);
-//     box.classList.remove("hidden");
-
-//     setTimeout(() => {
-//         box.classList.add("hidden");
-//     }, 3000);
-// }
 
 // when the page loads, automatically sign the user out
 document.addEventListener("DOMContentLoaded", async () => {

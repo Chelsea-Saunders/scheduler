@@ -1,23 +1,7 @@
 import { supabase } from '../lib/supabase.mjs';
-import { showMessage } from '../lib/ui.mjs';
 
 // guard against redirect spam
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
-
-// function showMessage(message, isError = false) {
-//     const messageBox = document.getElementById("status-message");
-//     if (!messageBox) return;
-
-//     messageBox.textContent = message;
-//     messageBox.classList.remove("hidden");
-//     messageBox.classList.toggle("error", isError);
-//     messageBox.classList.add("show");
-
-//     setTimeout(() => {
-//         messageBox.classList.remove("show");
-//         setTimeout(() => messageBox.classList.add("hidden"), 400);
-//     }, 3000);
-// }
 
 function togglePasswordVisibility(button) {
     const input = button.previousElementSibling;
@@ -30,18 +14,6 @@ function togglePasswordVisibility(button) {
     eyeHidden.style.display = isPassword ? "inline" : "none";
 
     button.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
-}
-
-// function showMessage(message, isError = false) {
-//     const messageDiv = document.querySelector("#login-message");
-//     if (!messageDiv) return;
-//     messageDiv.textContent = message;
-//     messageDiv.classList.toggle("error", !!isError);
-// }
-function setLoading(button, isLoading) {
-    if (!button) return;
-    button.disabled = isLoading;
-    button.setAttribute("aria-busy", isLoading ? "true" : "false");
 }
 function showCreateAccount(loginForm, createForm) {
     loginForm.style.display = "none";
@@ -66,6 +38,11 @@ function setMessage(messageDiv, text = "", isError = false) {
     messageDiv.textContent = text;
     messageDiv.classList.toggle("error", !!isError);
 }
+function setLoading(button, isLoading) {
+    if (!button) return;
+    button.disabled = isLoading;
+    button.setAttribute("aria-busy", isLoading ? "true" : "false");
+}
 // ****Resend confirmation email ****
 async function resendConfirmationEmail(resendButton) {
     const email = createForm.querySelector('input[name="email"]')?.value.trim();
@@ -79,7 +56,7 @@ async function resendConfirmationEmail(resendButton) {
             type: "signup", 
             email,
             options: {
-                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
+                emailRedirectTo: "https://chelsea-saunders.github.io/update-password.html/",
             },
         });
 
@@ -155,27 +132,18 @@ async function handleCreateAccount(event, createForm, loginForm) {
     try {
         localStorage.setItem("fullName", fullName);
 
-        console.log("About to send to PHP:", fullName, email);
-
         const res = await fetch("https://rsceb.org/backend/sendmail_scheduler.php", {
             method: "POST", 
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({
-            type: "signup", 
-            name: fullName, 
-            email, 
-            password,
+                type: "signup", 
+                name: fullName, 
+                email, 
+                password,
             }),
         });
 
-        console.log("✅ Fetch completed, response:", res);
-        console.log("✅ Fetch status:", res.status);
-
-        const text = await res.text();
-        console.log("✅ Raw response text:", text);
-
-        const result = JSON.parse(text);
-        console.log("✅ Parsed result:", result);
+        const result = await res.json();
 
         if (result.ok) {
             showMessage(`Welcome aboard ${fullName}! Please check your inbox to confirm your account.`);
@@ -185,47 +153,11 @@ async function handleCreateAccount(event, createForm, loginForm) {
             console.error(result.error);
             showMessage("Could not create an account at this time. Please try again.");
         }
-
-        } catch (error) {
-        console.error("💥 Unexpected error:", error);
+    } catch (error) {
+        console.error("Unexpected error:", error);
         showMessage("Something went wrong. Please try again.");
-        }
     }
-
-
-//     try {
-//         localStorage.setItem("fullName", fullName);
-
-//         console.log("About to send to PHP:", fullName, email);
-
-//         const res = await fetch("https://rsceb.org/backend/sendmail_scheduler.php", {
-//             method: "POST", 
-//             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//             body: new URLSearchParams({
-//                 type: "signup", 
-//                 name: fullName, 
-//                 email, 
-//                 password,
-//             }),
-//         });
-
-//         console.log("PHP response:", res.status);
-
-//         const result = await res.json();
-
-//         if (result.ok) {
-//             showMessage(`Welcome aboard ${fullName}! Please check your inbox to confirm your account.`);
-//             createForm.style.display = "none";
-//             loginForm.style.display = "block";
-//         } else {
-//             console.error(result.error);
-//             showMessage("Could not create an account at this time. Please try again.");
-//         }
-//     } catch (error) {
-//         console.error("Unexpected error:", error);
-//         showMessage("Something went wrong. Please try again.");
-//     }
-// }
+}
 function handleSupabaseRedirect() {
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;
@@ -366,11 +298,9 @@ document.addEventListener("DOMContentLoaded", () => {
     handleSupabaseRedirect();
 
     // auto-redirect logged-in users to scheduler
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user && !window.location.pathname.includes("scheduler.html")) {
             window.location.assign(redirect);
         }
-        const { data: sessionData } = await supabase.auth.getSession();
-        console.log("Session after login:", sessionData);
     });
 });
