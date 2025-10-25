@@ -57,7 +57,7 @@ async function resendConfirmationEmail(resendButton) {
             type: "signup", 
             email,
             options: {
-                emailRedirectTo: "https://chelsea-saunders.github.io/update-password.html/",
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/update-password.html/",
             },
         });
 
@@ -94,7 +94,7 @@ async function handleLogin(event, loginForm, loginButton, messageDiv, redirect) 
             email, 
             password, 
             options: {
-                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/", 
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html/", 
             },
         });
 

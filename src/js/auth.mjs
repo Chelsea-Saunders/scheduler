@@ -23,7 +23,7 @@ function setupLoginForm(loginForm) {
                 email, 
                 password, 
                 options: {
-                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
+                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html/",
                 },
             });
 
@@ -65,7 +65,7 @@ function setupCreateAccountForm(createForm) {
                 email, 
                 password, 
                 options: {
-                    emailRedirectTo: "https://chelsea-saunders.github.io/update-password.html/",
+                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html/",
                 },
             });
 
