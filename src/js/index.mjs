@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase.mjs';
 
 // guard against redirect spam
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
+const loginForm = document.getElementById("login-form");
 
 function togglePasswordVisibility(button) {
     const input = button.previousElementSibling;
@@ -171,7 +172,7 @@ function handleSupabaseRedirect() {
 
         // if session is established, redirect to user
         supabase.auth.onAuthStateChange((event, session) => {
-            if (sessio?.user) {
+            if (session?.user) {
                 const base = window.location.hostname.includes("github.io") ? "/scheduler/" : "./";
                 const params = new URLSearchParams(window.location.search);
                 const redirect = params.get("redirect") || `${base}scheduler.html`;
