@@ -251,13 +251,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const resetForm = document.getElementById("reset-form");
     const loginButton = loginForm.querySelector('[type="submit"]');
 
-    const { data: { user } } = await supabase.auth.getUser();
-    // ONLY if its not reset password page
-    if (
-        user && 
-        !window.location.pathname.includes("update-password.html")
-    ) {
-        window.location.href = "index.html";
+    const { data } = await supabase.auth.getUser();
+    const user = data?.user || null;
+    // prevent redirect from update password
+    const isResetPage = window.location.pathname.includes("update-password.html");
+    if (user && !isResetPage) {
+        window.location.href = "index.html";   
     }
 
     // determine the correct base path
