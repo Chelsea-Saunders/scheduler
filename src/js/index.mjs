@@ -221,7 +221,7 @@ function showPasswordUpdateForm(loginForm) {
         });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const showCreateAccountButton = document.getElementById("show-create-account");
     const showLoginButton = document.getElementById("show-login");
     const forgotPasswordLink = document.getElementById("forgot-password");
@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const resetForm = document.getElementById("reset-form");
     const loginButton = loginForm.querySelector('[type="submit"]');
 
-    const { data: { user } } = supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (user) {
         window.location.href = "index.html";
     }
