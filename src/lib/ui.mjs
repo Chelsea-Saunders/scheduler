@@ -1,16 +1,21 @@
 export function showMessage(message, isError = false) {
-    const messageBox = document.getElementById("status-message");
-    messageBox.textContent = message;
+    const box = document.getElementById("status-message");
+    if (!box) return;
+    
+    // clear ongoing hide timers
+    clearTimeout(messageTimeout);
 
-    // reset classes
-    messageBox.classList.remove("hidden", "error", "show");
+    // reset message & classes
+    box.textContent = message;
+    box.classList.remove("hidden", "error", "show");
 
-    if (isError) messageBox.classList.add("error");
-    messageBox.classList.add("show");
+    // apply error class if needed
+    if (isError) box.classList.add("error");
+    box.classList.add("show");
 
     // auto hide after 3 seconds
-    setTimeout(() => {
-        messageBox.classList.remove("show");
-        setTimeout(() => messageBox.classList.add("hidden"), 400);
+    messageTimeout = setTimeout(() => {
+        box.classList.remove("show");
+        setTimeout(() => box.classList.add("hidden"), 400);
     }, 3000);
 }
