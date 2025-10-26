@@ -98,7 +98,7 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
             email, 
             password, 
             options: {
-                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html/", 
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html", 
             },
         });
 
@@ -232,6 +232,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const createForm = document.getElementById("create-acct-form");
     const resetForm = document.getElementById("reset-form");
     const loginButton = loginForm.querySelector('[type="submit"]');
+
+    const { data: { user } } = supabase.auth.getUser();
+    if (user) {
+        window.location.href = "index.html";
+    }
 
     // determine the correct base path
     const base = window.location.hostname.includes("github.io")
