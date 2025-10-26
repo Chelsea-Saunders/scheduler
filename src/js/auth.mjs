@@ -134,7 +134,7 @@ function setupResetForm(resetForm) {
                 setTimeout(() => {
                     resetButton.textContent = "Send Reset Link";
                     resetButton.disabled = false;
-                }, 10000);
+                }, 2000);
             } 
             // server side error
             if (result.error) {
