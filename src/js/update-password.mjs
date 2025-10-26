@@ -76,10 +76,19 @@ function handlePasswordUpdateError(error) {
 }
 
 // success 
-function handlePasswordUpdateSuccess() {
+async function handlePasswordUpdateSuccess() {
     showMessage("Password updated! Redirecting to login...");
     getForm().reset();
     getForm().style.opacity = "1";
+
+    try {
+        // sign out user and let them log in
+        await supabase.auth.signOut();
+    } catch (error) {
+        console.warn("Sign-out after password reset failed:", error);
+    }
+
+    // redirect to login
     setTimeout(() => {
         window.location.assign("index.html")
     }, 2000);
@@ -108,13 +117,16 @@ async function handleFormSubmission(event) {
     handlePasswordUpdateSuccess();
 }
 // main
-function initializePasswordResetPage() {
+async function initializePasswordResetPage() {
     const accessToken = getAccessTokenFromUrl();
 
     if (!accessToken) {
         redirectToLogin();
         return;
     }
+
+    // clear old session before reset
+    await supabase.auth.signOut();
 
     const form = getForm();
     form.addEventListener("submit", handleFormSubmission);

@@ -124,22 +124,42 @@ function setupResetForm(resetForm) {
                 console.warn("Non-JSON response (using fallback)");
             }
 
+            // success
             if (result.ok) {
-                showSubmissionMessage("Check your email for reset instructions.");
-            } else if (result.error) {
+                showSubmissionMessage("Reset link sent! Check your inbox.");
+                // reset the form
+                resetForm.reset();
+                //show confirmation message
+                resetButton.textContent = "Check your inbox!";
+                setTimeout(() => {
+                    resetButton.textContent = "Send Reset Link";
+                    resetButton.disabled = false;
+                }, 2000);
+                return;
+            } 
+            // server side error
+            if (result.error) {
                 console.error("Server error:", result.error);
                 showSubmissionMessage("WARNING: " + result.error, true);
-            } else {
-                showSubmissionMessage("Request sent! Please check your email.", false);
-            }
+                resetButton.textContent = "Error";
+                setTimeout(() => {
+                    resetButton.textContent = "Server Error";
+                    resetButton.disabled = false;
+                }, 2000);
+                return;
+            } 
+            // generic failure
+            showSubmissionMessage("Request sent! Please check your email.", false);
+            resetButton.textContent = "Send Reset Link";
+            resetButton.disabled = false;
+
         } catch (error) {
             console.error("Network or fetch error", error);
             showSubmissionMessage("Network error:  please try again later.", true);
-        } finally {
             // re-enable button and restore text
-            resetButton.disabled = false;
             resetButton.textContent = "Send Reset Link";
-        }
+            resetButton.disabled = false;
+        } 
     });
 }
 
