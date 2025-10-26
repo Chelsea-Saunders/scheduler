@@ -135,7 +135,6 @@ function setupResetForm(resetForm) {
                     resetButton.textContent = "Send Reset Link";
                     resetButton.disabled = false;
                 }, 2000);
-                return;
             } 
             // server side error
             if (result.error) {
@@ -146,7 +145,6 @@ function setupResetForm(resetForm) {
                     resetButton.textContent = "Server Error";
                     resetButton.disabled = false;
                 }, 2000);
-                return;
             } 
             // generic failure
             showSubmissionMessage("Request sent! Please check your email.", false);
