@@ -161,7 +161,7 @@ async function handleCreateAccount(event, createForm, loginForm) {
         // add rate limit/supabase error message handling
         if (result?.error && result.error.toLowerCase().includes("rate limit")) {
             showMessage(
-                "You've requested to many confirmation emails. Please wait 10 minutes and try again.", 
+                "You've requested to many confirmation emails. Please wait awhile before trying again.", 
                 true
             );
             console.warn("Rate limit triggered:", result.error);
