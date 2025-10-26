@@ -212,31 +212,31 @@ function showPasswordUpdateForm(loginForm) {
             <button type="submit">Update Password</button>
         `;
 
-        const main = document.querySelector("main");
-        main.innerHTML = "";
-        main.appendChild(newPasswordForm);
+    const main = document.querySelector("main");
+    main.innerHTML = "";
+    main.appendChild(newPasswordForm);
 
-        newPasswordForm.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            const newPassword = document.getElementById("new-password").value.trim();
-            const confirmPassword = document.getElementById("confirm-password").value.trim();
+    newPasswordForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const newPassword = document.getElementById("new-password").value.trim();
+        const confirmPassword = document.getElementById("confirm-password").value.trim();
 
-            if (newPassword !== confirmPassword) {
-                showMessage("Passwords do not match.", true);
-                return;
-            }
+        if (newPassword !== confirmPassword) {
+            showMessage("Passwords do not match.", true);
+            return;
+        }
 
-            const { error } = await supabase.auth.updateUser({ password: newPassword });
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
 
-            if (error) {
-                showMessage("Could not update password. Please try again.", true);
-                console.error(error);
-            } else {
-                showMessage("Password updated! Please login with your new password.");
-                newPasswordForm.remove();
-                loginForm.style.display = "block";
-            }
-        });
+        if (error) {
+            showMessage("Could not update password. Please try again.", true);
+            console.error(error);
+        } else {
+            showMessage("Password updated! Please login with your new password.");
+            newPasswordForm.remove();
+            loginForm.style.display = "block";
+        }
+    });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -252,7 +252,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loginButton = loginForm.querySelector('[type="submit"]');
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
+    // ONLY if its not reset password page
+    if (
+        user && 
+        !window.location.pathname.includes("update-password.html")
+    ) {
         window.location.href = "index.html";
     }
 

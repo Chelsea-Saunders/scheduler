@@ -10,9 +10,6 @@ function getNewPasswordInput() {
 function getConfirmPasswordInput() {
     return document.getElementById("confirm-password");
 }
-function getStatusMessageBox() {
-    return document.getElementById("status-message");
-}
 function getSubmitButton() {
     return getForm().querySelector("button");
 }
