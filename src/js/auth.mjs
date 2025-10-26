@@ -144,7 +144,7 @@ function setupResetForm(resetForm) {
                 setTimeout(() => {
                     resetButton.textContent = "Server Error";
                     resetButton.disabled = false;
-                }, 10000);
+                }, 2000);
             } 
             // generic failure
             showSubmissionMessage("Request sent! Please check your email.", false);
