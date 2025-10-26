@@ -148,7 +148,25 @@ async function handleCreateAccount(event, createForm, loginForm) {
             }),
         });
 
-        const result = await res.json();
+        // safe JSON parse
+        let result;
+        try {
+            result = await res.json();
+        } catch {
+            showMessage("Server returned an unexpected response. Please try again.");
+            console.error("Invalid JSON response from server");
+            return;
+        }
+
+        // add rate limit/supabase error message handling
+        if (result?.error && result.error.toLowerCase().includes("rate limit")) {
+            showMessage(
+                "You've requested to many confirmation emails. Please wait 10 minutes and try again.", 
+                true
+            );
+            console.warn("Rate limit triggered:", result.error);
+            return;
+        }
 
         if (result.ok) {
             showMessage(`Welcome aboard ${fullName}! Please check your inbox to confirm your account.`);
