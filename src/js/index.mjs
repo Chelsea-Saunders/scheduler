@@ -1,8 +1,9 @@
 import { supabase } from '../lib/supabase.mjs';
+import { showMessage } from '../lib/ui.mjs';
 
 // guard against redirect spam
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
-const loginForm = document.getElementById("login-form");
+// const loginForm = document.getElementById("login-form");
 
 function togglePasswordVisibility(button) {
     const input = button.previousElementSibling;
@@ -45,7 +46,7 @@ function setLoading(button, isLoading) {
     button.setAttribute("aria-busy", isLoading ? "true" : "false");
 }
 // ****Resend confirmation email ****
-async function resendConfirmationEmail(resendButton) {
+async function resendConfirmationEmail(createForm, resendButton) {
     const email = createForm.querySelector('input[name="email"]')?.value.trim();
     if (!email) {
         showMessage("Please enter your email first.");
@@ -57,7 +58,7 @@ async function resendConfirmationEmail(resendButton) {
             type: "signup", 
             email,
             options: {
-                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/update-password.html/",
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/update-password.html",
             },
         });
 
@@ -76,8 +77,11 @@ async function resendConfirmationEmail(resendButton) {
     }
 }
 // ***** Login form submission *****
-async function handleLogin(event, loginForm, loginButton, messageDiv, redirect) {
+async function handleLogin(event, loginForm, loginButton,  redirect) {
     event.preventDefault();
+
+    const messageDiv = document.getElementById("status-message");
+
     setMessage(messageDiv);
     setLoading(loginButton, true);
 
@@ -170,19 +174,6 @@ function handleSupabaseRedirect() {
     // clear hash from URL
         window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
 
-        // if session is established, redirect to user
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session?.user) {
-                const base = window.location.hostname.includes("github.io") ? "/scheduler/" : "./";
-                const params = new URLSearchParams(window.location.search);
-                const redirect = params.get("redirect") || `${base}scheduler.html`;
-
-                if (!window.location.pathname.includes("scheduler.html")) {
-                    window.location.assign(redirect);
-                }
-            }
-        });
-
         // handle password recovery
         if (accessToken && type === "recovery") {
             showPasswordUpdateForm(loginForm);
@@ -240,7 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("login-form");
     const createForm = document.getElementById("create-acct-form");
     const resetForm = document.getElementById("reset-form");
-    const messageDiv = document.querySelector("#login-message");
     const loginButton = loginForm.querySelector('[type="submit"]');
 
     // determine the correct base path
@@ -282,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // login form submission
     loginForm?.addEventListener("submit", (event) => 
-        handleLogin(event, loginForm, loginButton, messageDiv, redirect)
+        handleLogin(event, loginForm, loginButton, redirect)
     );
 
     // create account form submission

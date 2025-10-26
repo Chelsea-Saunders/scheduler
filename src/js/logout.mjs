@@ -1,63 +1,100 @@
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
 
+// dom element helpers
+function getLogoutContainer() {
+    return document.getElementById("logout");
+}
 
-// when user session changes logout/login
-supabase.auth.onAuthStateChange((_event, session) => {
-    if (!session?.user) {
-        // redirect to your actual login page
-        window.location.replace("index.html");
-    }
-});
+// ui helpers
+function setLogoutContent(title, message, buttonText = "") {
+    const container = getLogoutContainer();
+    container.innerHTML = `
+        <h1>${title}</h1>
+        <p>${message}</p>
+        ${buttonText ? `<button id="try-again">${buttonText}</button>` : ""}
+    `;
+}
 
-// when the page loads, automatically sign the user out
-document.addEventListener("DOMContentLoaded", async () => {
-    const { error } = await supabase.auth.signOut();
+function fadeOutAndRedirect(redirectUrl = "index.html", delay = 1500) {
+    const container = getLogoutContainer();
+    container.style.transition = "opacity 0.8s ease";
+    container.style.opacity = "0";
 
-    const logoutDiv = document.getElementById("logout");
+    setTimeout(() => {
+        window.location.href = redirectUrl;
+    }, delay);
+}
 
+// supabase handler
+async function signOutUser() {
+    return await supabase.auth.signOut();
+}
+// error handling
+function handleLogoutError(error) {
+    console.error("Logout failed:", error);
+    showMessage("Sign out failed. Please try again.", true);
+
+    setLogoutContent(
+        "Sign Out Failed", 
+        "There was an issue signing you out. Please try again.", 
+        `<button id="try-again">Try Again</button>`
+    );
+
+    addRetryLogoutListener();
+}
+
+// retry logout
+function addRetryLogoutListener() {
+    const retryButton = document.getElementById("try-again");
+    if (!retryButton) return;
+
+    retryButton.addEventListener("click", async () => {
+        const retry = await signOutUser();
+
+        if (!retry.errot) {
+            showMessage("You have been signed out.");
+            setLogoutContent(
+                "You have been logged out", 
+                "Redirecting to login page..."
+            );
+            fadeOutAndRedirect();
+        } else {
+            showMessage("Sign out failed again. Please try refreshing the page.", true);
+        }
+    });
+}
+// successful logout
+function handleSuccessfulLogout() {
+    showMessage("You have ben signed out.");
+    setLogoutContent(
+        "You have been successfully logged out", 
+        "Redirecting to login page..."
+    );
+    fadeOutAndRedirect();
+}
+// main auth listener
+function listenForAuthChanges() {
+    supabase.auth.onAuthStateChange((_event, session) => {
+        if (!session?.user) {
+            window.location.replace("index.html");
+        }
+    });
+}
+// main logout flow
+async function performLogout() {
+    const { error } = await signOutUser();
     if (error) {
-        console.error("Logout failed:", error);
-        showMessage("⚠️ Sign out failed. Please try again.", true);
-
-        logoutDiv.innerHTML = `
-            <h1>⚠️ Sign Out Failed</h1>
-            <p>There was an issue signing you out. Please try again.</p>
-            <button id="try-again">Try Again</button>
-            `;
-
-            document.getElementById("try-again").addEventListener("click", async () => {
-                const retry = await supabase.auth.signOut();
-                if (!retry.error) {
-                    showMessage("✅ You have been signed out."); 
-
-                    // fade out
-                    logoutDiv.style.transition = "opacity 0.8s ease";
-                    logoutDiv.style.opacity = "0";
-
-                    // small delay for UX
-                    setTimeout(() => {
-                        window.location.href = "index.html";
-                    }, 1500);
-                } else {
-                    showMessage("⚠️ Sign out failed again. Please try refreshing the page.", true);
-                }
-            });
+        handleLogoutError(error);
     } else {
-        showMessage("✅ You have been signed out.");
-        // fade out animation
-        logoutDiv.innerHTML = `
-            <h1>✅ You’ve been signed out</h1>
-            <p>Redirecting to login page...</p>
-            `;
-            
-            // fade out
-            logoutDiv.style.transition = "opacity 0.8s ease";
-            logoutDiv.style.opacity = "0";
-
-            // small delay for UX
-            setTimeout(() => {
-                window.location.href = "index.html";
-            }, 1500);
+        handleSuccessfulLogout();
     }
+}
+// page load
+function initializeLogoutPage() {
+    listenForAuthChanges();
+    performLogout();
+}
+document.addEventListener("DOMContentLoaded", () => {
+    initializeLogoutPage();
 });

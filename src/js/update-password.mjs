@@ -1,77 +1,129 @@
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
 
-document.addEventListener("DOMContentLoaded", () => {
-    // parse token from URL hash
-    const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
-    const accessToken = tokenMatch ? tokenMatch[1] : null;
+function getForm() {
+    return document.getElementById("update-password-form");
+}
+function getNewPasswordInput() {
+    return document.getElementById("new-password");
+}
+function getConfirmPasswordInput() {
+    return document.getElementById("confirm-password");
+}
+function getStatusMessageBox() {
+    return document.getElementById("status-message");
+}
+function getSubmitButton() {
+    return getForm().querySelector("button");
+}
 
-    // if there's no token match, redirect to login
-    if (!accessToken) {
-        window.location.href = "index.html";
+// when page loads
+function getAccessTokenFromUrl() {
+    const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
+    return tokenMatch ? tokenMatch[1] : null;
+}
+function redirectToLogin() {
+    window.location.href = "index.html";
+}
+
+// form submission handler
+function disableSubmitButton() {
+    const button = getSubmitButton();
+    button.disabled = true;
+    button.textContent = "Updating...";
+    getForm().style.opacity = "0.7";
+}
+
+function enableSubmitButton() {
+    const button = getSubmitButton();
+    button.disabled = false;
+    button.textContent = "Update Password";
+    getForm().style.opacity = "1";
+}
+
+// validation
+function validatePasswords(newPassword, confirmPassword) {
+    if (newPassword !== confirmPassword) {
+        showMessage("Passwords do NOT match.", true);
+        return false;
+    }
+    return true;
+}
+
+// password update
+async function updatePassword(newPassword) {
+    const { error } = await supabase.auth.updateUser({
+        password: newPassword
+    });
+    return error;
+}
+
+// error handling
+function handlePasswordUpdateError(error) {
+    console.error("Password update failed:", error);
+
+    if (!error?.message) {
+        showMessage("Could not update password. Please try again.", true);
+        return;
+    }
+    if (error.message.includes("different from old password")) {
+        showMessage("Your new password must be different from your current password.", true);
+    } else if (error.message.includes("invalid or expired")) {
+        showMessage("The reset link has expired. Please request a new password reset.", true);
+    } else {
+        showMessage("Could not update password. Please try again.", true);
+    }
+}
+
+// success 
+function handlePasswordUpdateSuccess() {
+    showMessage("Password updated! Redirecting to login...");
+    getForm().reset();
+    getForm().style.opacity = "1";
+    setTimeout(() => {
+        window.location.assign("index.html")
+    }, 2000);
+}
+
+// form submission handler
+async function handleFormSubmission(event) {
+    event.preventDefault();
+
+    const newPassword = getNewPasswordInput().value.trim();
+    const confirmPassword = getConfirmPasswordInput().value.trim();
+
+    if (!validatePasswords(newPassword, confirmPassword)) {
+        return;
     }
 
-    // reference the form and inputs
-    const form = document.getElementById("update-password-form");
-    const messageBox = document.getElementById("status-message");
+    disableSubmitButton();
 
-    // form submission
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
+    const error = await updatePassword(newPassword);
 
-        const newPassword = document.getElementById("new-password").value.trim();
-        const confirmPassword = document.getElementById("confirm-password").value.trim();
+    if (error) {
+        handlePasswordUpdateError(error);
+        enableSubmitButton();
+        return;
+    }
+    handlePasswordUpdateSuccess();
+}
+// main
+function initializePasswordResetPage() {
+    const accessToken = getAccessTokenFromUrl();
 
-        // validate that passwords match
-        if (newPassword !== confirmPassword) {
-            showMessage("⚠️ Passwords do not match.", true);
-            return;
-        }
+    if (!accessToken) {
+        redirectToLogin();
+        return;
+    }
 
-        // disable submission button and show loading state
-        const submitButton = form.querySelector("button");
-        submitButton.disabled = true;
-        submitButton.textContent = "Updating...";
-        form.style.opacity = "0.7";
+    const form = getForm();
+    form.addEventListener("submit", handleFormSubmission);
 
-        // show create new password form and handle submission
-        const { error } = await supabase.auth.updateUser({ 
-            password: newPassword 
-        });
+    // auto-focus new password field
+    getNewPasswordInput().focus();
+}
 
-        if (error) {
-            console.error("Password update failed:", error);
 
-            // handle specific error messages from supabase
-            if (error.message && error.message.includes("different from the old password")) {
-                showMessage("Your new password must be different from your current password.", true);
-            }
-            // handle other errors: invalid token, expired link...
-            else if (error.message && error.message.includes("invalid or expired")) {
-                showMessage("The reset link has expired. Please request a new password reset.", true);
-            }
-            // fallback for all other errors
-            else {
-                showMessage("Could not update password. Please try again.", true);
-            }
-
-            // re-enable button
-            submitButton.disabled = false;
-            submitButton.textContent = "Update Password";
-            form.style.opacity = "1";
-            return;
-        }
-
-        // success message
-        showMessage("✅ Password updated! Redirecting to login...");
-        // reset form
-        form.reset();
-        form.style.opacity = "1";
-
-        // take us back to the sign in page
-        setTimeout(() => window.location.assign("index.html"), 2000);
-    });
-
-    // auto-focus the new password field
-    document.getElementById("new-password").focus();
+document.addEventListener("DOMContentLoaded", () => {
+    initializePasswordResetPage();
 });

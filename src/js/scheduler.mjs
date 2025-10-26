@@ -3,15 +3,15 @@ import { showMessage } from "../lib/ui.mjs";
 
 window.supabase = supabase; // for debugging
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
-window.addEventListener("load", async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log("Session on scheduler load:", session);
-    if (!session) {
-        window.location.href = "index.html?redirect=scheduler.html";
-    } else {
-        console.log("User authenticated:", session.user.email);
-    }
-});
+// window.addEventListener("load", async () => {
+//     const { data: { session } } = await supabase.auth.getSession();
+//     console.log("Session on scheduler load:", session);
+//     if (!session) {
+//         window.location.href = "index.html?redirect=scheduler.html";
+//     } else {
+//         console.log("User authenticated:", session.user.email);
+//     }
+// });
 
 const holidays = [
     "2025-10-13", // Columbus Day
@@ -143,19 +143,27 @@ async function loadAppointments() {
                     .eq("user_id", user.id); // ensures user only deletes their own appt
 
                 if (deleteError) {
-                    // restor button if something goes wrong
+                    // restore button if something goes wrong
                     cancelButton.disabled = false;
                     cancelButton.textContent = "Cancel";
                     // show error message
                     console.error(deleteError);
-                    showMessage("⚠️Could not cancel that appointment. Please try again.");
+                    showMessage("Could not cancel that appointment. Please try again.");
                     return;
                 }
 
                 showMessage("Appointment cancelled.");
+
+                // add fade out effect
+                item.style.transition = "opacity 0.5s ease";
+                item.style.opacity = "0";
+                setTimeout(() => item.remove(), 500);
+
+                // small delay so supabase catches up
+                await new Promise(res => setTimeout(res, 500));
                 await loadAppointments();
+
                 const matchingDay = new Date(row.date + "T12:00:00");
-                await refreshBookedSlots(matchingDay);
                 await showTimeSlots(matchingDay);
             });
 
@@ -232,7 +240,7 @@ function setupShowMoreToggle(containerId, buttonId) {
 
     button.addEventListener("click", () => {
         const isExpanded = container.classList.toggle("expanded");
-        button.textContent = isExpanded ? "Show less" : "Show more";
+        button.textContent = isExpanded ? "Show Less" : "Show More";
     });
 }
 setupShowMoreToggle("tuesday-slots", "show-more-tues");
@@ -241,14 +249,17 @@ setupShowMoreToggle("thursday-slots", "show-more-thurs");
 // refresh list of booked time slots for a given date
 let bookedTimesCache = [];
 
-async function refreshBookedSlots(date) {
+async function fetchBookedSlots(date) {
     const ymd = toHumanYMD(date);
 
     // get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const { data: { session }, error: userError } = await supabase.auth.getSession();
+    const user = session?.user;
     if (userError || !user) {
-        console.warn("No logged in user, show only global bookings.");
-        showMessage("You must be logged in to view your booked slots.", true);
+        if(!window._showLoginMessage) {
+            showMessage("You must be logged in to view your booked slots.", true);
+            window._showLoginMessage = true;
+        }
     }
 
     // get all booked times for that date (share calendar)
@@ -281,7 +292,8 @@ async function refreshBookedSlots(date) {
 
 // select/book a time slot
 async function selectTimeSlot(date, time) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) {
         showMessage("You must be logged in to book an appointment.");
         window.location.href = `index.html?redirect=scheduler.html`;
@@ -307,7 +319,7 @@ async function selectTimeSlot(date, time) {
             // handle duplicate / conflict (409)
             if (status === 409 || (error && error.message?.includes("duplicate"))) {
                 showMessage("That time slot is already booked. Please choose another time.", true);
-                await refreshBookedSlots(date);
+                await fetchBookedSlots(date);
                 await showTimeSlots(date);
                 return;
             }
@@ -327,7 +339,7 @@ async function selectTimeSlot(date, time) {
 
             // always refresh from live data after booking
             await loadAppointments();
-            await refreshBookedSlots(date);
+            await fetchBookedSlots(date);
             await showTimeSlots(date);
 
     } catch (error) {
@@ -361,7 +373,7 @@ async function showTimeSlots(date) {
     selectedDateHeader.classList.add("visible");
 
     // get booked times from supabase
-    const bookedTimes = (await refreshBookedSlots(date)) ?? [];
+    const bookedTimes = (await fetchBookedSlots(date)) ?? [];
 
     // create time slot buttons
     const allTimes = generateTimeSlots("09:00", "17:00", 30);
@@ -421,13 +433,13 @@ function applyGreeting(user) {
         user.email?.split("@")[0] ||
         "Friend";
 
-    heading.textContent = `Welcome ${displayName}! Let's schedule your 6-month cleaning!`;
+    heading.textContent = `Welcome ${displayName}! Let's schedule your 6-month checkup!`;
     loadAppointments();
 }
 
 // ensure user is logged in
 async function checkUserOrRedirect() {
-    let { data: { session } } = await supabase.auth.getUser();
+    let { data: { session } } = await supabase.auth.getSession();
     let user = session?.user;
 
     // retry for up to 2 seconds if supabase hasn't loaded the session yet
@@ -454,7 +466,8 @@ async function updateMissingNameMetadata(user) {
         const cached = localStorage.getItem("fullName");
         if (cached) {
             await supabase.auth.updateUser({ data: { name: cached } });
-            const refreshed = (await supabase.auth.getUser()).data.user;
+            const { data: { session } } = await supabase.auth.getSession();
+            const refreshed = session?.user;
             return refreshed;
         }
     }

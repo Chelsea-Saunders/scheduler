@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const logoutLink = document.querySelector(".logout-link");
 
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getSession();
 
         if (user) {
             // logged in === hide login
