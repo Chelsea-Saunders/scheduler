@@ -26,13 +26,17 @@ function showLogin(createForm, loginForm) {
     loginForm.style.display = "block";
 }
 function showResetPassword(loginForm, createForm, resetForm) {
-    loginForm.style.display = "none";
-    createForm.style.display = "none";
-    resetForm.style.display = "block";
+    // hide login and create forms
+    loginForm.classList.add("hidden");
+    createForm.classList.add("hidden");
+    // show reset form
+    resetForm.classList.remove("hidden");
 }
 function backToLogin(resetForm, loginForm) {
-    resetForm.style.display = "none";
-    loginForm.style.display = "block";
+    // hide reset form
+    resetForm.classList.add("hidden");
+    // show login form
+    loginForm.classList.remove("hidden");
 }
 //  **** Message and loading ****
 function setMessage(messageDiv, text = "", isError = false) {

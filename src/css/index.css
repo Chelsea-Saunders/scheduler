@@ -71,6 +71,10 @@ form {
     width: 100%;
     box-sizing: border-box;
 }
+/* make reset pwd hidden */
+.hidden {
+    display: none !important;
+}
 /* to make create acct invisible until clicked */
 #create-acct-form {
     display: none;
