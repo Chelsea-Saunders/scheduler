@@ -1,3 +1,6 @@
+
+let messageTimeout;
+
 export function showMessage(message, isError = false) {
     const box = document.getElementById("status-message");
     if (!box) return;
