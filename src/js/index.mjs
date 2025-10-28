@@ -255,8 +255,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const user = data?.user || null;
     // prevent redirect from update password
     const isResetPage = window.location.pathname.includes("update-password.html");
-    if (user && !isResetPage) {
-        window.location.href = "index.html";   
+    if (user && !isResetPage && !wondow.location.pathname.includes("scheduler.html")) {
+        window.location.href = "redirect";
     }
 
     // determine the correct base path
@@ -314,9 +314,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     // handle supabase redirect 
     handleSupabaseRedirect();
 
+    let hasRedirected = false;
+
     // auto-redirect logged-in users to scheduler
     supabase.auth.onAuthStateChange((_event, session) => {
+        if (hasRedirected) return;
         if (session?.user && !window.location.pathname.includes("scheduler.html")) {
+            hasRedirected = true;
             window.location.assign(redirect);
         }
     });
