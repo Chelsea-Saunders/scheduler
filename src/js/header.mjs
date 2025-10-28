@@ -24,7 +24,7 @@ export function toggleMenuHandler() {
 }
 
 // toggle login/logout links
-function updateLoginLogoutLinks() {
+function updateLoginLogoutLinks(user) {
     const loginLink = document.querySelector(".login-link");
     const logoutLink = document.querySelector(".logout-link");
 
