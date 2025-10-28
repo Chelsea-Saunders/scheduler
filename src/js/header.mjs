@@ -52,9 +52,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const { data: { session } } = await supabase.auth.getSession();
-        const user = session?.user;
+        const user = session?.user || null;
 
-        updateLoginLogoutLinks();
+        updateLoginLogoutLinks(user);
 
         // message if user is already logged in and clicks login
         if (user && loginLink) {
