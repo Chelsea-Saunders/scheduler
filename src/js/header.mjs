@@ -32,9 +32,10 @@ function updateLoginLogoutLinks() {
         return;
     }
     
+    // hide/show login/logout links in header
     if (user) {
         loginLink.style.display = "none";
-        logoutLink.style.display = "block";
+        logoutLink.style.display = "inline-block";
     } else {
         loginLink.style.display = "inline-block";
         logoutLink.style.display = "none";
