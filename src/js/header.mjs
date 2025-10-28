@@ -23,25 +23,6 @@ export function toggleMenuHandler() {
     header.classList.toggle("menu-open", next);
 }
 
-// toggle login/logout links
-function updateLoginLogoutLinks(user) {
-    const loginLink = document.querySelector(".login-link");
-    const logoutLink = document.querySelector(".logout-link");
-
-    if (!loginLink || !logoutLink) {
-        return;
-    }
-    
-    // hide/show login/logout links in header
-    if (user) {
-        loginLink.style.display = "none";
-        logoutLink.style.display = "inline-block";
-    } else {
-        loginLink.style.display = "inline-block";
-        logoutLink.style.display = "none";
-    }
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
     // attach menu toggle
     document.getElementById("toggle-menu")?.addEventListener("click", toggleMenuHandler);
@@ -51,40 +32,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     const logoutLink = document.querySelector(".logout-link");
 
     try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const user = session?.user || null;
+        const { data: { user } } = await supabase.auth.getSession();
 
-        updateLoginLogoutLinks(user);
+        if (user) {
+            // logged in === hide login
+            if (loginLink) loginLink.style.display = "none";
+            if (logoutLink) logoutLink.style.display = "block";
 
-        // message if user is already logged in and clicks login
-        if (user && loginLink) {
-            loginLink.addEventListener("click", (event) => {
-                event.preventDefault();
-                showSubmissionMessage("You're already logged in.");
-            });
+            // show message if user clicks anyway
+            if (loginLink) {
+                loginLink.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    showSubmissionMessage("You're already logged in.");
+                });
+            }
+        } else {
+            // not logged in === hide logout
+            if (loginLink) loginLink.style.display = "inline-block";
+            if (logoutLink) logoutLink.style.display = "none";
         }
 
         // handle logout 
-        logoutLink.addEventListener("click", async (event) => {
-            event.preventDefault();
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.error("Logout failed:", error);
-                showSubmissionMessage("Logout failed. Please try again.", true);
-                return;
-            }
-            showSubmissionMessage("Log out successful. Redirecting...");
-            // redirect to home after logout
-            setTimeout(() => {
-                window.location.href = "index.html";
-            }, 2000);
-        });
-
+        if (logoutLink) {
+            logoutLink.addEventListener("click", async (event) => {
+                event.preventDefault();
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error("Logout failed:", error);
+                    showSubmissionMessage("Logout failed. Please try again.", true);
+                    return;
+                }
+                showSubmissionMessage("Log out successful. Redirecting...");
+                // redirect to home after logout
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1500);
+            });
+        }
     } catch (error) {
         console.error("Error checking Supabase session:", error);
     }
-    // live update header without changes
-    supabase.auth.onAuthStateChange((_event, session) => {
-        updateLoginLogoutLinks(session?.user || null);
+    // live update header with auth changes
+    supabase.auth.onAuthStateChange((event) => {
+        if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+            // reload only once when logged in or out
+            location.reload();
+        } 
     });
 });
