@@ -92,65 +92,36 @@ function setupResetForm(resetForm) {
         }
 
         const email = resetForm.querySelector('input[name="email"]').value.trim();
+        const resetButton = resetForm.querySelector("button[type='submit']");
 
         if (!email) {
             showSubmissionMessage("Please enter a valid email address.");
             return;
         }
 
-        // get a reference to button
-        const resetButton = resetForm.querySelector("button[type='submit']");
+        resetButton.disabled = true;
+        resetButton.textContent = "Sending...";
         
         try {
-            // disable and update text while sending
-            resetButton.disabled = true;
-            resetButton.textContent = "Sending...";
-
-            const res = await fetch("https://rsceb.org/sendmail_scheduler.php", {
-                method: "POST", 
-                headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
-                body: new URLSearchParams({
-                    type: "recovery", 
-                    email: email
-                })
+            const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: "https://chelsea-saunders.github.io/scheduler/update-password.html"
             });
 
-            const resultText = await res.text();
-
-            let result = {};
-            try {
-                result = JSON.parse(resultText);
-            } catch {
-                console.warn("Non-JSON response (using fallback)");
+            if (error) {
+                console.error("Password reset error:", error);
+                showSubmissionMessage("Password reset failed: " + error.message, true);
+                // re-enable button and restore text
+                resetButton.textContent = "Send Reset Link";
+                resetButton.disabled = false;
+                return;
             }
 
-            // success
-            if (result.ok) {
-                showSubmissionMessage("Reset link sent! Check your inbox.");
-                // reset the form
-                resetForm.reset();
-                //show confirmation message
-                resetButton.textContent = "Check your inbox!";
-                setTimeout(() => {
-                    resetButton.textContent = "Send Reset Link";
-                    resetButton.disabled = false;
-                }, 2000);
-            } 
-            // server side error
-            if (result.error) {
-                console.error("Server error:", result.error);
-                showSubmissionMessage("WARNING: " + result.error, true);
-                resetButton.textContent = "Error";
-                setTimeout(() => {
-                    resetButton.textContent = "Server Error";
-                    resetButton.disabled = false;
-                }, 2000);
-            } 
-            // generic failure
-            showSubmissionMessage("Request sent! Please check your email.", false);
-            resetButton.textContent = "Send Reset Link";
-            resetButton.disabled = false;
-
+            showSubmissionMessage("Password reset link sent to youre email. Check your inbox.");
+            resetButton.textContent = "Check your inbox";
+            setTimeout(() => {
+                resetButton.textContent = "Send Reset Link";
+                resetButton.disabled = false;
+            }, 2000);
         } catch (error) {
             console.error("Network or fetch error", error);
             showSubmissionMessage("Network error:  please try again later.", true);
