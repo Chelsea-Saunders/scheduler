@@ -36,7 +36,7 @@ export async function toggleLoginOut() {
         const { data: { session } } = await supabase.auth.getSession();
         const user = session?.user;
 
-        logoutLink.reaplaceWith(logoutLink.cloneNode(true));
+        logoutLink.replaceWith(logoutLink.cloneNode(true));
         const freshLogoutLink = document.querySelector(".logout-link");
 
         if (user) {
