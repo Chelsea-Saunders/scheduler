@@ -180,7 +180,7 @@ async function handleCreateAccount(event, createForm, loginForm) {
         }
 
         if (result.ok) {
-            showMessage(`Welcome aboard ${fullName}! Please check your inbox to confirm your account.`);
+            showMessage(`Welcome aboard, ${fullName}! Please check your inbox to confirm your account.`);
             createForm.style.display = "none";
             loginForm?.classList.remove("hidden");
         } else if (result.error){
