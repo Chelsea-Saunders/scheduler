@@ -116,7 +116,7 @@ function setupResetForm(resetForm) {
                 } else {
                     showSubmissionMessage("Password reset failed: " + error.message, true);
                 }
-                
+
                 resetButton.textContent = "Send Reset Link";
                 resetButton.disabled = false;
                 return;
@@ -142,8 +142,45 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("login-form");
     const createForm = document.getElementById("create-acct-form");
     const resetForm = document.getElementById("reset-form");
+    // create acct
+    const showCreateLink = document.getElementById("show-create-account");
+    const showLoginLink = document.getElementById("show-login");
+    const forgotPasswordLink = document.getElementById("forgot-password");
+    const backToLoginLink = document.getElementById("back-to-login");
 
+    // setup forms
     if (loginForm) setupLoginForm(loginForm);
     if (createForm) setupCreateAccountForm(createForm);
     if (resetForm) setupResetForm(resetForm);
+
+    // show "create acct"
+    showCreateLink?.addEventListener("click", (event) => {
+        event.preventDefault();
+        loginForm?.classList.add("hidden");
+        createForm?.classList.remove("hidden");
+        resetForm?.classList.add("hidden");
+    });
+
+    // show "login"
+    showLoginLink?.addEventListener("click", (event) => {
+        event.preventDefault();
+        createForm?.classList.add("hidden");
+        loginForm?.classList.remove("hidden");
+        resetForm?.classList.add("hidden");
+    });
+
+    // show "reset password"
+    forgotPasswordLink?.addEventListener("click", (event) => {
+        event.preventDefault();
+        loginForm?.classList.add("hidden");
+        resetForm?.classList.remove("hidden");
+        createForm?.classList.add("hidden");
+    });
+
+    // back to login from reset
+    backToLoginLink?.addEventListener("click", (event) => {
+        event.preventDefault();
+        resetForm?.classList.add("hidden");
+        loginForm?.classList.remove("hidden");
+    });
 });
