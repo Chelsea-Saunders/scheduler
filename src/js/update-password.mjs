@@ -13,11 +13,6 @@ function getConfirmPasswordInput() {
 function getSubmitButton() {
     return getForm().querySelector("button");
 }
-// when page loads
-function getAccessTokenFromUrl() {
-    const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
-    return tokenMatch ? tokenMatch[1] : null;
-}
 function redirectToLogin() {
     window.location.href = "index.html";
 }
@@ -114,7 +109,7 @@ async function handleFormSubmission(event) {
 }
 // main
 async function initializePasswordResetPage() {
-    const hashParams = new URLSearchParams("window.location.hash.substring(1)");
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = hashParams.get("access_token");
     const refreshToken = hashParams.get("refresh_token");
     const type = hashParams.get("type");
@@ -127,7 +122,7 @@ async function initializePasswordResetPage() {
     }
 
     // clear old session before reset
-    await supabase.auth.signOut();
+    // await supabase.auth.signOut();
 
     try {
         const { data, error } = await supabase.auth.setSession({
