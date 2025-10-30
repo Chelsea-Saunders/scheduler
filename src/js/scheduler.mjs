@@ -53,10 +53,14 @@ function setupDateButtons() {
         dateButtons.push(button);
     });
 }
-        
+
+let isLoadingAppointments = false; 
 
 // MY APPOINTMENTS
 async function loadAppointments() {
+    if (isLoadingAppointments) return; //prevent duplicate loads
+    isLoadingAppointments = true; // lock while running
+
     const list = document.getElementById("my-appts");
     if (!list) return;
     list.innerHTML = "Loading...";
@@ -166,6 +170,9 @@ async function loadAppointments() {
     } catch (error) {
         console.error("Unexpected error loading appointments:", error);
         list.textContent = "Could not load your appointments. Please try again.";
+    } finally {
+        // unlock
+        isLoadingAppointments = false;
     }
 }
 

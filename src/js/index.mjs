@@ -271,6 +271,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? "/scheduler/"
         : "./";
     const params = new URLSearchParams(window.location.search);
+    if (params.get("varified") === "true") {
+        const { error } = await supabase.auth.signOut();
+        if (!error) {
+            showMessage("Email verified! Please login to continue.");
+        }
+    }
     const redirect = params.get("redirect") || `${base}scheduler.html`;
 
     const { data } = await supabase.auth.getUser();
