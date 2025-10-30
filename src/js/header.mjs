@@ -33,6 +33,13 @@ export async function toggleLoginOut() {
     }
 
     try {
+        if (
+            window.location.href.includes("type=recovery") ||
+            window.location.pathname.includes("update-password.html")
+        ) {
+            console.log("Recovery flow detected - skipping header auth logic");
+            return;
+        }
         const { data: { session } } = await supabase.auth.getSession();
         const user = session?.user;
 
