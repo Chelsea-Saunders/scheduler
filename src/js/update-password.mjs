@@ -114,9 +114,14 @@ async function handleFormSubmission(event) {
 }
 // main
 async function initializePasswordResetPage() {
-    const accessToken = getAccessTokenFromUrl();
+    const hashParmas = new URLSearchParams("window.location.hash.substring(1)");
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    const type = hashParams.get("type");
 
-    if (!accessToken) {
+    // ensure this is recovery link
+    if (type !== "recovery" || !accessToken || !refreshToken) {
+        showMessage("Invalid or expired password reset link.", true);
         redirectToLogin();
         return;
     }
@@ -127,7 +132,7 @@ async function initializePasswordResetPage() {
     try {
         const { data, error } = await supabase.auth.setSession({
             access_token: accessToken, 
-            refresh_token: accessToken,
+            refresh_token: refreshToken,
         });
 
         if (error) {
