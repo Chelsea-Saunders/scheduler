@@ -114,7 +114,7 @@ async function handleFormSubmission(event) {
 }
 // main
 async function initializePasswordResetPage() {
-    const hashParmas = new URLSearchParams("window.location.hash.substring(1)");
+    const hashParams = new URLSearchParams("window.location.hash.substring(1)");
     const accessToken = hashParams.get("access_token");
     const refreshToken = hashParams.get("refresh_token");
     const type = hashParams.get("type");

@@ -109,8 +109,14 @@ function setupResetForm(resetForm) {
 
             if (error) {
                 console.error("Password reset error:", error);
-                showSubmissionMessage("Password reset failed: " + error.message, true);
-                // re-enable button and restore text
+
+                // handle rate limit
+                if (error.message?.toLowerCase().includes("rate limit")) {
+                    showSubmissionMessage("Too many requests. Please wait before trying again.", true);
+                } else {
+                    showSubmissionMessage("Password reset failed: " + error.message, true);
+                }
+                
                 resetButton.textContent = "Send Reset Link";
                 resetButton.disabled = false;
                 return;
