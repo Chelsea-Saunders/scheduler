@@ -139,6 +139,9 @@ async function handleCreateAccount(event, createForm, loginForm) {
     }
 
     try {
+        // ensure old sessions are cleared out before signup
+        await supabase.auth.sighOut();
+        
         localStorage.setItem("fullName", fullName);
 
         const res = await fetch("https://rsceb.org/sendmail_scheduler.php", {
