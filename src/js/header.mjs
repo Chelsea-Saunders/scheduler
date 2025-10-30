@@ -78,11 +78,20 @@ export async function toggleLoginOut() {
     } catch (error) {
         console.error("Error checking Supabase session:", error);
     }
+    let authReload = false;
+    let reloadTimer;
     // live update header with auth changes
-    supabase.auth.onAuthStateChange((event) => {
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (authReload) return; // prevent double reloads
+        if (document.visibilityState !== "visible") return; // only the active tab reacts
+
         if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
-            // reload only once when logged in or out
-            location.reload();
+            clearTimeout(reloadTimer);
+            reloadTimer = setTimeout(() => {
+                authReload = true;
+                console.log(`Authorization event: ${event}`);
+                location.reload();
+            }, 300);
         }
     });
 }
