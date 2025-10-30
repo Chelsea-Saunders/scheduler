@@ -69,7 +69,7 @@ h1 {
     transition: background-color 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s ease;
 }
 button {
-    margin: 0 0 0 0.5rem;
+    margin: 0 0.2 0 0.2rem;
     padding: 0.4rem 1rem;
     border: solid 1px rgba(103, 103, 103, 0.533);
     border-radius: var(--bs-border-radius-large);
@@ -92,16 +92,24 @@ button.selected {
     border-color: rgb(0, 94, 128);
     animation: pulse 0.25s ease;
 }
-button.holiday {
-    background-color: #ddd;
-    color: #777;
-    border-color: #ccc;
-    cursor: not-allowed;
-    pointer-events: none;   
-    text-decoration: line-through;
-    font-style: italic;
-    opacity: 0.6;
-    box-shadow: none;
+button.holiday, 
+button.holiday:disabled {
+    background-color: #918d8d !important;
+    color: black !important;
+    border-color: #ccc !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;   
+    font-style: italic !important;
+    opacity: 0.6 !important;
+    box-shadow: none !important;
+}
+button.holiday:hover, 
+button.holiday:focus {
+    background-color: #918d8d !important;
+    color: black !important;
+    border-color: #ccc !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
 }
 #time-section {
     opacity: 0;

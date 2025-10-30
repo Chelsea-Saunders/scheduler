@@ -3,20 +3,13 @@ import { showMessage } from "../lib/ui.mjs";
 
 window.supabase = supabase; // for debugging
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
-// window.addEventListener("load", async () => {
-//     const { data: { session } } = await supabase.auth.getSession();
-//     console.log("Session on scheduler load:", session);
-//     if (!session) {
-//         window.location.href = "index.html?redirect=scheduler.html";
-//     } else {
-//         console.log("User authenticated:", session.user.email);
-//     }
-// });
 
 const holidays = [
     "2025-10-13", // Columbus Day
     "2025-11-11", // Veterans Day
     "2025-11-27", // Thanksgiving
+    "2025-11-28", // Black Friday
+    "2025-12-24", // Christmas Eve (observed)
     "2025-12-25", // Christmas
     "2026-01-01", // New Year's Day
     "2026-01-19", // Martin Luther King Jr. Day
