@@ -16,6 +16,10 @@ export function showMessage(message, isError = false) {
     if (isError) box.classList.add("error");
     box.classList.add("show");
 
+    // accessibility: allow screen readers to announce
+    box.setAttribute("tabindex", "-1");
+    box.focut();
+
     // auto hide after 3 seconds
     messageTimeout = setTimeout(() => {
         box.classList.remove("show");

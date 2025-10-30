@@ -117,12 +117,9 @@ async function initializePasswordResetPage() {
     // ensure this is recovery link
     if (type !== "recovery" || !accessToken || !refreshToken) {
         showMessage("Invalid or expired password reset link.", true);
-        redirectToLogin();
+        setTimeout(redirectToLogin, 2000);
         return;
     }
-
-    // clear old session before reset
-    // await supabase.auth.signOut();
 
     try {
         const { data, error } = await supabase.auth.setSession({
