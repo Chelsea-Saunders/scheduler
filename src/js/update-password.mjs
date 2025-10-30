@@ -13,7 +13,6 @@ function getConfirmPasswordInput() {
 function getSubmitButton() {
     return getForm().querySelector("button");
 }
-
 // when page loads
 function getAccessTokenFromUrl() {
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
@@ -124,6 +123,25 @@ async function initializePasswordResetPage() {
 
     // clear old session before reset
     await supabase.auth.signOut();
+
+    try {
+        const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken, 
+            refresh_token: accessToken,
+        });
+
+        if (error) {
+            console.error("Failed to set recovery session:", error);
+            showMessage("Invalid or expired recovery link. Please request a new one.", true);
+            return;
+        }
+
+        console.log("Recovery session established:", data);
+    } catch (error) {
+        console.error("Unexpected session error:", error);
+        showMessage("Could not restore recovery session.", true);
+        return;
+    }
 
     const form = getForm();
     form.addEventListener("submit", handleFormSubmission);
