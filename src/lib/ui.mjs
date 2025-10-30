@@ -18,7 +18,7 @@ export function showMessage(message, isError = false) {
 
     // accessibility: allow screen readers to announce
     box.setAttribute("tabindex", "-1");
-    box.focut();
+    box.focus();
 
     // auto hide after 3 seconds
     messageTimeout = setTimeout(() => {
