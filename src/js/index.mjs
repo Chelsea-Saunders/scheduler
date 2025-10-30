@@ -134,7 +134,7 @@ async function handleCreateAccount(event, createForm, loginForm) {
     const password = createForm.querySelector('input[name="password"]').value.trim();
 
     if (!fullName || !email || !password) {
-        showMessage("Please enter your name, email and password.");
+        showMessage("Please enter your name, email, and password.", true);
         return;
     }
 
@@ -152,12 +152,19 @@ async function handleCreateAccount(event, createForm, loginForm) {
             }),
         });
 
-        // safe JSON parse
+        // check for http errors
+        if (!res.ok) {
+            console.error("Server returned HTTP error:", res.status, res.statusText);
+            showMessage("Server error: Please try again later.", true);
+            return;
+        }
+
+        // parse JSON safely
         let result;
         try {
             result = await res.json();
         } catch {
-            showMessage("Server returned an unexpected response. Please try again.");
+            showMessage("Server returned an unexpected response. Please try again.", true);
             console.error("Invalid JSON response from server");
             return;
         }
@@ -165,7 +172,7 @@ async function handleCreateAccount(event, createForm, loginForm) {
         // add rate limit/supabase error message handling
         if (result?.error && result.error.toLowerCase().includes("rate limit")) {
             showMessage(
-                "You've requested to many confirmation emails. Please wait awhile before trying again.", 
+                "You've requested too many confirmation emails. Please wait a few minutes before trying again.", 
                 true
             );
             console.warn("Rate limit triggered:", result.error);
@@ -175,14 +182,16 @@ async function handleCreateAccount(event, createForm, loginForm) {
         if (result.ok) {
             showMessage(`Welcome aboard ${fullName}! Please check your inbox to confirm your account.`);
             createForm.style.display = "none";
-            loginForm.style.display = "block";
-        } else {
+            loginForm?.classList.remove("hidden");
+        } else if (result.error){
             console.error(result.error);
-            showMessage("Could not create an account at this time. Please try again.");
+            showMessage("Signup failed: " + result.error, true);
+        } else {
+            showMessage("Request completed, but server returned no result. Please check your email.", false);
         }
     } catch (error) {
-        console.error("Unexpected error:", error);
-        showMessage("Something went wrong. Please try again.");
+        console.error("Unexpected network or fetch error:", error);
+        showMessage("Network error: Please try again.", true);
     }
 }
 function handleSupabaseRedirect() {
