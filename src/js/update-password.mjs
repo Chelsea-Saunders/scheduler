@@ -114,13 +114,49 @@ async function initializePasswordResetPage() {
     const refreshToken = hashParams.get("refresh_token");
     const type = hashParams.get("type");
 
-    // ensure this is recovery link
+    const form = getForm();
+
+    // reset form (user enters email to get reset link)
     if (type !== "recovery" || !accessToken || !refreshToken) {
-        showMessage("Invalid or expired password reset link.", true);
-        setTimeout(redirectToLogin, 2000);
-        return;
+        console.log("Password reset request mode(no recovery token detected).");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const emailInput = document.getElementById("email");
+            const email = emailInput?.value?.trim();
+            if (!email) {
+                showMessage("Please enter your email address.", true);
+                return;
+            }
+
+            const button = getSubmitButton();
+            button.disabled = true;
+            button.textContent = "Sending...";
+
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + "/update-password.html", 
+            });
+
+            if (error) {
+                console.error("Failed to send recovery link:", error);
+                showMessage("Failed to send recovery link. Please request a new one.", true);
+                button.disabled = false;
+                button.textContent = "Send Reset Link";
+                return;
+            }
+
+            // successful reset request
+            showMessage("Check your inbox for the reset link.");
+            form.reset();
+            button.disabled = false;
+            button.textContent = "Send Reset Link";
+        });
+
+        return; // stop here - don't set up password update
     }
 
+    // recovery mode (user cliked email link to open form to set new password)
     try {
         const { data, error } = await supabase.auth.setSession({
             access_token: accessToken, 
@@ -128,8 +164,8 @@ async function initializePasswordResetPage() {
         });
 
         if (error) {
-            console.error("Failed to set recovery session:", error);
-            showMessage("Invalid or expired recovery link. Please request a new one.", true);
+            console.error("Failed to open recovery link session:", error);
+            showMessage("Could not open the reset password link. Please request a new one.", true);
             return;
         }
 
@@ -140,7 +176,6 @@ async function initializePasswordResetPage() {
         return;
     }
 
-    const form = getForm();
     form.addEventListener("submit", handleFormSubmission);
 
     // auto-focus new password field
