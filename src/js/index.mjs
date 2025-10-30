@@ -264,13 +264,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const resetForm = document.getElementById("reset-form");
     const loginButton = loginForm.querySelector('[type="submit"]');
 
-    const { data } = await supabase.auth.getUser();
-    const user = data?.user || null;
-    // prevent redirect from update password
     const isResetPage = window.location.pathname.includes("update-password.html");
-    if (user && !isResetPage) {
-        window.location.href = "index.html";   
-    }
 
     // determine the correct base path
     const base = window.location.hostname.includes("github.io")
@@ -278,6 +272,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         : "./";
     const params = new URLSearchParams(window.location.search);
     const redirect = params.get("redirect") || `${base}scheduler.html`;
+
+    const { data } = await supabase.auth.getUser();
+    const user = data?.user || null;
+
+    // only redirect away from login/signup pages if already logged in
+    const isPageAuthenticated = window.location.pathname.endsWith("index.html") || window.location.pathname === "/scheduler/";
+    
+    if (user && isPageAuthenticated && !isResetPage) {
+        window.location.href = `${base}scheduler.html`;   
+    }
 
     // show create account form
     showCreateAccountButton?.addEventListener("click", (event) => {
