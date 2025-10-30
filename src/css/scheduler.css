@@ -92,6 +92,17 @@ button.selected {
     border-color: rgb(0, 94, 128);
     animation: pulse 0.25s ease;
 }
+button.holiday {
+    background-color: #ddd;
+    color: #777;
+    border-color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;   
+    text-decoration: line-through;
+    font-style: italic;
+    opacity: 0.6;
+    box-shadow: none;
+}
 #time-section {
     opacity: 0;
     max-height: 0;
