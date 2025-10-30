@@ -279,11 +279,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     const redirect = params.get("redirect") || `${base}scheduler.html`;
 
-    const { data } = await supabase.auth.getUser();
-    const user = data?.user || null;
+    let user = null;
+    for (let i = 0; i < 5; i++) { // try up to 5 times
+        const { data } = await supabase.auth.getUser();
+        user = data.user || null;
+        if (user) break;
+        await new Promise(res => setTimeout(res, 200)); // wait 0.5sec before retry
+    }
 
     // only redirect away from login/signup pages if already logged in
-    const isPageAuthenticated = window.location.pathname.endsWith("index.html") || window.location.pathname === "/scheduler/";
+    const isPageAuthenticated = 
+        window.location.pathname.endsWith("index.html") || 
+        window.location.pathname === "/scheduler/";
     
     if (user && isPageAuthenticated && !isResetPage) {
         window.location.href = `${base}scheduler.html`;   
