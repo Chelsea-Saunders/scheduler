@@ -58,6 +58,11 @@ export async function toggleLoginOut() {
             // logout behavior
             freshLogoutLink.addEventListener("click", async (event) => {
                 event.preventDefault();
+
+                // log out of employee session if there is one
+                localStorage.removeItem("employeeLoggedIn");
+
+                // supabase logout for regular users
                 const { error } = await supabase.auth.signOut();
                 if (error) {
                     console.error("Logout failed:", error);

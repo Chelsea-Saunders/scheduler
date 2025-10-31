@@ -1,8 +1,8 @@
-import { supabase } from './supabaseClient.mjs';
+import { supabase } from '../lib/supabase.mjs';
 import { showMessage } from '../lib/ui.mjs';
 
 // congig's
-const redirectAfterLogin = "calendar.html";
+const redirectAfterLogin = "./calendar.html";
 let currentPasscode = null; // holds the one fetched from supabase
 
 // select elements
@@ -13,20 +13,22 @@ const regenerateLink = document.getElementById("regenerate-passcode");
 async function fetchCurrentPasscode() {
     try {
         const { data, error } = await supabase
-            .from("employee_passcodes")
+            .from("employee_passcode")
             .select("passcode")
             .order("created_at", { ascending: false })
-            .limit(1)
-            .single(); // get latest only
+            .limit(1);
 
         if (error) {
             throw error;
         }
-        if (!data) {
+
+        console.log("what is supabase fetching:", error);
+
+        if (!data || data.length === 0) {
             throw new Error("No passcode found in database.");
         }
 
-        currentPasscode = data.passcode;
+        currentPasscode = data[0].passcode;
         console.log("Fetched passcode:", currentPasscode); // for testing 
     } catch (error) {
         console.error("Error fetching passcode:", error.message);
@@ -46,13 +48,13 @@ function isPasscodeCorrect(passcode) {
     return passcode === currentPasscode;
 }
 
-// HANDLE LOGIN SUCCESS
-function loginSuccess() {
-    showMessage("Passcode correct! Redirecting...");
-    setTimeout(() => {
-        window.location.assign(redirectAfterLogin);
-    }, 1000);
-}
+// // HANDLE LOGIN SUCCESS
+// function loginSuccess() {
+//     showMessage("Passcode correct! Redirecting...");
+//     setTimeout(() => {
+//         window.location.assign(redirectAfterLogin);
+//     }, 1000);
+// }
 
 // HANDLE LOGIN FAILURE
 function loginFailure(input) {
@@ -95,6 +97,32 @@ async function initEmployeeLogin() {
     form.addEventListener("submit", handleEmployeeLogin);
 }
 
+// // EMPLOYEE LOGIN 
+// function loginSuccess() {
+//     const expiresAt = Date.now() + 2 * 60 * 60 * 1000; // 2 hours from now/login time
+//     localStorage.setItem("employeeLoggedIn", JSON.stringify({ loggedIn: true, expiresAt }));
+//     showMessage("Passcode correct! Redirecting...");
+//     setTimeout(() => {
+//         window.location.href = "./calendar.html";
+//     }, 1500);
+// }
+function loginSuccess() {
+    const expiresAt = Date.now() + 2 * 60 * 60 * 1000;
+    localStorage.setItem("employeeLoggedIn", JSON.stringify({ loggedIn: true, expiresAt }));
+    localStorage.setItem("sessionType", "employee");
+    showMessage("Passcode correct! Redirecting...");
+    setTimeout(() => {
+        window.location.assign(redirectAfterLogin);
+    }, 1500);    
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     initEmployeeLogin();
+
+    // TEMP TEST: check what Supabase returns
+    (async () => {
+    const { data, error } = await supabase.from("employee_passcode").select("*");
+    console.log("Test query:", data, error);
+    })();
+
 });

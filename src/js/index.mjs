@@ -5,6 +5,14 @@ import { showMessage } from '../lib/ui.mjs';
 window._isRedirectingToLogin = window._isRedirectingToLogin || false;
 // const loginForm = document.getElementById("login-form");
 
+// skip supabase user login on employee-only pages
+const path = window.location.pathname;
+if (path.includes("employee.html") || path.includes("calendar.html")) {
+    console.log("Skipping supabase redirect check on employee login pages");
+    // prevent the rest of index.mjs from running on calendar
+    throw new Error("Skip index.mjs for employee pages");
+}
+
 function togglePasswordVisibility(button) {
     const input = button.previousElementSibling;
     const isPassword = input.type === "password";
@@ -299,7 +307,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isEmployeeLogin = window.location.pathname.includes("employee.html");
 
     // only redirect if not on employee login page
-    if (user && isPageAuthenticated && !isEmployeeLogin && !isResetPage) {
+    const sessionType = localStorage.getItem("sessionType");
+    if (user && sessionType !== isPageAuthenticated && !isEmployeeLogin && !isResetPage) {
         window.location.href = `${base}scheduler.html`;   
     }
 
