@@ -141,7 +141,7 @@ async function handleCreateAccount(event, createForm, loginForm) {
     try {
         // ensure old sessions are cleared out before signup
         await supabase.auth.sighOut();
-        
+
         localStorage.setItem("fullName", fullName);
 
         const res = await fetch("https://rsceb.org/sendmail_scheduler.php", {
@@ -294,8 +294,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isPageAuthenticated = 
         window.location.pathname.endsWith("index.html") || 
         window.location.pathname === "/scheduler/";
-    
-    if (user && isPageAuthenticated && !isResetPage) {
+
+    // check if user is clicking on employee login link
+    const isEmployeeLogin = window.location.pathname.includes("employee.html");
+
+    // only redirect if not on employee login page
+    if (user && isPageAuthenticated && !isEmployeeLogin && !isResetPage) {
         window.location.href = `${base}scheduler.html`;   
     }
 

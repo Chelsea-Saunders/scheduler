@@ -1,7 +1,7 @@
 import { showSubmissionMessage } from "./form-utilities.mjs";
 import { supabase } from "../lib/supabase.mjs";
 
-// toggles menu open/close
+// toggles menu open/close (mobile)
 export function toggleMenuHandler() {
     const toggleButton = document.querySelector("#toggle-menu");
     const nav = document.querySelector("#global-nav");
@@ -28,11 +28,12 @@ export async function toggleLoginOut() {
     const loginLink = document.querySelector(".login-link");
     const logoutLink = document.querySelector(".logout-link");
 
-    if (!loginLink || !logoutLink) {
+    if (!loginLink && !logoutLink) {
         return;
     }
 
     try {
+        // skip logic for password recovery page
         if (
             window.location.href.includes("type=recovery") ||
             window.location.pathname.includes("update-password.html")
@@ -43,45 +44,49 @@ export async function toggleLoginOut() {
         const { data: { session } } = await supabase.auth.getSession();
         const user = session?.user;
 
-        logoutLink.replaceWith(logoutLink.cloneNode(true));
+        // clone logout link to remove old event listeners
+        if (logoutLink) {
+            logoutLink.replaceWith(logoutLink.cloneNode(true));
+        }
         const freshLogoutLink = document.querySelector(".logout-link");
 
         if (user) {
-            // logged in => hide login
-            loginLink.style.display = "none";
-            logoutLink.style.display = "block";
+            // logged in => hide login, show logout
+            if (loginLink) loginLink.style.display = "none";
+            if (freshLogoutLink) freshLogoutLink.style.display = "inline-block";
 
-            // prevent login click
-            loginLink.addEventListener("click", (event) => {
+            // logout behavior
+            freshLogoutLink.addEventListener("click", async (event) => {
                 event.preventDefault();
-                showSubmissionMessage("You're already logged in.");
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error("Logout failed:", error);
+                    showSubmissionMessage("Logout failed: Please try again.", true);
+                    return;
+                }
+
+                showSubmissionMessage("Logout successful. Redirecting...");
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1500);
             });
         } else {
-            // logged out => hide logout
-            loginLink.style.display = "inline-block";
-            logoutLink.style.display = "none";
-        }
-
-        freshLogoutLink.addEventListener("click", async (event) => {
-            event.preventDefault();
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.error("Logout failed:", error);
-                showSubmissionMessage("Logout failed: Please try again.", true);
-                return;
+            // if logged out, show login, hide logout
+            if (loginLink) {
+                loginLink.style.display = "inline-block";
             }
-            showSubmissionMessage("Logout successful. Redirecting...");
-            setTimeout(() => {
-                window.location.href = "index.html";
-            }, 1500);
-        });
+            if (freshLogoutLink) {
+                freshLogoutLink.style.display = "none";
+            }
+        }
     } catch (error) {
         console.error("Error checking Supabase session:", error);
     }
     let authReload = false;
     let reloadTimer;
+
     // live update header with auth changes
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabase.auth.onAuthStateChange((event) => {
         if (authReload) return; // prevent double reloads
         if (document.visibilityState !== "visible") return; // only the active tab reacts
 

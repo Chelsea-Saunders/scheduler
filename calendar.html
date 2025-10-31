@@ -12,12 +12,13 @@
     <meta property="og:url" content="https://www.northwinddentalak.com">
     <meta property="og:type" content="website">
     <meta name="robots" content="index, follow"> <!-- This will help search engins know if they should index your page -->
-    <title>Logout</title>
+    <title>Weekly Schedule</title>
     <link rel="icon" href="./src/images/favicon-16.png" sizes="32x32" type="image/png">
     <link rel="icon" href="./src/images/favicon-32.png" sizes="16x16" type="image/png">
     <link rel="apple-touch-icon" href="/favicon-32.png" sizes="180x180">
-    <link rel="stylesheet" href="./src/css/logout.css">
+    <link rel="stylesheet" href="./src/css/calendar.css">
     <link rel="stylesheet" href="./src/css/components.css">
+    <script type="module" src="./src/js/calendar.mjs" defer></script>
     <script type="module" src="./src/js/header.mjs" defer></script>
     <script type="module" src="./src/js/logout.mjs" defer></script>
     <script type="module" src="./src/js/auth.mjs" defer></script>
@@ -55,18 +56,15 @@
             </button>
             <nav id="global-nav" class="global-nav" aria-label="main-navigation">
                 <ul>
-                    <li><a href="index.html" class="login-link">LOGIN</a> </li>
+                    <!-- <li><a href="index.html" class="login-link">LOGIN</a> </li> -->
                     <li><a href="logout.html" class="logout-link">SIGN OUT</a></li>
                 </ul>
             </nav>
         </div>
     </header>
     <main>
-        <div id="status-message" class="status-message hidden" aria-live="polite"></div>
-        <div id="logout" class="logout-container">
-            <h1>Signing you out...</h1>
-            <p>Please wait a moment.</p>
-        </div>
+        <h2>Weekly Calendar</h2>
+        <p>This is wher the scheduled calendar will appear.</p>
     </main>
     <footer>
         <div class="main-footer">
