@@ -301,6 +301,10 @@ async function selectTimeSlot(date, time) {
     }
     // format date as YYYY-MM-DD
     const ymd = toHumanYMD(date);
+    // extract metadata
+    const fullName = user.user_metadata?.name || localStorage.getItem("fullName") || "Unknown";
+    const email = user.email || null;
+    const phone = user.user_metadata?.phone || localStorage.getItem("phone") || null;
 
     // call supabase to book
     try {
@@ -313,6 +317,9 @@ async function selectTimeSlot(date, time) {
                     time,
                     label: "Consultation",
                     duration_minutes: 30,
+                    email: email,
+                    phone: phone, 
+                    name: fullName,
                 },
             ]);
 

@@ -139,16 +139,17 @@ async function handleCreateAccount(event, createForm, loginForm) {
     event.preventDefault();
     const fullName = createForm.querySelector('input[name="name"]').value.trim();
     const email = createForm.querySelector('input[name="email"]').value.trim();
+    const phone = createForm.querySelector('input[name="phone"]').value.trim();
     const password = createForm.querySelector('input[name="password"]').value.trim();
 
-    if (!fullName || !email || !password) {
+    if (!fullName || !email || !password || !phone) {
         showMessage("Please enter your name, email, and password.", true);
         return;
     }
 
     try {
         // ensure old sessions are cleared out before signup
-        await supabase.auth.sighOut();
+        await supabase.auth.signOut();
 
         localStorage.setItem("fullName", fullName);
 
@@ -159,6 +160,7 @@ async function handleCreateAccount(event, createForm, loginForm) {
                 type: "signup", 
                 name: fullName, 
                 email, 
+                phone,
                 password,
             }),
         });
@@ -178,6 +180,20 @@ async function handleCreateAccount(event, createForm, loginForm) {
             showMessage("Server returned an unexpected response. Please try again.", true);
             console.error("Invalid JSON response from server");
             return;
+        }
+
+        // after successful JSON parse, capture and store metadata
+        localStorage.setItem("fullName", fullName);
+        localStorage.setItem("phone", phone);
+
+        // update supabase metadata
+        try {
+            await supabase.auth.updateUser({
+                data: { name: fullName, phone: phone }
+            });
+            console.log("User metadata updated:", { name: fullName, phone: phone });
+        } catch (metaError) {
+            console.warn("Could not update user metadata (likely needs email varification):", metaError);
         }
 
         // add rate limit/supabase error message handling
@@ -308,9 +324,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // only redirect if not on employee login page
     const sessionType = localStorage.getItem("sessionType");
-    if (user && sessionType !== isPageAuthenticated && !isEmployeeLogin && !isResetPage) {
-        window.location.href = `${base}scheduler.html`;   
+
+    if (
+        user &&
+        sessionType !== "employee" &&
+        isPageAuthenticated && 
+        !isEmployeeLogin &&
+        !isResetPage
+    ) {
+        window.location.href = `${base}scheduler.html`;
     }
+
+    // const sessionType = localStorage.getItem("sessionType");
+    // if (user && sessionType !== isPageAuthenticated && !isEmployeeLogin && !isResetPage) {
+    //     window.location.href = `${base}scheduler.html`;   
+    // }
 
     // show create account form
     showCreateAccountButton?.addEventListener("click", (event) => {
@@ -362,6 +390,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // auto-redirect logged-in users to scheduler
     supabase.auth.onAuthStateChange((_event, session) => {
+        const sessionType = localStorage.getItem("sessionType");
+        // if user is employee, do not redirect
+        if (sessionType === "employee") return;
+
+        // otherwise, redirect logged-in users
         if (session?.user && !window.location.pathname.includes("scheduler.html")) {
             window.location.assign(redirect);
         }
