@@ -481,7 +481,7 @@ async function updateMissingNameMetadata(user) {
         }
 
         if (!user.user_metadata?.phone && cachedPhone) {
-            updates.phone = cachedPhone;
+            updates.user_phone = cachedPhone;
         }
 
         if (Object.keys(updates).length > 0) {
