@@ -469,13 +469,32 @@ async function checkUserOrRedirect() {
 
 // fills metadata name if not saved at signup
 async function updateMissingNameMetadata(user) {
-    if (!user.user_metadata?.name) {
-        const cached = localStorage.getItem("fullName");
-        if (cached) {
-            await supabase.auth.updateUser({ data: { name: cached } });
-            const { data: { session } } = await supabase.auth.getSession();
-            const refreshed = session?.user;
-            return refreshed;
+    const cachedName = localStorage.getItem("fullName");
+    const cachedPhone = localStorage.getItem("phone");
+
+    // if either field is missing in supabase, update it
+    if (!user.user_metadata?.name || !user.user_metadata?.phone) {
+        const updates = {};
+
+        if (!user.user_metadata?.name && cachedName) {
+            updates.name = cachedName;
+        }
+
+        if (!user.user_metadata?.phone && cachedPhone) {
+            updates.phone = cachedPhone;
+        }
+
+        if (Object.keys(updates).length > 0) {
+            try {
+                await supabase.auth.updateUser({ data: updates });
+                console.log("User metadata updated:", updates);
+
+                // refresh user session to get latest data
+                const { data: { session } } = await supabase.auth.getSession();
+                return session?.user || user;
+            } catch (error) {
+                console.warn("Failed to update user metadata:", error);
+            }
         }
     }
     return user;
