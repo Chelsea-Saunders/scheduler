@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- CHARACTER SEST AND VIEWPOINT -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Friendly and professional dental care for the whole family in Wasilla, Alaska. Offering gentle, compassionate, restorative, and advanced dentistry with personalized care for patients of all ages. With comprehensive dental services: cleanings, fillings, implants, cosmetic dentistry and emergency care for everyone.">
+    <meta name="author" content="Chelsea Saunders"> <!-- OPEN GRAPH: social sharing -->
+    <meta property="og:title" content="Page Title">
+    <meta property="og:description" content="Your trusted family dentist in Wasilla, Alaska. Comprehensive dental care for children and adults, including cleanings, fillings, crowns, and more.">
+    <meta property="og:image" content="">
+    <meta property="og:url" content="https://www.northwinddentalak.com">
+    <meta property="og:type" content="website">
+    <meta name="robots" content="index, follow"> <!-- This will help search engins know if they should index your page -->
+    <title>Admin Dashboard</title>
+    <link rel="icon" href="./src/images/favicon-16.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="./src/images/favicon-32.png" sizes="16x16" type="image/png">
+    <link rel="apple-touch-icon" href="/favicon-32.png" sizes="180x180">
+    <link rel="stylesheet" href="./src/css/admin.css">
+    <link rel="stylesheet" href="./src/css/components.css">
+    <script type="module" src="./src/js/employee.mjs" defer></script>
+    <script type="module" src="./src/js/header.mjs" defer></script>
+    <!-- <script type="module" src="./src/js/logout.mjs" defer></script> -->
+    <script type="module" src="./src/js/auth.mjs" defer></script>
+</head>
+<body>
+    <header>
+        <div class="global-header">
+            <a href="index.html" class="logo-link">
+                <img src="./src/images/logos/logo.jpg" alt="Northwind Dental Logo" class="logo">
+            </a>
+            <button
+                id="toggle-menu"
+                class="global-nav__toggle"
+                type="button"
+                aria-controls="global-nav"
+                aria-expanded="false"
+                aria-label="Open menu"
+                data-menu-open="false"
+            >
+                <span class="global-nav__toggle-menu-open">
+                    <span class="hamburger" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                    <span class="visually-hidden">Open</span>
+                </span>
+                <span class="global-nav__toggle-menu-closed">
+                    <span class="x-icon" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                    </span> 
+                    <span class="visually-hidden">Close</span>
+                </span>
+            </button>
+            <nav id="global-nav" class="global-nav" aria-label="main-navigation">
+                <ul>
+                    <li><a href="index.html" class="login-link">LOGIN</a> </li>
+                    <li><a href="logout.html" class="logout-link">SIGN OUT</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <h2>Admin Dashboard</h2>
+    </main>
+    <footer>
+        <div class="main-footer">
+            <div class="footer-left">
+                <h4 id="footer-name">NORTHWIND DENTAL</h4>
+                <p class="footer-address">3719 E. Meridian Loop<br>STE. B<br>Wasilla, AK 99654</p>
+                <p id="footer-phone">Phone: (907) 373-2440<br>Fax: 907-373-1920</p>
+            </div>
+            <div class="footer-middle">
+                <h4 id="footer-office-hours">OFFICE HOURS</h4>
+                <p class="footer-hours">
+                    Monday: 9AM-5PM<br>
+                    Tuesday: 9AM-5PM<br>
+                    Wednesday: 9AM-5PM<br>
+                    Thursday: 9AM-5PM<br>
+                    Friday: CLOSED<br>
+                    Saturday: CLOSED<br>
+                </p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p id="copyright">&copy; 2025 Northwind Dental. All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

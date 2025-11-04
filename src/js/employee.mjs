@@ -13,7 +13,7 @@ const regenerateLink = document.getElementById("regenerate-passcode");
 async function fetchCurrentPasscode() {
     try {
         const { data, error } = await supabase
-            .from("employee_passcode")
+            .from("employees")
             .select("passcode")
             .order("created_at", { ascending: false })
             .limit(1);
@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // TEMP TEST: check what Supabase returns
     (async () => {
-    const { data, error } = await supabase.from("employee_passcode").select("*");
+    const { data, error } = await supabase.from("employees").select("*");
     console.log("Test query:", data, error);
     })();
 
