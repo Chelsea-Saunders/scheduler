@@ -5,10 +5,15 @@ import { applyPhoneFormatterToAll } from './form-utilities.mjs';
 
 // skip supabase user login on employee-only pages
 const path = window.location.pathname;
+
 if (path.includes("employee.html") || path.includes("calendar.html")) {
     console.log("Skipping supabase redirect check on employee login pages");
-    // prevent the rest of index.mjs from running on calendar
-    throw new Error("Skip index.mjs for employee pages");
+} else {
+    document.addEventListener("DOMContentLoaded", () => {
+        initializePage().catch(error => {
+            console.error("Init failed:", error);
+        });
+    });
 }
 
 function togglePasswordVisibility(button) {
@@ -21,15 +26,19 @@ function togglePasswordVisibility(button) {
     eye.style.display = isPassword ? "none" : "inline";
     eyeHidden.style.display = isPassword ? "inline" : "none";
 
-    button.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
+    button.setAttribute(
+        "aria-label", 
+        isPassword ? "Hide password" : "Show password"
+    );
 }
 function showCreateAccount(loginForm, createForm) {
-    loginForm.style.display = "none";
-    createForm.style.display = "block";
+    console.log("showCreateAccount() called");
+    loginForm.classList.add("hidden");
+    createForm.classList.remove("hidden");
 }
 function showLogin(createForm, loginForm) {
-    createForm.style.display = "none";
-    loginForm.style.display = "block";
+    createForm.classList.add("hidden");
+    loginForm.classList.remove("hidden");
 }
 function showResetPassword(loginForm, createForm, resetForm) {
     // hide login and create forms
@@ -197,7 +206,8 @@ function showPasswordUpdateForm(loginForm) {
     });
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+// CALL ALL FUNCTIONS HERE TO INITIALIZE LOGIN
+async function initializePage() {
     const showCreateAccountButton = document.getElementById("show-create-account");
     const showLoginButton = document.getElementById("show-login");
     const forgotPasswordLink = document.getElementById("forgot-password");
@@ -207,7 +217,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loginForm = document.getElementById("login-form");
     const createForm = document.getElementById("create-acct-form");
     const resetForm = document.getElementById("reset-form");
-    const loginButton = loginForm.querySelector('[type="submit"]');
+    const loginButton = loginForm?.querySelector('[type="submit"]');
 
     const isResetPage = window.location.pathname.includes("update-password.html");
 
@@ -215,6 +225,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const base = window.location.hostname.includes("github.io")
         ? "/scheduler/"
         : "./";
+
     const params = new URLSearchParams(window.location.search);
     if (params.get("verified") === "true") {
         const { error } = await supabase.auth.signOut();
@@ -230,6 +241,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isPageAuthenticated = 
         window.location.pathname.endsWith("index.html") || 
         window.location.pathname === "/scheduler/";
+
+    console.log("createForm element:", createForm);
+    console.log("setupCreateAccountForm value:", setupCreateAccountForm);
 
     // create account 
     if (createForm) {
@@ -261,6 +275,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         showLogin(createForm, loginForm);
     });
 
+    console.log("Show create account button:", showCreateAccountButton);
+
     // show create account form
     showCreateAccountButton?.addEventListener("click", (event) => {
         event.preventDefault();
@@ -291,8 +307,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
         // show/hide password
-    document.querySelectorAll(".show-password").forEach(button => {
-        button.addEventListener("click", () => togglePasswordVisibility(button));
+    document.querySelectorAll(".show-password").forEach((button) => {
+        button.addEventListener("click", () => 
+            togglePasswordVisibility(button)
+        );
     }); 
 
     // handle supabase redirect 
@@ -309,4 +327,4 @@ document.addEventListener("DOMContentLoaded", async () => {
             window.location.assign(redirect);
         }
     });
-});
+}

@@ -76,9 +76,9 @@ form {
     display: none !important;
 }
 /* to make create acct invisible until clicked */
-#create-acct-form {
+/* #create-acct-form {
     display: none;
-}
+} */
 
 #login-email, 
 #login-password, 
