@@ -12,16 +12,15 @@
     <meta property="og:url" content="https://www.northwinddentalak.com">
     <meta property="og:type" content="website">
     <meta name="robots" content="index, follow"> <!-- This will help search engins know if they should index your page -->
-    <title>Employee Login</title>
+    <title>Admin Login</title>
     <link rel="icon" href="./src/images/favicon-16.png" sizes="32x32" type="image/png">
     <link rel="icon" href="./src/images/favicon-32.png" sizes="16x16" type="image/png">
     <link rel="apple-touch-icon" href="/favicon-32.png" sizes="180x180">
-    <link rel="stylesheet" href="./src/css/employee.css">
+    <link rel="stylesheet" href="./src/css/admin.css">
     <link rel="stylesheet" href="./src/css/components.css">
-    <script type="module" src="./src/js/employee.mjs" defer></script>
+    <script type="module" src="./src/js/admin.mjs" defer></script>
     <script type="module" src="./src/js/header.mjs" defer></script>
-    <!-- <script type="module" src="./src/js/logout.mjs" defer></script> -->
-    <script type="module" src="./src/js/auth.mjs" defer></script>
+    <!-- <script type="module" src="./src/js/auth.mjs" defer></script> -->
 </head>
 <body>
     <header>
@@ -56,6 +55,7 @@
             </button>
             <nav id="global-nav" class="global-nav" aria-label="main-navigation">
                 <ul>
+                    <li><a href="admin.html" class="login-link" id="admin-login-link">ADMIN LOGIN</a></li>
                     <li><a href="index.html" class="login-link">LOGIN</a> </li>
                     <li><a href="logout.html" class="logout-link">SIGN OUT</a></li>
                 </ul>
@@ -63,12 +63,49 @@
         </div>
     </header>
     <main>
-        <h2>Employee Login</h2>
-        <form id="employee-passcode-form">
-            <input type="password" name="passcode" placeholder="Enter this weeks passcode" required>
-            <button type="submit">Enter</button>
-            <a href="#" id="regenerate-passcode">Regenerate Passcode</a>
-        </form>
+        <section id="admin-login-container">
+            <h2>Employee Login</h2>
+            <form id="admin-login-form">
+                <label for="login-email">Email:
+                    <input 
+                        type="email" 
+                        id="login-email" 
+                        name="email" 
+                        placeholder="email@email.com" 
+                        autocomplete="email" 
+                        required
+                    >
+                </label>
+
+                <label for="login-password">Password:</label>
+                <div class="password-container">
+                    <input 
+                        type="password" 
+                        id="login-password" 
+                        name="password" 
+                        minlength="8" 
+                        autocomplete="current-password" 
+                        placeholder="required length: 8 characters"
+                        required
+                    >
+                    <button
+                        type="button"
+                        class="show-password"
+                        aria-label="Show password"
+                    >
+                    <!-- eye open -->
+                    <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" aria-hidden="true">
+                        <path d="M572.52 241.4C518.79 135.45 407.81 64 288 64S57.21 135.45 3.48 241.4a48.11 48.11 0 0 0 0 29.2C57.21 376.55 168.19 448 288 448s230.79-71.45 284.52-177.4a48.11 48.11 0 0 0 0-29.2ZM288 400c-79.4 0-144-64.6-144-144S208.6 112 288 112s144 64.6 144 144-64.6 144-144 144Zm0-240a96 96 0 1 0 96 96 96.11 96.11 0 0 0-96-96Z"/>
+                    </svg>
+                    <!-- eye slashed (hidden) -->
+                    <svg class="icon-eye-hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" aria-hidden="true">
+                        <path d="M634 471L34 3a16 16 0 0 0-22 22l85 66C36 144 6 204 1 240a48 48 0 0 0 0 32c54 106 165 177 287 177a333 333 0 0 0 130-26l95 74a16 16 0 0 0 22-22Zm-346-62a96 96 0 0 1-93-118l121 93a96 96 0 0 1-28 25Zm46-159 54 41a96 96 0 0 0-54-41Z"/>
+                    </svg>
+                    </button>
+                    <button id="submit" type="submit">Submit</button>
+                </div>
+            </form>
+        </section>
     </main>
     <footer>
         <div class="main-footer">

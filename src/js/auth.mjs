@@ -50,6 +50,17 @@ console.log("auth.mjs loaded");
 
 console.log("exported setupCreateAccountForm");
 export function setupCreateAccountForm(createForm, loginForm) {
+    console.log("setupCreateAccountForm() running", createForm);
+    if (!createForm) {
+        console.warn("⚠️ createForm is null or undefined!");
+        return;
+    }
+
+    createForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        console.log("✅ Create Account form submitted!");
+    });
+
     createForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
@@ -84,6 +95,8 @@ export function setupCreateAccountForm(createForm, loginForm) {
 
             localStorage.setItem("fullName", fullName);
 
+            console.log("🟡 About to call supabase.auth.signUp()");
+
             // create account in supabase
             const { data, error } = await supabase.auth.signUp({
                 email, 
@@ -93,6 +106,8 @@ export function setupCreateAccountForm(createForm, loginForm) {
                     emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html"
                 },
             });
+            console.log("🟢 Supabase signUp returned:", { data, error });
+
 
             if (error) {
                 console.error("Signup error:", error);
@@ -109,7 +124,9 @@ export function setupCreateAccountForm(createForm, loginForm) {
                     { 
                         id: data.user.id, 
                         name: fullName, 
-                        email,  
+                        email,
+                        phone, 
+                        role: isAdmin ? "admin" : "employee"
                     }
                 ]);
 

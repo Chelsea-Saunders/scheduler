@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
 import { validateEmail, applyPhoneFormatterToAll, validatePhone, validatePassword } from "./form-utilities.mjs";
+import { handleLogin } from "./auth.mjs";
 
 // TOGGLE PASSWORD VISIBILITY
 function togglePasswordVisible() {
@@ -84,4 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
     applyPhoneFormatterToAll();
     togglePasswordVisible();
     submitButton();
+    handleLogin(event, {
+        default: "scheduler.html",
+    });
 });

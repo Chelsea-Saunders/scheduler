@@ -12,15 +12,15 @@
     <meta property="og:url" content="https://www.northwinddentalak.com">
     <meta property="og:type" content="website">
     <meta name="robots" content="index, follow"> <!-- This will help search engins know if they should index your page -->
-    <title>Admin Dashboard</title>
+    <title>Weekly Schedule</title>
     <link rel="icon" href="./src/images/favicon-16.png" sizes="32x32" type="image/png">
     <link rel="icon" href="./src/images/favicon-32.png" sizes="16x16" type="image/png">
     <link rel="apple-touch-icon" href="/favicon-32.png" sizes="180x180">
-    <link rel="stylesheet" href="./src/css/admin.css">
+    <link rel="stylesheet" href="./src/css/calendar.css">
     <link rel="stylesheet" href="./src/css/components.css">
-    <script type="module" src="./src/js/employee.mjs" defer></script>
+    <script type="module" src="./src/js/calendar.mjs" defer></script>
     <script type="module" src="./src/js/header.mjs" defer></script>
-    <!-- <script type="module" src="./src/js/logout.mjs" defer></script> -->
+    <script type="module" src="./src/js/admin-dashboard.mjs" defer></script>
     <script type="module" src="./src/js/auth.mjs" defer></script>
 </head>
 <body>
@@ -56,14 +56,36 @@
             </button>
             <nav id="global-nav" class="global-nav" aria-label="main-navigation">
                 <ul>
-                    <li><a href="index.html" class="login-link">LOGIN</a> </li>
+                    <!-- <li><a href="index.html" class="login-link">LOGIN</a> </li> -->
                     <li><a href="logout.html" class="logout-link">SIGN OUT</a></li>
                 </ul>
             </nav>
         </div>
     </header>
-    <main>
-        <h2>Admin Dashboard</h2>
+    <main id="admin-dashboard" class="hidden">
+        <h1>Admin Dashboard</h1>
+
+        <section id="appointments-container">
+            <h2>Appointments</h2>
+            <table id="appointments-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </section>
+        
+        <section id="employee-container">
+            <h2>Employees</h2>
+            <ul id="employee-list"></ul>
+        </section>
+
     </main>
     <footer>
         <div class="main-footer">

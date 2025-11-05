@@ -1,7 +1,19 @@
 
-main {
-    padding: 2rem;
+/* admin login container */
+#admin-login-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    border-radius: var(--bs-border-radius-medium);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.072);
+    background-color: var(--bs-background-color);
+    justify-content: center;
+    align-items: center;
 }
+/* header */
 h2 {
     color: navy;
     margin-bottom: 1rem;
@@ -9,56 +21,88 @@ h2 {
     font-size: 1.5rem;
     text-align: center;
 }
-#employee-passcode-form {
+/* form container */
+#admin-login-form {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 1.5rem;
-    border-radius: var(--bs-border-radius-medium);
-    background-color: rgba(222, 222, 222, 0.114);   
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.167);
+    /* gap: 1rem; */
+    width: 100%;
 }
+/* email/password lable and input */
+label[for="login-email"], 
+label[for="login-password"] {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+    color: navy;
+}
+input[type="email"], 
 input[type="password"] {
-    padding: 0.4rem;
+    padding: 0.4rem 0.5rem;
     border: 1px solid var(--bs-border-color-light);
     border-radius: var(--bs-border-radius-medium);
-    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    cursor: pointer;
 }
-button {
+/* password container */
+label[for="login-password"] {
+    margin-top: 1rem;
+}
+/* parent container */
+.password-container {
+    position: relative;
+    width: 100%;
+}
+.password-container input {
+    width: 100%;
+    padding-right: 2.5rem;
+    box-sizing: border-box;
+}
+/* icon button */
+.password-container .show-password {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-240%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+}
+/* eye icon (svg) */
+.show-password svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: rgba(92, 92, 126, 0.807);
+    transition: transform 0.2s ease, fill 0.2s ease;
+}
+/* hover effect */
+.show-password:hover svg {
+    fill: rgba(92, 92, 126, 0.807);
+    transform: scale(1.1);
+}
+.icon-eye-slash {
+    display: none; 
+}
+.icon-eye-hidden {
+    display: none;
+}
+/* submit button */
+#submit {
+    margin: 2rem auto 0 auto;
     padding: 0.6rem;
     border: none;
+    width: 100%;
     border-radius: var(--bs-border-radius-large);
     background-color: rgb(47, 47, 129);
-    color: var(--bs-text-color-light);
+    color: white;
     font-size: 1rem;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(97, 108, 123, 0.44);
     transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.15s ease;
-}
-button:hover {
-    background-color: rgba(0, 102, 128, 0.503);
-    color: black;
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.284);
-}
-button:active, 
-a:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-#regenerate-passcode {
-    display: inline-block;
-    color: navy;
-    text-align: center;
-    text-decoration: none; 
-    cursor: pointer;
-    font-size: 0.7rem;
-    transition: transform 0.15s ease, color 0.3s ease;
-}
-#regenerate-passcode:hover {
-    text-decoration: underline;
-    color: rgba(0, 102, 128, 0.935);
-    transform: translateY(-2px);
 }

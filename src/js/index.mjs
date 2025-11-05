@@ -10,9 +10,17 @@ if (path.includes("employee.html") || path.includes("calendar.html")) {
     console.log("Skipping supabase redirect check on employee login pages");
 } else {
     document.addEventListener("DOMContentLoaded", () => {
-        initializePage().catch(error => {
-            console.error("Init failed:", error);
-        });
+        console.log("DOM fully loaded, running initializePage...");
+        initializePage();
+
+        const loginForm = document.getElementById("login-form");
+        const createForm = document.getElementById("create-acct-form");
+
+        if (createForm && !createForm._listenerBound) {
+            console.warn("Manually binding setupCreateAccountForm fallback...");
+            setupCreateAccountForm(createForm, loginForm);
+            createForm._listenerBound = true; // prevent multiple bindings
+        }
     });
 }
 
@@ -111,6 +119,23 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
         if (!email || !password) {
             setMessage(messageDiv, "Please enter both email and password.", true);
             return;
+        }
+
+        // check role: 
+        const { data: employee } = await supabase
+            .from("employees")
+            .select("role")
+            eq("id", user.id)
+            .single();
+
+        if (employee?.role === "admin") {
+            console.log("Welcome, admin!");
+            setMessage("Welcome, admin! Redirecting...");
+            window.location.href = "admin-dashboard.html";
+        } else {
+            console.log("Logged in as an employee");
+            setMessage("Logged in as an employee. Redirecting...");
+            window.location.href = "calendar.html";
         }
         
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -231,6 +256,8 @@ async function initializePage() {
         const { error } = await supabase.auth.signOut();
         if (!error) {
             showMessage("Email verified! Please login to continue.");
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
     }
     const redirect = params.get("redirect") || `${base}scheduler.html`;
