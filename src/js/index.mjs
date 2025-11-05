@@ -1,9 +1,7 @@
 import { supabase } from '../lib/supabase.mjs';
 import { showMessage } from '../lib/ui.mjs';
-
-// guard against redirect spam
-window._isRedirectingToLogin = window._isRedirectingToLogin || false;
-// const loginForm = document.getElementById("login-form");
+import { setupCreateAccountForm } from './auth.mjs';
+import { applyPhoneFormatterToAll } from './form-utilities.mjs';
 
 // skip supabase user login on employee-only pages
 const path = window.location.pathname;
@@ -134,94 +132,14 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
         setLoading(loginButton, false);
     }
 }
-// ***** Create account submission *****
-async function handleCreateAccount(event, createForm, loginForm) {
-    event.preventDefault();
-    const fullName = createForm.querySelector('input[name="name"]').value.trim();
-    const email = createForm.querySelector('input[name="email"]').value.trim();
-    const phone = createForm.querySelector('input[name="phone"]').value.trim();
-    const password = createForm.querySelector('input[name="password"]').value.trim();
 
-    if (!fullName || !email || !password || !phone) {
-        showMessage("Please enter your name, email, and password.", true);
+function handleSupabaseRedirect() {
+    // try to find login form dynamically
+    const loginForm = document.getElementById("login-form");
+    if (!loginForm) {
+        console.warn("Login form not found; skipping password recovery UI setup.");
         return;
     }
-
-    try {
-        // ensure old sessions are cleared out before signup
-        await supabase.auth.signOut();
-
-        localStorage.setItem("fullName", fullName);
-
-        const res = await fetch("https://rsceb.org/sendmail_scheduler.php", {
-            method: "POST", 
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                type: "signup", 
-                name: fullName, 
-                email, 
-                phone,
-                password,
-            }),
-        });
-
-        // check for http errors
-        if (!res.ok) {
-            console.error("Server returned HTTP error:", res.status, res.statusText);
-            showMessage("Server error: Please try again later.", true);
-            return;
-        }
-
-        // parse JSON safely
-        let result;
-        try {
-            result = await res.json();
-        } catch {
-            showMessage("Server returned an unexpected response. Please try again.", true);
-            console.error("Invalid JSON response from server");
-            return;
-        }
-
-        // after successful JSON parse, capture and store metadata
-        localStorage.setItem("fullName", fullName);
-        localStorage.setItem("phone", phone);
-
-        // update supabase metadata
-        try {
-            await supabase.auth.updateUser({
-                data: { name: fullName, phone: phone }
-            });
-            console.log("User metadata updated:", { name: fullName, phone: phone });
-        } catch (metaError) {
-            console.warn("Could not update user metadata (likely needs email varification):", metaError);
-        }
-
-        // add rate limit/supabase error message handling
-        if (result?.error && result.error.toLowerCase().includes("rate limit")) {
-            showMessage(
-                "You've requested too many confirmation emails. Please wait a few minutes before trying again.", 
-                true
-            );
-            console.warn("Rate limit triggered:", result.error);
-            return;
-        }
-
-        if (result.ok) {
-            showMessage(`Welcome aboard, ${fullName}! Please check your inbox to confirm your account.`);
-            createForm.classList.add("hidden");
-            loginForm?.classList.remove("hidden");
-        } else if (result.error){
-            console.error(result.error);
-            showMessage("Signup failed: " + result.error, true);
-        } else {
-            showMessage("Request completed, but server returned no result. Please check your email.", false);
-        }
-    } catch (error) {
-        console.error("Unexpected network or fetch error:", error);
-        showMessage("Network error: Please try again.", true);
-    }
-}
-function handleSupabaseRedirect() {
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
@@ -233,7 +151,7 @@ function handleSupabaseRedirect() {
         window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
 
         // handle password recovery
-        if (accessToken && type === "recovery") {
+        if (type === "recovery") {
             showPasswordUpdateForm(loginForm);
         }
 }
@@ -298,26 +216,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? "/scheduler/"
         : "./";
     const params = new URLSearchParams(window.location.search);
-    if (params.get("varified") === "true") {
+    if (params.get("verified") === "true") {
         const { error } = await supabase.auth.signOut();
         if (!error) {
             showMessage("Email verified! Please login to continue.");
         }
     }
     const redirect = params.get("redirect") || `${base}scheduler.html`;
-
-    let user = null;
-    for (let i = 0; i < 5; i++) { // try up to 5 times
-        const { data } = await supabase.auth.getUser();
-        user = data.user || null;
-        if (user) break;
-        await new Promise(res => setTimeout(res, 200)); // wait 0.5sec before retry
-    }
+    const { data } = await supabase.auth.getUser();
+    const user = data?.user;
 
     // only redirect away from login/signup pages if already logged in
     const isPageAuthenticated = 
         window.location.pathname.endsWith("index.html") || 
         window.location.pathname === "/scheduler/";
+
+    // create account 
+    if (createForm) {
+        setupCreateAccountForm(createForm, loginForm);
+    }
 
     // check if user is clicking on employee login link
     const isEmployeeLogin = window.location.pathname.includes("employee.html");
@@ -335,21 +252,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.location.href = `${base}scheduler.html`;
     }
 
-    // const sessionType = localStorage.getItem("sessionType");
-    // if (user && sessionType !== isPageAuthenticated && !isEmployeeLogin && !isResetPage) {
-    //     window.location.href = `${base}scheduler.html`;   
-    // }
-
-    // show create account form
-    showCreateAccountButton?.addEventListener("click", (event) => {
-        event.preventDefault();
-        showCreateAccount(loginForm, createForm);
-    });
+    // attach phone formatter
+    applyPhoneFormatterToAll();
 
     // show login form
     showLoginButton?.addEventListener("click", (event) => {
         event.preventDefault();
         showLogin(createForm, loginForm);
+    });
+
+    // show create account form
+    showCreateAccountButton?.addEventListener("click", (event) => {
+        event.preventDefault();
+        showCreateAccount(loginForm, createForm);
     });
 
     // show forgot password form
@@ -364,7 +279,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         backToLogin(resetForm, loginForm);
     });
 
-    // resend password button
+    // resend password confirmation email
     resendButton?.addEventListener("click", async (event) => {
         event.preventDefault();
         resendConfirmationEmail(createForm, resendButton);
@@ -373,11 +288,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // login form submission
     loginForm?.addEventListener("submit", (event) => 
         handleLogin(event, loginForm, loginButton, redirect)
-    );
-
-    // create account form submission
-    createForm?.addEventListener("submit", (event) => 
-        handleCreateAccount(event, createForm, loginForm)
     );
 
         // show/hide password

@@ -11,7 +11,7 @@ function verifyEmployeeAccess() {
         return false;
     }
 
-    console.log("Employee varified, showing calendar.");
+    console.log("Employee verified, showing calendar.");
     return true;
 }
 

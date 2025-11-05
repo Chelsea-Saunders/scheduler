@@ -1,5 +1,6 @@
-import { validateForm, showSubmissionMessage } from "./form-utilities.mjs";
+import { validateForm, validateEmail, validatePhone, applyPhoneFormatterToAll } from "./form-utilities.mjs";
 import { supabase } from "../lib/supabase.mjs";
+import { showMessage } from "../lib/ui.mjs";
 
 function setupLoginForm(loginForm) {
     loginForm.addEventListener("submit", async (event) => {
@@ -43,42 +44,121 @@ function setupLoginForm(loginForm) {
         }
     });
 }
-function setupCreateAccountForm(createForm) {
+export function setupCreateAccountForm(createForm, loginForm) {
     createForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        if (!validateForm(createForm)) {
-            showSubmissionMessage("Please correct the highlighted fields.");
-            return;
-        }
-
+        // form data
+        const fullName = createForm.querySelector('input[name="name"]').value.trim();
         const email = createForm.querySelector('input[name="email"]').value.trim();
+        const phone = createForm.querySelector('input[name="phone"]').value.trim();
         const password = createForm.querySelector('input[name="password"]').value.trim();
 
-        if (!email || !password) {
-            showSubmissionMessage("Please enter both email and password.");
+        // VALIDATE
+        if (!fullName || !email || !password || !phone) {
+            showMessage("Please enter your name, email, phone, and password.", true);
             return;
         }
 
+       // validate phone number
+        const phoneCheck = validatePhone(phone);
+        if (!phoneCheck.valid) {
+            showMessage(`Phone number error: ${phoneCheck.message}`, true);
+            return;
+        }
+        // validate email
+        const emailCheck = validateEmail(email);
+        if (!emailCheck.valid) {
+            showMessage(`Email error: ${emailCheck.message}`, true);
+            return;
+        }
+        
         try {
+            // log out if logged in anywhere
+            await supabase.auth.signOut();
+
+            localStorage.setItem("fullName", fullName);
+
+            // create account in supabase
             const { data, error } = await supabase.auth.signUp({
                 email, 
                 password, 
                 options: {
-                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html",
+                    data: { name: fullName, phone },
+                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html"
                 },
             });
 
             if (error) {
-                console.error("Sign up error:", error);
-                showSubmissionMessage("Signup failed: " + error.message, true);
-            } else {
-                showSubmissionMessage("Signup successful! Check your inbox for confirmation link.");
-                createForm.reset();
+                console.error("Signup error:", error);
+                showMessage(`Signup failed: ${error.message}`, true);
+                return;
             }
+
+            console.log("Supabase signup success:", data);
+
+            // INSERT EMPLOYEE RECORD
+            const { data: insertData, error: insertError } = await supabase
+                .from("employees")
+                .insert([
+                    { 
+                        id: data.user.id, 
+                        name: fullName, 
+                        email,  
+                    }
+                ]);
+
+            if (insertError) {
+                console.warn("Could not add employee to database:", insertError);
+                showMessage("Could not complete signup of employee. Please try again or contact support.", true);
+                return;
+            } else {
+                console.log("Employee added to database:", insertData);
+                showMessage("Employee account created successfully. Please confirm their account via their email.");
+            }
+
+            // SEND CUSTOM PHP EMAIL
+            try {
+                const mailResponse = await fetch("https://rsceb.org/sendmail_scheduler.php", {
+                    method: "POST", 
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
+                    body: new URLSearchParams({
+                        type: "signup", 
+                        name: fullName, 
+                        email, 
+                        phone,
+                        supabase_id: data.user?.id || "",  
+                    }),
+                });
+                if (!mailResponse.ok) {
+                    console.warn("PHP email filed to send");
+                    showMessage("Account created, but confirmation email could not be sent. Please contact support.", true);
+                }
+            }catch (mailError) {
+                console.error("Could not send signup email via PHP:", mailError);
+                showMessage("Account created but confirmation email failed to send.", true);
+            }
+
+            // update user metadata
+            try {
+                await supabase.auth.updateUser({
+                    data: { name: fullName, phone }
+                }); 
+    
+                console.log("User metadata updated:", { name: fullName, phone });
+            } catch (metaError) {
+                console.error("Could not update user metadata(likely needs email confirmation):", metaError);
+            }
+
+            // SUCCESS MESSAGE AND UI HANDELING
+            showMessage(`Welcome aboard, ${fullName}! Please check your inbox to confirm your account.`);
+            createForm.reset();
+            createForm.classList.add("hidden");
+            loginForm?.classList.remove("hidden");
+            
         } catch (error) {
-            console.error("Unexpected signup error:", error);
-            showSubmissionMessage("Something went wrong. Please try again later.", true);
+            console.error("Unexpected network or fetch error:", error);
+            showMessage("Network error: Please try again.", true);
         }
     });
 }
@@ -122,7 +202,7 @@ function setupResetForm(resetForm) {
                 return;
             }
 
-            showSubmissionMessage("Password reset link sent to youre email. Check your inbox.");
+            showSubmissionMessage("Password reset link sent to your email. Check your inbox.");
             resetButton.textContent = "Check your inbox";
             setTimeout(() => {
                 resetButton.textContent = "Send Reset Link";

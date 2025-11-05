@@ -12,7 +12,7 @@ export function validateForm(form) {
         if (!value) ok = false;
 
         // email validation
-        if (ok && field.type === "email" && !validateEmail(value)) {
+        if (ok && field.type === "email" && !validateEmail(value).valid) {
             ok = false;
         } 
         // password minlength 
@@ -67,6 +67,64 @@ export function showSubmissionMessage(message) {
 }
 // VALIDATE EMAIL FORMAT
 export function validateEmail(email) {
+    if (!email) return { valid: false, message: "Email is required." };
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    const isValid = emailRegex.test(email.trim());
+    if (!isValid) {
+        return { valid: false, message: "Please enter a valid email address." };
+    }
+    return { valid: true };
+}
+// VALIDATE PHONE NUMBER 
+export function validatePhone(phone) {
+    if (!phone) return { valid: false, message: "Phone number is required." };
+
+    const pattern = /^(\+?1\s?)?(\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}$/;
+    const isValid = pattern.test(phone.trim());
+
+    if (!isValid) {
+        return { valid: false, message: "Please enter a valid phone number." };
+    }
+
+    return { valid: true };
+}
+// PHONE NUMBER INPUT FORMATTING
+export function attachPhoneFormatter(input) {
+    if (!input) return;
+    input.addEventListener("input", (event) => {
+        let value = event.target.value.replace(/\D/g, ''); // remove non-digits
+        if (value.length > 3 && value.length <= 6) {
+            value = value.replace(/(\d{3})(\d{1,3})/, '($1) $2');
+        }
+        else if (value.length > 6) {
+            value = value.replace(/(\d{3})(\d{3})(\d{1,4})/, '($1) $2-$3');
+        }
+        event.target.value = value;
+    });
+}
+
+// VALIDATE PASSWORD STRENGTH
+export function validatePassword(password) {
+    if (!password) {
+        return { valid: false, message: "Password is required." };
+    }
+
+    // must be 8 characters, 1 number, 1 letter
+    const pattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const isValid = pattern.test(password);
+
+    if (!isValid) {
+        return {
+            valid: false, 
+            message: "Password must be at least 8 characters long and include at lease one letter and one number."
+        };
+    }
+
+    return {
+        valid: true
+    };
+}
+// make attachPhoneFormatter universal to all forms
+export function applyPhoneFormatterToAll() {
+    document.querySelectorAll('input[name="phone"]').forEach(attachPhoneFormatter);
 }
