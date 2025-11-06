@@ -60,13 +60,10 @@ async function submitButton () {
             // proceed with supabase login
             try {
                 console.log("Attempting admin login ...");
-                console.log("email:", email, "password:", password);
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email, 
                     password,
                 });
-
-                console.log("Supabase sign-in attempt starting...");
                 console.log("sign in response:", data, error);
 
                 if (error) {
@@ -74,6 +71,8 @@ async function submitButton () {
                     showMessage(`Login failed: ${error.message}`, true);
                     return;
                 }
+
+                console.log("User ID from auth:", data.user.id);
 
                 // if data.user is missing...throw error
                 if (!data.user) {
@@ -84,9 +83,9 @@ async function submitButton () {
                 // after successful login: double check 
                 const { data: employee, error: roleError } = await supabase
                     .from("employees")
-                    .select("role")
+                    .select("role", { head: false })
                     .eq("id", data.user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (roleError || employee?.role !== "admin") {
                     showMessage("Access denied: Admins only.", true);

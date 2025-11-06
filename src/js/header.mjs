@@ -104,12 +104,25 @@ export async function toggleLoginOut() {
         if (authReload || document.visibilityState !== "visible") return; // prevent double reloads
 
         if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+
+            const currentPath = window.location.pathname;
+            if (
+                currentPath.includes("index.html") ||
+                currentPath.includes("admin.html") || 
+                currentPath.includes("create-account") ||
+                currentPath.includes("reset-password") ||
+                currentPath === "/" // root page
+            ) {
+                console.log(`Skipping reload on auth page for event: ${event}`);
+                return;
+            }
+
             clearTimeout(reloadTimer);
             reloadTimer = setTimeout(() => {
                 authReload = true;
                 console.log(`Authorization event: ${event}`);
                 location.reload();
-            }, 300);
+            }, 3500);
         }
     });
 }

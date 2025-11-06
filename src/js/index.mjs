@@ -113,31 +113,22 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
     setLoading(loginButton, true);
 
     try {
+        // get input values
         const email = loginForm.email?.value?.trim();
         const password = loginForm.password?.value ?? "";
 
+        //validate presence of both email and password
         if (!email || !password) {
             setMessage(messageDiv, "Please enter both email and password.", true);
             return;
         }
 
         // check role: 
-        const { data: employee } = await supabase
-            .from("employees")
-            .select("role")
-            eq("id", user.id)
-            .single();
-
-        if (employee?.role === "admin") {
-            console.log("Welcome, admin!");
-            setMessage("Welcome, admin! Redirecting...");
-            window.location.href = "admin-dashboard.html";
-        } else {
-            console.log("Logged in as an employee");
-            setMessage("Logged in as an employee. Redirecting...");
-            window.location.href = "calendar.html";
-        }
         
+
+        
+        
+        // try signing in with supabase
         const { data, error } = await supabase.auth.signInWithPassword({
             email, 
             password, 
@@ -146,6 +137,9 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
             },
         });
 
+        console.log("Supabase sign-in response:", data, error);
+
+        // handle login errors
         if (error) {
             setMessage(messageDiv, error.message || "Login failed. Please try again.", true);
             loginForm.password.value = "";
@@ -153,16 +147,49 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
             return;
         }
 
+        // ensure we actually have a user and session
         if (!data?.user || !data?.session) {
             setMessage(messageDiv, "Login incomplete. Please try again.", true);
             return;
         }
 
-        window.location.assign(redirect);
+
+        // grab the user
+        const user = data.user;
+        console.log("Logged in user ID:", user.id);
+
+        // check user's role in employees table
+        const { data: employee, error: roleError } = await supabase
+            .from("employees")
+            .select("role")
+            .eq("user_id", user.id)
+            .single();
+
+        if (roleError) {
+            setMessage(messageDiv, "Could not verify role. Please try again.", true);
+            console.error("Role fetch error:", roleError);
+            return;
+        }
+
+        // redirect based on role
+        if (employee?.role === "admin") {
+            console.log("Welcome, admin!");
+            setMessage(messageDiv, "Welcome, admin! Redirecting...");
+            console.log("Would redirect to admin-dashboard.html here");
+            // window.location.href = "admin-dashboard.html";
+        } else {
+            console.log("Logged in as an employee");
+            setMessage(messageDiv, "Logged in as an employee. Redirecting...");
+            console.log("would redirect to calendar.html here");
+            // window.location.href = "calendar.html";
+        }
+
     } catch (error) {
+        // handle unexpected errors
         setMessage(messageDiv, "An unexpected error occurred. Please try again.", true);
         console.error(error);
     } finally {
+        // always reset loading state
         setLoading(loginButton, false);
     }
 }
