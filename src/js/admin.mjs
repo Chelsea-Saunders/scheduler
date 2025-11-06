@@ -1,6 +1,6 @@
 import { supabase } from "../lib/supabase.mjs";
-import { showMessage, handleLogin } from "../lib/ui.mjs";
-import { validateEmail, applyPhoneFormatterToAll, validatePhone, validatePassword } from "./form-utilities.mjs";
+import { showMessage } from "../lib/ui.mjs";
+import { validateEmail, validatePassword } from "./form-utilities.mjs";
 
 // TOGGLE PASSWORD VISIBILITY
 function togglePasswordVisible() {
@@ -34,21 +34,13 @@ async function submitButton () {
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
 
-            const name = form.querySelector('input[name="name"]').value.trim();
             const email = document.getElementById("login-email").value.trim();
             const password = form.querySelector('input[name="password"]').value.trim()
-            const phone = form.querySelector('input[name="phone"]').value.trim();
 
             // validate email
             const emailCheck = validateEmail(email);
             if (!emailCheck.valid) {
                 showMessage(`Email error: ${emailCheck.message}`, true);
-                return;
-            }
-            // validate phone
-            const phoneCheck = validatePhone(phone);
-            if (!phoneCheck.valid) {
-                showMessage(`Phone error: ${phoneCheck.message}`, true);
                 return;
             }
 
@@ -59,32 +51,53 @@ async function submitButton () {
                 return;
             }
 
-            // passed validation: proceed with login to insert into supabase
+            // proceed with supabase login
             try {
-                const { data, error } = await supabase
-                    .from("employees")
-                    .insert([{ name, email}]);
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email, 
+                    password,
+                });
 
                 if (error) {
-                    console.error("Insert error:", error);
-                    showMessage("Could not add employee. Try again later.", true);
-                } else {
-                    showMessage(`Employee: ${name} added successfully!`, false);
-                    form.reset();
+                    console.error("Login error:", error);
+                    showMessage(`Login failed: ${error.message}`, true);
+                    return;
                 }
+
+                // if data.user is missing...throw error
+                if (!data.user) {
+                    showMessage("Unexpected login response: Please try again.", true);
+                    return;
+                }
+
+                // after successful login: double check 
+                const { data: employee, error: roleError } = await supabase
+                    .from("employees")
+                    .select("role")
+                    .eq("id", data.user.id)
+                    .single();
+
+                if (roleError || employee?.role !== "admin") {
+                    showMessage("Access denied: Admins only.", true);
+                    await supabase.auth.signOut();
+                    return;
+                }
+
+                console.log("Admin verified:", employee.role);
+                showMessage("Login successful! Redirecting...");
+                setTimeout(() => {
+                    window.location.href = "admin-dashboard.html";
+                }, 1500);
+
             }catch (error) {
-                console.error("Network or fetch error:", error);
-                showMessage("Network error. Please try again later.", true);
+                console.error("Unexpected error:", error);
+                showMessage("Unexpected error during login.", true);
             }
         });
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    applyPhoneFormatterToAll();
     togglePasswordVisible();
     submitButton();
-    handleLogin ({
-        default: "scheduler.html",
-    });
 });

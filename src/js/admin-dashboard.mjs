@@ -10,7 +10,7 @@ async function verifyAdminAccess() {
 
         if (userError || !user) {
             // not logged in
-            window.location.href = "index.html";
+            window.location.href = "admin.html";
             return;
         }
 
@@ -24,7 +24,7 @@ async function verifyAdminAccess() {
         if (roleError || employee?.role !== "admin") {
             showMessage("Access denied: Admins only.", true);
             setTimeout(() => {
-                window.location.href = "index.html";
+                window.location.href = "admin.html";
             }, 2000);
             return;
         } 
@@ -65,7 +65,7 @@ async function loadEmployees() {
     console.log(employees);
 
     // pupulate employee table
-    const container = document.getElementById("employee-container");
+    const container = document.getElementById("employees-list-container");
     if (!container) return;
 
     container.innerHTML = employees
@@ -88,6 +88,7 @@ async function loadAppointments() {
     const { data: appointments, error } = await supabase
         .from("appointments")
         .select("id, name, email, date, time, status")
+        .order("date", { ascending: true })
         .order("time", { ascending: true });
 
     if (error) {
@@ -99,15 +100,21 @@ async function loadAppointments() {
     console.log(appointments);
 
     // populate appointment table
-    const container = document.getElementById("appointment-container");
-    if (!container) return;
+    const table = document.getElementById("appointments-table");
+    if (!table) return;
+
+    let tbody = table.querySelector("tbody");
+    if (!tbody) {
+        tbody = document.createElement("tbody");
+        table.appendChild(tbody);
+    }
 
     if (!appointments || appointments.length === 0) {
-        container.innerHTML = `<tr><td colspan="5">No appointments found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5">No appointments found.</td></tr>`;
         return;
     }
 
-    container.innerHTML = appointments
+    tbody.innerHTML = appointments
         .map(
             (appointment) => `
                 <tr>
@@ -122,7 +129,54 @@ async function loadAppointments() {
         .join("");
 }
 
+async function handleCreateAppt(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const date = form.querySelector('input[name="date"]').value;
+    const time = form.querySelector('input[name="time"]').value;
+
+    if (!date || !time) {
+        showMessage("Please fill out all fields.", true);
+        return;
+    }
+
+    const { error } = await supabase
+        .from("appointments")
+        .insert([{ date, time, status: "available"}]);
+
+    if (error) {
+        showMessage("Failed to create an appointment.", true);
+        console.error("Failed to create appointment:", error);
+        return;
+    }
+
+    showMessage("Appointment created successfully.");
+    console.log("Appointment created:", { date, time });
+    form.reset();
+    await loadAppointments();
+}
+
+// admin logout handler
+async function adminLogout() {
+    await supabase.auth.signOut();
+    window.location.href = "admin.html";
+}
+
 //DOM
 document.addEventListener("DOMContentLoaded", async () => {
     await verifyAdminAccess();
+
+    const form = document.getElementById("create-appt-form");
+    if (form) {
+        form.addEventListener("submit", handleCreateAppt);
+    }
+
+    const logout = document.getElementById("admin-logout");
+    if (logout) {
+        logout.addEventListener("click", adminLogout);
+    }
+
+    // auto refresh appts every 60 seconds
+    setInterval(loadAppointments, 60000);
 });

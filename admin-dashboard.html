@@ -65,6 +65,12 @@
     <main id="admin-dashboard" class="hidden">
         <h1>Admin Dashboard</h1>
 
+        <section id="employee-container">
+            <h2>Employees</h2>
+            <div id="employees-list-container">
+        </section>
+
+
         <section id="appointments-container">
             <h2>Appointments</h2>
             <table id="appointments-table">
@@ -80,12 +86,22 @@
                 </thead>
             </table>
         </section>
-        
-        <section id="employee-container">
-            <h2>Employees</h2>
-            <ul id="employee-list"></ul>
+
+        <section id="create-appt-container">
+            <h2>Create New Appointment</h2>
+            <form id="create-appt-form">
+                <label>Date: 
+                    <input type="date" name="date" placeholder="date" required>
+                </label>
+                <label>Time:
+                    <input type="time" name="time" placeholder="time" required>
+                </label>
+                <button type="submit">Add Appointment</button>
+            </form>
         </section>
 
+        <button id="admin-logout">Logout</button>
+        
     </main>
     <footer>
         <div class="main-footer">
