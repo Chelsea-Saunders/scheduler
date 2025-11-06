@@ -28,17 +28,22 @@ function togglePasswordVisible() {
 
 // SUBMIT LOGIN LISTENER
 async function submitButton () {
+    console.log("Looking for admin login form...");
     const form = document.getElementById("admin-login-form");
+    console.log("Found admin login form?", form);
     
     if (form) {
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
 
+            console.log("form submitted");
+
             const email = document.getElementById("login-email").value.trim();
-            const password = form.querySelector('input[name="password"]').value.trim()
+            const password = form.querySelector('input[name="password"]').value.trim();
 
             // validate email
             const emailCheck = validateEmail(email);
+            console.log("Email validation:", emailCheck);
             if (!emailCheck.valid) {
                 showMessage(`Email error: ${emailCheck.message}`, true);
                 return;
@@ -46,6 +51,7 @@ async function submitButton () {
 
             // validate password
             const checkPassword = validatePassword(password);
+            console.log("Password validation:", checkPassword);
             if (!checkPassword.valid) {
                 showMessage(`Password error: ${checkPassword.message}`, true);
                 return;
@@ -53,10 +59,15 @@ async function submitButton () {
 
             // proceed with supabase login
             try {
+                console.log("Attempting admin login ...");
+                console.log("email:", email, "password:", password);
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email, 
                     password,
                 });
+
+                console.log("Supabase sign-in attempt starting...");
+                console.log("sign in response:", data, error);
 
                 if (error) {
                     console.error("Login error:", error);
@@ -85,6 +96,8 @@ async function submitButton () {
 
                 console.log("Admin verified:", employee.role);
                 showMessage("Login successful! Redirecting...");
+                console.log("Reached redirect step - about to navigate...");
+                window.location.href = "admin-dashboard.html";
                 setTimeout(() => {
                     window.location.href = "admin-dashboard.html";
                 }, 1500);

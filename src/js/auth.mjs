@@ -1,4 +1,4 @@
-import { validateForm, validateEmail, validatePhone, applyPhoneFormatterToAll } from "./form-utilities.mjs";
+import { validateEmail, validatePhone } from "./form-utilities.mjs";
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
 

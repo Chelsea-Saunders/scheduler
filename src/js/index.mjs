@@ -322,6 +322,39 @@ async function initializePage() {
         backToLogin(resetForm, loginForm);
     });
 
+    // handle reset password form submission
+    resetForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const email = resetForm.querySelector('input[name="email"]').value.trim();
+        
+        if (!email) {
+            showMessage("Please enter your email address.", true);
+            return;
+        }
+
+        // send reset password email through supabase
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin.includes("localhost")
+                ? "http://localhost:5173/reset-password.html"
+                : "https://chelsea-saunders.github.io/scheduler/update-password.html"
+        });
+
+        if (error) {
+            showMessage(`Failed to send reset email: ${error.message}`, true);
+            console.error("Password reset email error:", error);
+            return;
+        }
+
+        showMessage("Reset email sent! Please check your inbox.");
+        resetForm.reset();
+
+        setTimeout(() => {
+            resetForm.classList.add("hidden");
+            loginForm.classList.remove("hidden");
+        }, 1500);
+    });
+
     // resend password confirmation email
     resendButton?.addEventListener("click", async (event) => {
         event.preventDefault();
