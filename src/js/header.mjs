@@ -107,6 +107,17 @@ export async function toggleLoginOut() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    document.getElementById("toggle-menu")?.addEventListener("click", toggleMenuHandler);
-    await toggleLoginOut();
+    // mobile menu toggle (always needed)
+    const menuToggle = document.getElementById("toggle-menu");
+    if (menuToggle) {
+        menuToggle.addEventListener("click", toggleMenuHandler);
+    } else {
+        console.warn("No menu toggle button found in header - skipping menu logic");
+    }
+    // login/logout toggle
+    try {
+        await toggleLoginOut();
+    } catch (error) {
+        console.error("Header login/logout toggle failed:", error);
+    }
 });
