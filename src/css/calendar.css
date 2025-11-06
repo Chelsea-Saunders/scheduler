@@ -1,0 +1,32 @@
+
+#calendar-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+.slot {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: var(--bs-border-radius-medium);
+    text-align: center;
+}
+.slot.booked {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+.slot.available {
+    background-color: #d4edda;
+    color: #155724;
+}
+.slot button {
+    padding: 0.4rem 0.6rem;
+    border: none;
+    border-radius: var(--bs-border-radius-medium);
+    background-color: var(--bs-primary);
+    color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.slot button:hover {
+    background-color: var(--bs-primary-dark);
+}
