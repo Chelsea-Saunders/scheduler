@@ -51,6 +51,11 @@ export async function toggleLoginOut() {
         }
         const freshLogoutLink = document.querySelector(".logout-link");
 
+        if (!freshLogoutLink) {
+            console.warn("No .logout-link found - skipping logout setup");
+        }
+
+        // logged in state
         if (user) {
             // logged in => hide login, show logout
             if (loginLink) loginLink.style.display = "none";
