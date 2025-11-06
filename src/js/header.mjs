@@ -29,6 +29,7 @@ export async function toggleLoginOut() {
     const logoutLink = document.querySelector(".logout-link");
 
     if (!loginLink && !logoutLink) {
+        console.warn("No login/logout links found - skipping auth header logic for this page");
         return;
     }
 
@@ -56,25 +57,28 @@ export async function toggleLoginOut() {
             if (freshLogoutLink) freshLogoutLink.style.display = "inline-block";
 
             // logout behavior
-            freshLogoutLink.addEventListener("click", async (event) => {
-                event.preventDefault();
+            if (freshLogoutLink) {
+                freshLogoutLink.addEventListener("click", async (event) => {
+                    event.preventDefault();
 
-                // log out of employee session if there is one
-                localStorage.removeItem("employeeLoggedIn");
+                    // log out of employee session if there is one
+                    localStorage.removeItem("employeeLoggedIn");
 
-                // supabase logout for regular users
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                    console.error("Logout failed:", error);
-                    showSubmissionMessage("Logout failed: Please try again.", true);
-                    return;
-                }
+                    // supabase logout for regular users
+                    const { error } = await supabase.auth.signOut();
+                    if (error) {
+                        console.error("Logout failed:", error);
+                        showSubmissionMessage("Logout failed: Please try again.", true);
+                        return;
+                    }
 
-                showSubmissionMessage("Logout successful. Redirecting...");
-                setTimeout(() => {
-                    window.location.href = "index.html";
-                }, 1500);
-            });
+                    showSubmissionMessage("Logout successful. Redirecting...");
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 1500);
+                });
+            }
+            
         } else {
             // if logged out, show login, hide logout
             if (loginLink) {
@@ -92,8 +96,7 @@ export async function toggleLoginOut() {
 
     // live update header with auth changes
     supabase.auth.onAuthStateChange((event) => {
-        if (authReload) return; // prevent double reloads
-        if (document.visibilityState !== "visible") return; // only the active tab reacts
+        if (authReload || document.visibilityState !== "visible") return; // prevent double reloads
 
         if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
             clearTimeout(reloadTimer);
