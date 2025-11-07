@@ -33,8 +33,10 @@ function togglePasswordVisibility(button) {
     const eyeHidden = button.querySelector(".icon-eye-hidden");
 
     input.type = isPassword ? "text" : "password";
-    eye.style.display = isPassword ? "none" : "inline";
-    eyeHidden.style.display = isPassword ? "inline" : "none";
+    if (eye && eyeHidden) {
+        eye.hidden = isPassword;
+        eyeHidden.hidden = !isPassword;
+    }
 
     button.setAttribute(
         "aria-label", 
@@ -106,7 +108,7 @@ async function resendConfirmationEmail(createForm, resendButton) {
     }
 }
 // ***** Login form submission *****
-async function handleLogin(event, loginForm, loginButton,  redirect) {
+async function handleLogin(event, loginForm, loginButton) {
     event.preventDefault();
 
     const messageDiv = document.getElementById("status-message");
@@ -121,29 +123,31 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
 
         //validate presence of both email and password
         if (!email || !password) {
-            setMessage(messageDiv, "Please enter both email and password.", true);
+            setMessage("Please enter both email and password.", true);
             return;
         }
 
-        // check role: 
-        
-
-        
-        
         // try signing in with supabase
-        const { data, error } = await supabase.auth.signInWithPassword({
+        let data, error;
+        try {
+            ({ data, error } = await supabase.auth.signInWithPassword({
             email, 
             password, 
             options: {
-                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html", 
-            },
-        });
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html",
+            },  
+            }));
+        } catch (networkError) {
+            setMessage("A network error occurred during login. Please try again.", true);
+            console.error("supabase connection failed:", networkError);
+            return;
+        }
 
         console.log("Supabase sign-in response:", data, error);
 
         // handle login errors
         if (error) {
-            setMessage(messageDiv, error.message || "Login failed. Please try again.", true);
+            setMessage(error.message || "Login failed. Please try again.", true);
             loginForm.password.value = "";
             loginForm.password?.focus();
             return;
@@ -151,7 +155,7 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
 
         // ensure we actually have a user and session
         if (!data?.user || !data?.session) {
-            setMessage(messageDiv, "Login incomplete. Please try again.", true);
+            setMessage("Login incomplete. Please try again.", true);
             return;
         }
 
@@ -167,8 +171,14 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
             .eq("user_id", user.id)
             .single();
 
+        if (!employee) {
+            setMessage("No employee record found. Access Denied.", true);
+            console.warn("No employee found for user:", user.id);
+            return;
+        }
+
         if (roleError) {
-            setMessage(messageDiv, "Could not verify role. Please try again.", true);
+            setMessage("Could not verify role. Please try again.", true);
             console.error("Role fetch error:", roleError);
             return;
         }
@@ -176,31 +186,34 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
         // redirect based on role
         if (employee?.role === "admin") {
             console.log("Welcome, admin!");
-            setMessage(messageDiv, "Welcome, admin! Redirecting...");
-            localStorage.setItem("sessionType", "admin");
+            setMessage("Welcome, admin! Redirecting...");
+            await supabase.auth.signOut();
+            localStorage.setItem("sessionType");
 
             setTimeout(() => {
                 console.log("redirecting to admin-dashboard...");
+                // debugger;
                 window.location.href = "admin-dashboard.html";
             }, 1500);
             // console.log("Would redirect to admin-dashboard.html here");
             // window.location.href = "admin-dashboard.html";
         } else {
             console.log("Logged in as an employee");
-            setMessage(messageDiv, "Logged in as an employee. Redirecting...");
+            setMessage("Logged in as an employee. Redirecting...");
             // console.log("would redirect to calendar.html here");
             // window.location.href = "calendar.html";
             localStorage.setItem("sessionType", "employee");
             
             setTimeout(() => {
                 console.log("redirecting to calendar...");
+                // debugger;
                 window.location.href = "calendar.html";
             }, 1500);
         }
 
     } catch (error) {
         // handle unexpected errors
-        setMessage(messageDiv, "An unexpected error occurred. Please try again.", true);
+        setMessage("An unexpected error occurred. Please try again.", true);
         console.error(error);
     } finally {
         // always reset loading state
@@ -288,9 +301,8 @@ async function initializePage() {
     const isResetPage = window.location.pathname.includes("update-password.html");
 
     // determine the correct base path
-    const base = window.location.hostname.includes("github.io")
-        ? "/scheduler/"
-        : "./";
+    const isHosted = /github\.io$/i.text(window.location.hostname);
+    const base = isHosted ? "/scheduler/" : "./";
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("verified") === "true") {
@@ -326,14 +338,21 @@ async function initializePage() {
 
     if (
         user &&
-        sessionType !== "employee" &&
         isPageAuthenticated && 
         !isEmployeeLogin &&
         !isResetPage
     ) {
-        console.log("⚠️ [TRACE] Redirect triggered by", window.location.pathname, "→", new URL("admin-dashboard.html", window.location));
+        console.log("⚠️ [TRACE] Redirect triggered by", window.location.pathname);
 
-        window.location.href = `${base}scheduler.html`;
+        const sessionType = localStorage.getItem("sessionType");
+
+        if (sessionType === "admin") {
+            window.location.href = `${base}admin-dashboard.html`;
+        } else if (sessionType === "employee") {
+            window.location.href = `${base}calendar.html`;
+        } else {
+            window.location.href = `${base}scheduler.html`;
+        }
     }
 
     // attach phone formatter
@@ -419,39 +438,39 @@ async function initializePage() {
     // handle supabase redirect 
     handleSupabaseRedirect();
 
-    // auto-redirect logged-in users to scheduler
-    supabase.auth.onAuthStateChange((event, session) => {
-        const base = window.location.hostname.includes("github.io") ? "/scheduler/" : "./";
+    // // auto-redirect logged-in users to scheduler
+    // supabase.auth.onAuthStateChange((event, session) => {
+    //     const base = window.location.hostname.includes("github.io") ? "/scheduler/" : "./";
         
-        // only redirect if a signin just happened
-        if (event !== "SIGNED_IN") return;
+    //     // only redirect if a signin just happened
+    //     if (event !== "SIGNED_IN") return;
 
-        const sessionType = localStorage.getItem("sessionType");
-        const path = window.location.pathname;
+    //     const sessionType = localStorage.getItem("sessionType");
+    //     const path = window.location.pathname;
 
-        // never redirect when already on admin or employee pages
-        if (
-            path.includes("admin.html") ||
-            path.includes("admin-dashboard.html") ||
-            path.includes("employee.html")
-        ) {
-            console.log("[TRACE] Skipping redirect on admin/employee pages");
-            return;
-        }
+    //     // never redirect when already on admin or employee pages
+    //     if (
+    //         path.includes("admin.html") ||
+    //         path.includes("admin-dashboard.html") ||
+    //         path.includes("employee.html")
+    //     ) {
+    //         console.log("[TRACE] Skipping redirect on admin/employee pages");
+    //         return;
+    //     }
 
-        // route by session type
-        if (sessionType === "admin") {
-            console.log("[TRACE] Admin session -> admin-dashboard.html");
-            window.location.href = `${base}admin-dashboard.html`;
-            return;
-        }
-        if (sessionType === "employee") {
-            console.log("[TRACE] Employee session -> calendar.html");
-            window.location.href = `${base}calendar.html`;
-            return;
-        }
-        // default user
-        console.log("[TRACE] Default login session -> scheduler.html");
-        window.location.href = `${base}scheduler.html`;
-    });
+    //     // route by session type
+    //     if (sessionType === "admin") {
+    //         console.log("[TRACE] Admin session -> admin-dashboard.html");
+    //         window.location.href = `${base}admin-dashboard.html`;
+    //         return;
+    //     }
+    //     if (sessionType === "employee") {
+    //         console.log("[TRACE] Employee session -> calendar.html");
+    //         window.location.href = `${base}calendar.html`;
+    //         return;
+    //     }
+    //     // default user
+    //     console.log("[TRACE] Default login session -> scheduler.html");
+    //     window.location.href = `${base}scheduler.html`;
+    // });
 }

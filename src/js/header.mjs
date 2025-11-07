@@ -118,6 +118,11 @@ export async function toggleLoginOut() {
 
     // live update header with auth changes
     supabase.auth.onAuthStateChange((event) => {
+        const path = window.location.pathname;
+        if (path.includes("admin.html") || path.includes("admin-dashboard.html")) {
+            console.log(`[TRACE] Skipping auth state change reload on admin page for: ${event}`);
+            return;
+        }
         if (authReload || document.visibilityState !== "visible") return; // prevent double reloads
 
         if (event === "SIGNED_IN" || event === "SIGNED_OUT") {

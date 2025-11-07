@@ -39,7 +39,7 @@ export async function handleLogin(event, redirectMap) {
     }
 
     // supabase login
-    const { data, error } = await supabase.auth.signInWithPassword({ email, pasword });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
         showMessage(`Login failed: ${error.message}`, true);
@@ -57,7 +57,7 @@ export async function handleLogin(event, redirectMap) {
         .eq("id", user.id)
         .single();
 
-        if (rollError) {
+        if (roleError) {
             showMessage("Could not verify user role.", true);
             console.error(roleError);
             return;
@@ -68,10 +68,21 @@ export async function handleLogin(event, redirectMap) {
 
         // redirect based on role
         if (role === "admin" && redirectMap.admin) {
-            window.location.assign(redirectMap.admin);
+            if (!window.location.pathname.includes("admin-dashboard.html")) {
+                window.location.assign(redirectMap.admin);
+            }
+            
         } else if (role === "employee" && redirectMap.employee) {
-            window.location.href = redirectMap.employee;
+            if ( 
+                !window.location.pathname.includes("calendar.html") &&
+                !window.location.pathname.includes("admin-dashboard.html")
+            ) {
+                console.log("[TRACE] redirecting employee to calendar...");
+                window.location.href = redirectMap.employee;
+            }
+            
         } else if (redirectMap.default) {
+            console.log("[TRACE] redirecting to default...", redirectMap.default);
             window.location.href = redirectMap.default;
         } else {
             showMessage("No matching role redirect found.", true);
