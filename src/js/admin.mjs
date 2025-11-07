@@ -97,8 +97,11 @@ async function submitButton () {
 
                 console.log("Admin verified:", employee.role);
                 showMessage("Login successful! Redirecting...");
+
+                localStorage.setItem("sessionType", "admin");
+
                 console.log("Reached redirect step - about to navigate...");
-                window.location.href = "admin-dashboard.html";
+                // window.location.href = "admin-dashboard.html";
                 setTimeout(() => {
                     window.location.href = "admin-dashboard.html";
                 }, 1500);

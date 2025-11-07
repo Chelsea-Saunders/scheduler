@@ -1,6 +1,8 @@
 import { supabase } from '../lib/supabase.mjs';
 import { showMessage } from '../lib/ui.mjs';
 
+console.log("[TRACE] script loaded:", window.location.pathname);
+
 // congig's
 const redirectAfterLogin = "./calendar.html";
 let currentPasscode = null; // holds the one fetched from supabase

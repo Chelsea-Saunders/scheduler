@@ -3,6 +3,8 @@ import { showMessage } from '../lib/ui.mjs';
 import { setupCreateAccountForm } from './auth.mjs';
 import { applyPhoneFormatterToAll } from './form-utilities.mjs';
 
+console.log("[TRACE] script loaded:", window.location.pathname);
+
 // skip supabase user login on employee-only pages
 const path = window.location.pathname;
 
@@ -317,6 +319,8 @@ async function initializePage() {
         !isEmployeeLogin &&
         !isResetPage
     ) {
+        console.log("⚠️ [TRACE] Redirect triggered by", window.location.pathname, "→", new URL("admin-dashboard.html", window.location));
+
         window.location.href = `${base}scheduler.html`;
     }
 
@@ -406,6 +410,16 @@ async function initializePage() {
     // auto-redirect logged-in users to scheduler
     supabase.auth.onAuthStateChange((_event, session) => {
         const sessionType = localStorage.getItem("sessionType");
+
+        // skip redirect if on admin page
+        if (
+            window.location.pathname.includes("admin.html") || 
+            window.location.pathname.includes("admin-dashboard.html")
+        ) {
+            console.log("Skipping redirect to main page");
+            return;
+        }
+
         // if user is employee, do not redirect
         if (sessionType === "employee") return;
 

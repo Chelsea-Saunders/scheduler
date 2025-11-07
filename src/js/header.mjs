@@ -1,6 +1,8 @@
 import { showSubmissionMessage } from "./form-utilities.mjs";
 import { supabase } from "../lib/supabase.mjs";
 
+console.log("[TRACE] script loaded:", window.location.pathname);
+
 // toggles menu open/close (mobile)
 export function toggleMenuHandler() {
     const toggleButton = document.querySelector("#toggle-menu");
@@ -34,6 +36,8 @@ export async function toggleLoginOut() {
     }
 
     try {
+        console.log("⚠️ [TRACE] Redirect triggered by", window.location.pathname, "→", new URL("admin-dashboard.html", window.location));
+
         // skip logic for password recovery page
         if (
             window.location.href.includes("type=recovery") ||
@@ -78,6 +82,19 @@ export async function toggleLoginOut() {
                     }
 
                     showSubmissionMessage("Logout successful. Redirecting...");
+                    console.log("⚠️ [TRACE] Redirect triggered by", window.location.pathname, "→", new URL("admin-dashboard.html", window.location));
+
+                    if (
+                        window.location.pathname.includes("admin.html") || 
+                        window.location.pathname.includes("admin-dashboard.html")
+                    ) {
+                        console.log("[TRACE] Skipping logout redirect on admin page");
+                        return;
+                    }
+
+                    console.log(
+                          "⚠️ [TRACE] Redirect triggered by", window.location.pathname, "→ index.html");
+
                     setTimeout(() => {
                         window.location.href = "index.html";
                     }, 1500);
@@ -108,12 +125,21 @@ export async function toggleLoginOut() {
             const currentPath = window.location.pathname;
             if (
                 currentPath.includes("index.html") ||
-                currentPath.includes("admin.html") || 
+                // currentPath.includes("admin.html") || 
                 currentPath.includes("create-account") ||
                 currentPath.includes("reset-password") ||
                 currentPath === "/" // root page
             ) {
                 console.log(`Skipping reload on auth page for event: ${event}`);
+                return;
+            }
+
+            // skip reloads on admin pages
+            if (
+                currentPath.includes("admin.html") ||
+                currentPath.includes("admin-dashboard.html")
+            ) {
+                console.log(`[TRACE] Skipping reload on admin page for: ${event}`);
                 return;
             }
 
