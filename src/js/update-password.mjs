@@ -117,7 +117,7 @@ async function initializePasswordResetPage() {
     const form = getForm();
 
     // reset form (user enters email to get reset link)
-    if (type !== "recovery" || !accessToken || !refreshToken) {
+    if ((type !== "recovery" && type !== "signup") || !accessToken || !refreshToken) {
         console.log("Password reset request mode(no recovery token detected).");
 
         form.addEventListener("submit", async (event) => {
@@ -170,6 +170,13 @@ async function initializePasswordResetPage() {
         }
 
         console.log("Recovery session established:", data);
+
+        if (type === "signup") {
+            showMessage("Welcome! Please set your new password to complete your account setup.");
+        } else {
+            showMessage("Please enter a new password to reset your account.");
+        }
+        
     } catch (error) {
         console.error("Unexpected session error:", error);
         showMessage("Could not restore recovery session.", true);
