@@ -114,6 +114,7 @@ function loginSuccess() {
     localStorage.setItem("sessionType", "employee");
     showMessage("Passcode correct! Redirecting...");
     setTimeout(() => {
+        localStorage.setItem("sessionType", "employee");
         window.location.assign(redirectAfterLogin);
     }, 1500);    
 }

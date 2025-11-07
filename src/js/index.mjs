@@ -177,13 +177,25 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
         if (employee?.role === "admin") {
             console.log("Welcome, admin!");
             setMessage(messageDiv, "Welcome, admin! Redirecting...");
-            console.log("Would redirect to admin-dashboard.html here");
+            localStorage.setItem("sessionType", "admin");
+
+            setTimeout(() => {
+                console.log("redirecting to admin-dashboard...");
+                window.location.href = "admin-dashboard.html";
+            }, 1500);
+            // console.log("Would redirect to admin-dashboard.html here");
             // window.location.href = "admin-dashboard.html";
         } else {
             console.log("Logged in as an employee");
             setMessage(messageDiv, "Logged in as an employee. Redirecting...");
-            console.log("would redirect to calendar.html here");
+            // console.log("would redirect to calendar.html here");
             // window.location.href = "calendar.html";
+            localStorage.setItem("sessionType", "employee");
+            
+            setTimeout(() => {
+                console.log("redirecting to calendar...");
+                window.location.href = "calendar.html";
+            }, 1500);
         }
 
     } catch (error) {
@@ -408,24 +420,38 @@ async function initializePage() {
     handleSupabaseRedirect();
 
     // auto-redirect logged-in users to scheduler
-    supabase.auth.onAuthStateChange((_event, session) => {
-        const sessionType = localStorage.getItem("sessionType");
+    supabase.auth.onAuthStateChange((event, session) => {
+        const base = window.location.hostname.includes("github.io") ? "/scheduler/" : "./";
+        
+        // only redirect if a signin just happened
+        if (event !== "SIGNED_IN") return;
 
-        // skip redirect if on admin page
+        const sessionType = localStorage.getItem("sessionType");
+        const path = window.location.pathname;
+
+        // never redirect when already on admin or employee pages
         if (
-            window.location.pathname.includes("admin.html") || 
-            window.location.pathname.includes("admin-dashboard.html")
+            path.includes("admin.html") ||
+            path.includes("admin-dashboard.html") ||
+            path.includes("employee.html")
         ) {
-            console.log("Skipping redirect to main page");
+            console.log("[TRACE] Skipping redirect on admin/employee pages");
             return;
         }
 
-        // if user is employee, do not redirect
-        if (sessionType === "employee") return;
-
-        // otherwise, redirect logged-in users
-        if (session?.user && !window.location.pathname.includes("scheduler.html")) {
-            window.location.assign(redirect);
+        // route by session type
+        if (sessionType === "admin") {
+            console.log("[TRACE] Admin session -> admin-dashboard.html");
+            window.location.href = `${base}admin-dashboard.html`;
+            return;
         }
+        if (sessionType === "employee") {
+            console.log("[TRACE] Employee session -> calendar.html");
+            window.location.href = `${base}calendar.html`;
+            return;
+        }
+        // default user
+        console.log("[TRACE] Default login session -> scheduler.html");
+        window.location.href = `${base}scheduler.html`;
     });
 }

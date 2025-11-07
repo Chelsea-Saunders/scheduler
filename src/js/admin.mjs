@@ -101,8 +101,10 @@ async function submitButton () {
                 localStorage.setItem("sessionType", "admin");
 
                 console.log("Reached redirect step - about to navigate...");
+
                 // window.location.href = "admin-dashboard.html";
                 setTimeout(() => {
+                    localStorage.setItem("sessionType", "admin");
                     window.location.href = "admin-dashboard.html";
                 }, 1500);
 
