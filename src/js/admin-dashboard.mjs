@@ -19,7 +19,7 @@ async function verifyAdminAccess() {
         const { data: employee, error: roleError } = await supabase 
             .from("employees")
             .select("role")
-            .eq("scheduler_id", data.user.id)
+            .eq("user_id", data.user.id)
             .single();
 
         if (roleError || employee?.role !== "admin") {

@@ -84,7 +84,7 @@ async function submitButton () {
                 const { data: employee, error: roleError } = await supabase
                     .from("employees")
                     .select("role", { head: false })
-                    .eq("scheduler_id", data.user.id)
+                    .eq("user_id", data.user.id)
                     .maybeSingle();
 
                 console.log("Employee roll fetch:", employee, "Error:", roleError);
