@@ -332,6 +332,7 @@ async function initializePage() {
 
     // check if user is clicking on employee login link
     const isEmployeeLogin = window.location.pathname.includes("employee.html");
+    const isAdminLogin = window.location.pathname.includes("admin.html");
 
     // only redirect if not on employee login page
     const sessionType = localStorage.getItem("sessionType");
@@ -340,11 +341,11 @@ async function initializePage() {
         user &&
         isPageAuthenticated && 
         !isEmployeeLogin &&
+        !isAdminLogin &&
         !isResetPage
     ) {
         console.log("⚠️ [TRACE] Redirect triggered by", window.location.pathname);
-
-        const sessionType = localStorage.getItem("sessionType");
+        console.log("session type:", sessionType);
 
         if (sessionType === "admin") {
             window.location.href = `${base}admin-dashboard.html`;
