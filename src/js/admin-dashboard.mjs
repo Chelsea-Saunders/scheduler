@@ -1,6 +1,9 @@
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
 
+console.log("✅ admin-dashboard.mjs loaded");
+
+
 
 // PREVENT UNAUTHORIZED ACCESS TO ADMIN DASHBOARD
 async function verifyAdminAccess() {
@@ -197,14 +200,18 @@ async function handleAddEmployee(event) {
     
     try {
         console.log("Creating supabase auth user...");
+        console.log("➡️ handleAddEmployee triggered");
+
         // create supabase auth user (send confirmation email automatically)
         const { data: user, error: signUpError } = await supabase.auth.signUp({
             email, 
             password: crypto.randomUUID(), // temporary random password
             options: {
-                emailRedirectTo: `${window.location.origin}/update-password.html`,
+                emailRedirectTo: null,
             },
         });
+
+        console.log("Signup response:", user);
 
         if (signUpError) {
             console.error("Error creating auth user:", signUpError);
@@ -223,16 +230,40 @@ async function handleAddEmployee(event) {
 
         console.log("adding employee record for:", userId);
 
+        // send phpMailer email to new employee
+        const mailResponse = await fetch("https://rsceb.org/sendmail_scheduler.php", {
+            method: "POST", 
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                type: "signup",
+                email, 
+                name,
+                link: "https://chelsea-saunders.github.io/scheduler/update-password.html", 
+            }),
+        });
+
+        if (!mailResponse.ok) {
+            console.error("Mailer network eror:", mailResponse.status, mailResponse.statusText);
+            showMessage("Employee created, but notification email failed to send. Please contact support.", true);
+        } else {
+            const mailData = await mailResponse.json().catch(() => ({}));
+            console.log("Mailer response:", mailData);
+        }
+
+            // .then((response) => response.json())
+            // .then((data) => console.log("Mailer response:", data))
+            // .catch((error) => console.error("Mailer error:", error));
+
         // add employee info to table
-        const { error: insertError } = await supabase
-            .from("employees")
-            .insert([{
-                user_id: user.id, 
+        const { error: insertError } = await supabase.from("employees").insert([
+            {
+                user_id: userId, 
                 name, 
                 email, 
                 phone, 
-                role: "employee",
-            }]);
+                role,
+            }
+        ]);
 
         if (insertError) {
             console.error("Error inserting employee record:", insertError);
@@ -241,8 +272,15 @@ async function handleAddEmployee(event) {
         }
 
         showMessage(`Employee ${name} added. Please have them check their inbox for login setup email ${email}.`);
+        await loadEmployees();
+
+        console.log("Signup response:", user);
+        if (signUpError) console.log("SignupError:", signUpError);
+
+
         addEmployeeForm.reset();
         addEmployeeForm.classList.add("hidden");
+
     } catch (error) {
         console.error("Error adding employee:", error);
         showMessage("Failed to add employee:", true);
@@ -268,8 +306,24 @@ function togleAddEmployeeButton() {
     });
 }
 
+async function waitForElement(selector, timeout = 5000) {
+    const start = Date.now();
+    while(!document.querySelector(selector)) {
+        if (Date.now() - start > timeout) {
+            throw new Error(`Element ${selector} not found within ${timeout}ms`);
+        }
+        await new Promise(resolve => requestAnimationFrame(resolve));
+    }
+    return document.querySelector(selector);
+}
+
 //DOM
 document.addEventListener("DOMContentLoaded", async () => {
+    console.log("✅ DOM fully loaded");
+    const addEmployeeForm = await waitForElement("#add-employee");
+    console.log("🧾 Found addEmployeeForm:", addEmployeeForm);
+    addEmployeeForm?.addEventListener("submit", handleAddEmployee);
+
     await verifyAdminAccess();
 
     const form = document.getElementById("create-appt-form");
@@ -284,7 +338,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     toggleFormVisibility();
     togleAddEmployeeButton();
-    addEmployeeForm?.addEventListener("submit", handleAddEmployee);
 
     // auto refresh appts every 60 seconds
     setInterval(loadAppointments, 60000);
