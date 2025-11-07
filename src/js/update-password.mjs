@@ -110,6 +110,16 @@ async function handleFormSubmission(event) {
 // main
 async function initializePasswordResetPage() {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    if (window.location.hash.includes("type=signup")) {
+        console.log("Signup link detected - clearing any existing sessions before password setup.");
+
+        // sign out to prevent redirect to dashboard
+        try {
+            await supabase.auth.singOut();
+        } catch (error) {
+            console.warn("No existing session or failed to clear:", error);
+        }
+    }
     const accessToken = hashParams.get("access_token");
     const refreshToken = hashParams.get("refresh_token");
     const type = hashParams.get("type");
@@ -176,7 +186,7 @@ async function initializePasswordResetPage() {
         } else {
             showMessage("Please enter a new password to reset your account.");
         }
-        
+
     } catch (error) {
         console.error("Unexpected session error:", error);
         showMessage("Could not restore recovery session.", true);

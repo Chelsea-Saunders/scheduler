@@ -7,6 +7,11 @@ console.log("✅ admin-dashboard.mjs loaded");
 
 // PREVENT UNAUTHORIZED ACCESS TO ADMIN DASHBOARD
 async function verifyAdminAccess() {
+    // guard: skip admin checks if user arrived via signup/recovery link
+    if (window.location.hash.includes("type=signup") || window.location.hash.includes("type=recovery")) {
+        console.log("Skipping admin verification for signup/recovery flow.");
+        return;
+    }
 
     try {
         const { data, error: userError } = await supabase.auth.getUser();
