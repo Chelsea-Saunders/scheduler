@@ -250,10 +250,6 @@ async function handleAddEmployee(event) {
             console.log("Mailer response:", mailData);
         }
 
-            // .then((response) => response.json())
-            // .then((data) => console.log("Mailer response:", data))
-            // .catch((error) => console.error("Mailer error:", error));
-
         // add employee info to table
         const { error: insertError } = await supabase.from("employees").insert([
             {
@@ -306,7 +302,7 @@ function togleAddEmployeeButton() {
     });
 }
 
-async function waitForElement(selector, timeout = 5000) {
+async function waitForElement(selector, timeout = 3000) {
     const start = Date.now();
     while(!document.querySelector(selector)) {
         if (Date.now() - start > timeout) {
