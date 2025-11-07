@@ -119,6 +119,14 @@ export async function toggleLoginOut() {
     // live update header with auth changes
     supabase.auth.onAuthStateChange((event) => {
         const path = window.location.pathname;
+
+        // skip auto-reload if url has signup/recovery link hash
+        const hash = window.location.hash;
+        if (hash.includes("type=signup") || hash.includes("type=recovery")) {
+            console.log(`[TRACE] Skipping auth reload for signup/recovery link: ${event}`);
+            return;
+        }
+
         if (path.includes("admin.html") || path.includes("admin-dashboard.html")) {
             console.log(`[TRACE] Skipping auth state change reload on admin page for: ${event}`);
             return;
@@ -130,7 +138,6 @@ export async function toggleLoginOut() {
             const currentPath = window.location.pathname;
             if (
                 currentPath.includes("index.html") ||
-                // currentPath.includes("admin.html") || 
                 currentPath.includes("create-account") ||
                 currentPath.includes("reset-password") ||
                 currentPath === "/" // root page
