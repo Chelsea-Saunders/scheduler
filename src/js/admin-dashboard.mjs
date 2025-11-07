@@ -196,6 +196,7 @@ async function handleAddEmployee(event) {
     }
     
     try {
+        console.log("Creating supabase auth user...");
         // create supabase auth user (send confirmation email automatically)
         const { data: user, error: signUpError } = await supabase.auth.signUp({
             email, 
@@ -211,11 +212,22 @@ async function handleAddEmployee(event) {
             return;
         }
 
+        // wait briefly to ensure supabase has processed new user
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const userId = user?.user?.id;
+        if (!userId) {
+            showMessage("Signup successful but no user ID returned.", true);
+            return;
+        }
+
+        console.log("adding employee record for:", userId);
+
         // add employee info to table
         const { error: insertError } = await supabase
             .from("employees")
             .insert([{
-                user_id: user.user.id, 
+                user_id: user.id, 
                 name, 
                 email, 
                 phone, 
