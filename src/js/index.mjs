@@ -168,7 +168,7 @@ async function handleLogin(event, loginForm, loginButton) {
         const { data: employee, error: roleError } = await supabase
             .from("employees")
             .select("role")
-            .eq("user_id", user.id)
+            .eq("scheduler_id", user.id)
             .single();
 
         if (!employee) {

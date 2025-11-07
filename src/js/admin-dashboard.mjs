@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
 
+
 // PREVENT UNAUTHORIZED ACCESS TO ADMIN DASHBOARD
 async function verifyAdminAccess() {
 
@@ -18,7 +19,7 @@ async function verifyAdminAccess() {
         const { data: employee, error: roleError } = await supabase 
             .from("employees")
             .select("role")
-            .eq("id", user.id)
+            .eq("scheduler_id", data.user.id)
             .single();
 
         if (roleError || employee?.role !== "admin") {
@@ -87,7 +88,7 @@ async function loadAppointments() {
 
     const { data: appointments, error } = await supabase
         .from("appointments")
-        .select("id, name, email, date, time, status")
+        .select("id, name, date, time, phone, email, label, scheduler_id")
         .order("date", { ascending: true })
         .order("time", { ascending: true });
 
