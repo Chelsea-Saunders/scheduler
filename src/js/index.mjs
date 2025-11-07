@@ -301,7 +301,7 @@ async function initializePage() {
     const isResetPage = window.location.pathname.includes("update-password.html");
 
     // determine the correct base path
-    const isHosted = /github\.io$/i.text(window.location.hostname);
+    const isHosted = /github\.io$/i.test(window.location.hostname);
     const base = isHosted ? "/scheduler/" : "./";
 
     const params = new URLSearchParams(window.location.search);
