@@ -1,4 +1,7 @@
-
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
 h1 {
     font-size: 1.5rem;
     text-align: center;
@@ -7,7 +10,7 @@ h1 {
 }
 #dashboard-container {
     margin: 2rem auto;
-    max-width: 500px;
+    max-width: 800px;
     padding: 2rem;
     border: 1px solid var(--bs-border-color-light);
     border-radius: var(--bs-border-radius-medium);
@@ -29,13 +32,40 @@ h2 {
     color: navy;
     text-align: center;
 }
+/* EMPLOYEES CONTAINER */
+#add-employee {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+#add-employee label {
+    font-weight: bold;
+}
+#add-employee input {
+    padding: 0.25rem 0.3rem;
+    border-radius: var(--bs-border-radius-medium);
+    border: 1px solid var(--bs-border-color-light);
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+    color: gray;
+}
+
+/* APPOINTMENTS CONTAINER */
 #appointments-table {
     width: 100%;
     border-collapse: collapse;
+    box-sizing: border-box;
+}
+#appointments-table th {
+    padding: 0.25rem;
+    background-color: rgb(206, 215, 233);
 }
 #appointments-table td {
     text-align: center;
+    padding: 0.1rem;
 }
+/* CREATE NEW APPOINTMENT CONTAINER */
 #create-appt-container {
     padding: 1rem;
 }
@@ -55,19 +85,55 @@ h2 {
     font-size: 0.9rem;
     color: gray;
     width: 100%;
+    box-sizing: border-box;
 }
+/* hide form */
+.hidden {
+    display: none !important;
+}
+/* Buttons */
 button {
     padding: 0.3rem 0.5rem;
     border: none;
     border-radius: var(--bs-border-radius-large);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.235);
     color: white;
     background-color: navy;
     width: 50%;
     margin: 0 auto;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+button:hover {
+    background-color:rgb(206, 215, 233);
+    color: navy;
+    border: none;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.519);
 }
 #admin-logout {
     margin: 0 auto;
     display: block;
     width: 50%;
     font-size: 1rem;
+    cursor: pointer;
+}
+#show-add-employee-form {
+    display: block;
+    margin: 0 auto;
+    width: 60%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+#show-add-employee-form:hover {
+    background-color: rgb(206, 215, 233);
+    color: navy;
+    border: none;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.519);
+}
+@media (min-width: 400px) {
+    #show-add-employee-form {
+        width: 30%;
+    }
 }

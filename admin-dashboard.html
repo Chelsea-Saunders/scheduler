@@ -65,12 +65,56 @@
             </nav>
         </div>
     </header>
-    <main id="admin-dashboard" class="hidden">
+    <main id="admin-dashboard">
         <div id="dashboard-container">
             <h1>Admin Dashboard</h1>
 
             <section id="employee-container">
                 <h2>Employees</h2>
+                <button id="show-add-employee-form" class="add-new-employee">Add Employee</button>
+                <!-- hidden form -->
+                 <form id="add-employee" class="hidden">
+                    <label>
+                        Full Name:
+                        <input 
+                            type="text" 
+                            name="name" 
+                            placeholder="Full name" 
+                            required
+                            >
+                    </label>
+                    <label>
+                        Email:
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="email@gmail.com"
+                            required
+                            >
+                    </label>
+                    <label>
+                        Phone:
+                        <input
+                            type="tel"
+                            name="phone"
+                            placeholder="321-654-9870"
+                            required
+                            >
+                    </label>
+                    <label>
+                        Role:
+                        <input
+                            type="role"
+                            name="role"
+                            placeholder="Employee role/position"
+                            required
+                            >
+                    </label>
+
+                    <button type="submit">Invite Employee</button>
+                    <button type="button" id="cancel-add">Cancel</button>
+
+                 </form>
                 <div id="employees-list-container">
             </section>
 
@@ -95,10 +139,36 @@
                 <h2>Create New Appointment</h2>
                 <form id="create-appt-form">
                     <label>Date: 
-                        <input type="date" name="date" placeholder="date" required>
+                        <input 
+                            type="date" 
+                            name="date" 
+                            placeholder="date" 
+                            required
+                        >
                     </label>
                     <label>Time:
-                        <input type="time" name="time" placeholder="time" required>
+                        <input 
+                            type="time" 
+                            name="time" 
+                            placeholder="time" 
+                            required
+                        >
+                    </label>
+                    <label>Name:
+                        <input 
+                            type="name"
+                            name="name"
+                            placeholder="Name"
+                            required
+                        >
+                    </label>
+                    <label>Email:
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="email@email.com"
+                            required
+                        >
                     </label>
                     <button type="submit">Add Appointment</button>
                 </form>

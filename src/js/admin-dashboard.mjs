@@ -164,6 +164,98 @@ async function adminLogout() {
     window.location.href = "admin.html";
 }
 
+// TOGGLE FORM VISIBILITY
+function toggleFormVisibility() {
+    const addEmployee = document.getElementById("add-employee-button");
+    const addEmployeeForm = document.getElementById("add-employee");
+    const cancelAddEmployee = document.getElementById("cancel-add");
+
+    addEmployee?.addEventListener("click", () => {
+        addEmployeeForm.classList.toggle("hidden");
+    });
+
+    cancelAddEmployee?.addEventListener("click", () => {
+        addEmployeeForm.classList.add("hidden");
+        addEmployeeForm.reset();
+    });
+}
+
+// add employee form submission
+const addEmployeeForm = document.getElementById("add-employee");
+async function handleAddEmployee(event) {
+    event.preventDefault();
+
+    const name = addEmployeeForm.querySelector('input[name="name"]').value.trim();
+    const email = addEmployeeForm.querySelector('input[name="email"]').value.trim();
+    const phone = addEmployeeForm.querySelector('input[name="phone"]').value.trim();
+    const role = addEmployeeForm.querySelector('input[name="role"]').value.trim();
+
+    if (!name || !email || !role) {
+        showMessage("Please fill out Name, email, phone number and position or role of new employee.", true);
+        return;
+    }
+    
+    try {
+        // create supabase auth user (send confirmation email automatically)
+        const { data: user, error: signUpError } = await supabase.auth.signUp({
+            email, 
+            password: crypto.randomUUID(), // temporary random password
+            options: {
+                emailRedirectTo: `${window.location.origin}/update-password.html`,
+            },
+        });
+
+        if (signUpError) {
+            console.error("Error creating auth user:", signUpError);
+            showMessage(`Failed to create employee login: ${signUpError.message}`, true);
+            return;
+        }
+
+        // add employee info to table
+        const { error: insertError } = await supabase
+            .from("employees")
+            .insert([{
+                user_id: user.user.id, 
+                name, 
+                email, 
+                phone, 
+                role: "employee",
+            }]);
+
+        if (insertError) {
+            console.error("Error inserting employee record:", insertError);
+            showMessage(`Failed to add employee record to database: ${insertError.message}`, true);
+            return;
+        }
+
+        showMessage(`Employee ${name} added. Please have them check their inbox for login setup email ${email}.`);
+        addEmployeeForm.reset();
+        addEmployeeForm.classList.add("hidden");
+    } catch (error) {
+        console.error("Error adding employee:", error);
+        showMessage("Failed to add employee:", true);
+    }
+}
+// ADD NEW EMPLOYEE BUTTON TO SHOW FORM TOGGLE
+function togleAddEmployeeButton() {
+    const showFormButton = document.getElementById("show-add-employee-form");
+    const addEmployeeForm = document.getElementById("add-employee");
+    const cancelButton = document.getElementById("cancel-add");
+
+    // show form when add employee button is clicked
+    showFormButton?.addEventListener("click", () => {
+        addEmployeeForm.classList.remove("hidden");
+        showFormButton.classList.add("hidden");
+    });
+
+    // hide form when cancel button is clicked
+    cancelButton?.addEventListener("click", () => {
+        addEmployeeForm.classList.add("hidden");
+        showFormButton.classList.remove("hidden");
+        addEmployeeForm.reset();
+    });
+}
+
 //DOM
 document.addEventListener("DOMContentLoaded", async () => {
     await verifyAdminAccess();
@@ -177,6 +269,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (logout) {
         logout.addEventListener("click", adminLogout);
     }
+
+    toggleFormVisibility();
+    togleAddEmployeeButton();
+    addEmployeeForm?.addEventListener("submit", handleAddEmployee);
 
     // auto refresh appts every 60 seconds
     setInterval(loadAppointments, 60000);
