@@ -96,7 +96,7 @@ async function loadAppointments() {
 
     const { data: appointments, error } = await supabase
         .from("appointments")
-        .select("id, name, date, time, phone, email, label, scheduler_id")
+        .select("id, name, date, time, phone, email, label, user_id")
         .order("date", { ascending: true })
         .order("time", { ascending: true });
 

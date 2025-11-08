@@ -99,8 +99,8 @@ async function loadAppointments() {
         // fetch appointments for user
         const { data, error } = await supabase
             .from("appointments")
-            .select("id, date, time, scheduler_id")
-            .eq("scheduler_id", user.id)
+            .select("id, date, time, user_id")
+            .eq("user_id", user.id)
             .order("date", { ascending: true })
             .order("time", { ascending: true });
         
@@ -137,7 +137,7 @@ async function loadAppointments() {
                     .from("appointments")
                     .delete()
                     .eq("id", row.id)
-                    .eq("scheduler_id", user.id); // ensures user only deletes their own appt
+                    .eq("user_id", user.id); // ensures user only deletes their own appt
 
                 if (deleteError) {
                     // restore button if something goes wrong
@@ -265,7 +265,7 @@ async function fetchBookedSlots(date) {
     // get all booked times for that date (share calendar)
     const { data: allBookings, error } = await supabase
         .from ("appointments")
-        .select("time, scheduler_id")
+        .select("time, user_id")
         .eq("date", ymd);
 
     if (error) {
@@ -281,7 +281,7 @@ async function fetchBookedSlots(date) {
 
     // store which ones belong to the current user (for cancel buttons)
     const myBooked = (allBookings ?? [])
-        .filter(row => user && row.scheduler_id === user.id)
+        .filter(row => user && row.user_id === user.id)
         .map(row => normalizeHHMM(row.time));
 
     bookedTimesCache = allBooked;
@@ -312,7 +312,7 @@ async function selectTimeSlot(date, time) {
             .from ("appointments")
             .insert ([
                 { 
-                    scheduler_id: user.id, 
+                    user_id: user.id, 
                     date: ymd, 
                     time,
                     label: "Consultation",
