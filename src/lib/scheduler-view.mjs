@@ -1,5 +1,5 @@
-import { supabase } from "./lib/supabase.mjs";
-import { showMessage } from "./lib/ui.mjs";
+import { supabase } from "./supabase.mjs";
+import { showMessage } from "./ui.mjs";
 
 const holidays = [
     "2025-10-13", // Columbus Day
@@ -51,8 +51,21 @@ async function getCurrentUser() {
 
 // LOAD APPOINTMENTS
 async function loadAppointments(user, role) {
+    const table = document.getElementById("appointments-table");
     const list = document.getElementById("my-appts");
-    list.textContent = "Loading appointments...";
+
+    if (table) {
+        // table version for dashboards
+        let tbody = table.querySelector("tbody");
+        if (!tbody) {
+            tbody = document.createElement("tbody");
+            table.appendChild(tbody);
+        }
+        tbody.innerHTML = "<tr><td colspan='6'>Loading appointments...</td></tr>";
+    } else if (list) {
+        // list version for users
+        list.textContent = "Loading appointments...";
+    }
 
     let query = supabase
         .from("appointments")
@@ -73,31 +86,78 @@ async function loadAppointments(user, role) {
         return;
     }
 
-    list.innerHTML = "";
-    if (!data.length) {
-        list.textContent = "No appointments found.";
-        return;
-    }
+    if (table) {
+        // populate table
+        const tbody = table.querySelector("tbody");
+        if (!data.length) {
+            tbody.innerHTML = `<tr><td colspan="6">No appointments found.</td><tr>`;
+            return;
+        }
 
-    data.forEach((appointment) => {
+        tbody.innerHTML = data
+            .map(
+                (appointment) => `
+                    <tr>
+                        <td>${appointment.name}</td>
+                        <td>${appointment.email}</td>
+                        <td>${appointment.date}</td>
+                        <td>${appointment.time}</td>
+                        <td>${appointment.status || "-"}></td>
+                        <td>
+                            ${(role !== "user" || appointment.user_id === user.id)
+                                ?`<button class="delete-appt" data-id="${appointment.id}">Delete</button>`
+                                : ""
+                            }
+                        </td>
+                    </tr>`
+                ).join("");
+
+        // hook up delete buttons
+        tbody.querySelectorAll(".delete-appt").forEach((button) => {
+            button.addEventListener("click", async () => {
+                await deleteAppointment(button.dataset.id);
+            });
+        });
+    } else if (list) {
+        // populate list
+        list.innerHTML = "";
+        if (!data.length) {
+            list.textContent = "No appointments found.";
+            return;
+        }
+        data.forEach((appointment) => {
         const item = document.createElement("div");
         item.className = "appointment";
         item.textContent = `
-            ${appointment.date} - 
-            ${appointment.time} - 
-            ${appointment.name}
+            ${appointment.time} :
+            ${appointment.name} :
+            ${appointment.date} :
+            ${appointment.email} 
         `;
 
         // allow deletion if != user or it if't their own 
         if (role !== "user" || appointment.user_id === user.id) {
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "Delete";
+            deleteButton.classList.add("delete-button");
             deleteButton.addEventListener("click", () => deleteAppointment(appointment.id));
             item.appendChild(deleteButton);
         }
 
         list.appendChild(item);
     });
+}
+}
+// RELOAD APPTS
+async function reloadAppointments() {
+    const user = await getCurrentUser();
+    const { data: employee } = await supabase
+        .from("employees")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+    await loadAppointments(user, employee?.role || "user");
 }
 
 // DELETE APPOINTMENT AND REFRESH
@@ -116,23 +176,13 @@ async function deleteAppointment(id) {
         await reloadAppointments();
     }
 }
-// RELOAD APPTS
-async function reloadAppointments() {
-    const user = await getCurrentUser();
-    const { data: employee } = await supabase
-        .from("employees")
-        .select("role")
-        .eq("user_id", user.id)
-        .single();
 
-    await loadAppointments(user, employee?.role || "user");
-}
 // ADMIN/EMPLOYEE CONTROLS
 function setupAdminControls(role) {
     const section = document.getElementById("admin-controls");
     if (!section) return;
 
-    if (role === "admin" || role === "employee") {
+    if ((role === "admin" || role === "employee") && !section.querySelector("button")) {
         const createButton = setupCreateAppointmentModal();
         section.appendChild(createButton);
     }

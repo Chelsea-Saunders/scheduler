@@ -1,10 +1,50 @@
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
+import { initScheduler } from "../lib/scheduler-view.mjs";
 
 console.log("✅ admin-dashboard.mjs loaded");
 
+// LOAD EMPLOYEES LIST
+async function loadEmployees() {
+    console.log("Loading employees...");
 
+    const { data: employees, error } = await supabase
+        .from("employees")
+        .select("name, email, role")
+        .order("name", {ascending: true });
 
+    if (error) {
+        console.error("Error loading employees:", error);
+        showMessage("Failed to load employees list.", true);
+        return;
+    }
+
+    console.log("Employees loaded:", employees);
+
+    const container = document.getElementById("employees-list-container");
+    if (!container) {
+        console.warn("Employee list container not found.");
+        return;
+    }
+
+    if (!employees || employees.length === 0) {
+        container.innerHTML = `<p>No employees found.</p>`;
+        return;
+    }
+
+    // populate employee list
+    container.innerHTML = employees
+        .map(
+            (employees) => `
+                <div class="employee-card">
+                    <h3>${employee.name}</h3>
+                    <p>Email: ${employee.email}</p>
+                    <p>Role: ${employee.role}</p>
+                </div>
+            `
+        )
+        .join("");
+}
 // PREVENT UNAUTHORIZED ACCESS TO ADMIN DASHBOARD
 async function verifyAdminAccess() {
     // guard: skip admin checks if user arrived via signup/recovery link
@@ -43,8 +83,16 @@ async function verifyAdminAccess() {
         showMessage("Welcome, Admin!");
         document.body.classList.add("admin-mode");
 
-        // load dashboard 
-        await Promise.all([loadEmployees(), loadAppointments()]);
+        // load employees list
+        try {
+            await loadEmployees();
+            console.log("Employees loaded successfully.");
+        } catch (error) {
+            console.error("Error loading employees:", error);
+        }
+
+        // load scheduler for apointments 
+        await initScheduler({ role: "admin" });
 
     } catch (error) {
         console.error("Unexpected error during admin verification:", error);
@@ -53,40 +101,6 @@ async function verifyAdminAccess() {
             window.location.href = "index.html";
         }, 2000);
     }
-}
-
-// LOAD EMPLOYEES
-async function loadEmployees() {
-    // implementation for loading employees into the dashboard
-    console.log("Loading employees...");
-    
-    const { data: employees, error } = await supabase
-        .from("employees")
-        .select("name, email, role")
-        .order("name", { ascending: true });
-    
-    if (error) {
-        console.error("Error fetching employees:", error);
-        showMessage("Failed to load employee data.", true);
-        return;
-    }
-
-    console.log(employees);
-
-    // pupulate employee table
-    const container = document.getElementById("employees-list-container");
-    if (!container) return;
-
-    container.innerHTML = employees
-        .map(
-            (employee) => `
-                <div class="employee-card">
-                    <h3>${employee.name}</h3>
-                    <p>${employee.email}</p>
-                    <p><strong>${employee.role}</strong></p>
-                </div>`
-            )
-            .join("");
 }
 
 // LOAD APPOINTMENTS
@@ -138,34 +152,6 @@ async function loadAppointments() {
         .join("");
 }
 
-async function handleCreateAppt(event) {
-    event.preventDefault();
-
-    const form = event.target;
-    const date = form.querySelector('input[name="date"]').value;
-    const time = form.querySelector('input[name="time"]').value;
-
-    if (!date || !time) {
-        showMessage("Please fill out all fields.", true);
-        return;
-    }
-
-    const { error } = await supabase
-        .from("appointments")
-        .insert([{ date, time, status: "available"}]);
-
-    if (error) {
-        showMessage("Failed to create an appointment.", true);
-        console.error("Failed to create appointment:", error);
-        return;
-    }
-
-    showMessage("Appointment created successfully.");
-    console.log("Appointment created:", { date, time });
-    form.reset();
-    await loadAppointments();
-}
-
 // admin logout handler
 async function adminLogout() {
     await supabase.auth.signOut();
@@ -187,6 +173,7 @@ function toggleFormVisibility() {
         addEmployeeForm.reset();
     });
 }
+
 
 // add employee form submission
 const addEmployeeForm = document.getElementById("add-employee");
@@ -255,6 +242,8 @@ async function handleAddEmployee(event) {
             console.log("Mailer response:", mailData);
         }
 
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
         // add employee info to table
         const { error: insertError } = await supabase.from("employees").insert([
             {
@@ -273,7 +262,9 @@ async function handleAddEmployee(event) {
         }
 
         showMessage(`Employee ${name} added. Please have them check their inbox for login setup email ${email}.`);
-        await loadEmployees();
+        setTimeout(async () => {
+            await loadEmployees();
+        }, 500);
 
         console.log("Signup response:", user);
         if (signUpError) console.log("SignupError:", signUpError);
@@ -326,6 +317,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     addEmployeeForm?.addEventListener("submit", handleAddEmployee);
 
     await verifyAdminAccess();
+    await loadAppointments();
 
     const form = document.getElementById("create-appt-form");
     if (form) {
@@ -340,6 +332,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     toggleFormVisibility();
     togleAddEmployeeButton();
 
-    // auto refresh appts every 60 seconds
-    setInterval(loadAppointments, 60000);
+    // initialize scheduler with employee role
+    await initScheduler({ role: "admin" });
+    console.log("Scheduler initialized for admin.");
 });

@@ -2,13 +2,29 @@
     box-sizing: border-box;
     font-family: Arial, sans-serif;
 }
+#admin-dashboard {
+    display: flex;
+    flex-direction: column;
+    margin: 2rem auto;
+    max-width: 800px;
+    padding: 2rem;
+    background-color: var(--bs-background-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.134);
+    border-radius: var(--bs-border-radius-medium);
+    color: navy;
+    gap: 1rem;
+    border: none;
+}
 h1 {
     font-size: 1.5rem;
     text-align: center;
     color: navy;
     margin-bottom: 1rem;
 }
-#dashboard-container {
+#employee-container {
+    border: none;
+}
+#employee-dashboard {
     margin: 2rem auto;
     max-width: 800px;
     padding: 2rem;
@@ -17,6 +33,7 @@ h1 {
     background-color: var(--bs-background-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.134);
     color: navy;
+    gap: 1rem;
 }
 section {
     margin-bottom: 2rem;
@@ -50,8 +67,25 @@ h2 {
     box-sizing: border-box;
     color: gray;
 }
+.employee-card {
+    border-bottom: 1px solid gray;
+}
 
 /* APPOINTMENTS CONTAINER */
+#admin-controls{
+    border: none;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+#admin-controls button {
+    width: 60%;
+    max-width: 250px;
+}
+#appointments-container {
+    border: none; 
+}
 #appointments-table {
     width: 100%;
     border-collapse: collapse;
@@ -68,6 +102,11 @@ h2 {
 /* CREATE NEW APPOINTMENT CONTAINER */
 #create-appt-container {
     padding: 1rem;
+    gap: 1rem;
+    border: none;
+    border-radius: var(--bs-border-radius-medium);
+    background-color: var(--bs-background-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.072);
 }
 #create-appt-form {
     display: flex;
@@ -131,6 +170,52 @@ button:hover {
     border: none;
     transform: translateY(-3px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.519);
+}
+
+/* add appt modal: hidden */
+.modal.hidden {
+    display: none;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--bs-border-radius-medium);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+    max-width: 500px;
+    width: 320px;
+    text-align: center;
+}
+.modal-content label {
+    display: block;
+    margin-bottom: 0.75rem;
+}
+.modal-content input {
+    width: 100%;
+    padding: 6px;
+    margin-top: 4px;
+    border: 1px solid var(--bs-border-color-light);
+    border-radius: var(--bs-border-radius-medium);
+    box-sizing: border-box;
+}
+.modal-content .buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    border-radius: var(--bs-border-radius-large);
+    gap: 1rem;
 }
 @media (min-width: 400px) {
     #show-add-employee-form {

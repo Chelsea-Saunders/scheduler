@@ -21,7 +21,6 @@
     <script type="module" src="./src/js/header.mjs" defer></script>
     <script type="module" src="./src/js/auth.mjs" defer></script>
     <script type="module" src="./src/js/employee-dashboard.mjs" defer></script>
-    
 </head>
 <body>
     <header>
@@ -67,102 +66,77 @@
     <main>
         <div id="employee-dashboard">
             <h1>Employee Dashboard</h1>
-            <section id="appointments-container">
-                <h2>Appointments</h2>
-                <section id="admin-controls"></section>
-                <div id="my-appts">
-                    <div id="create-appointment-modal" class="modal hidden" aria-hidden="true">
-                        <div class="modal-content">
-                            <h3>Create Appointment</h3>
 
-                            <form id="create-appointment">
-                                <label>
-                                    Patient Name
-                                    <input 
-                                        type="text" 
-                                        id="name" 
-                                        placeholder="Jane Doe"
-                                        required
-                                    >
-                                </label>
+                <!-- list of appointments -->
+                 <section id="appointments-container">
+                    <h2>Appointments</h2>
+                    <!-- ad button -->
+                    <section id="admin-controls"></section>
+                        <table id="appointments-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </section>
 
-                                <label>
-                                    Patient Email
-                                    <input 
-                                        type="email"
-                                        id="email"
-                                        placeholder="email@email.com"
-                                        required
-                                    >
-                                </label>
+                <!-- hidden modal -->
+                <div id="create-appointment-modal" class="modal hidden" aria-hidden="true">
+                    <div class="modal-content">
+                        <h3>Create Appointment</h3>
 
-                                <label>
-                                    Date
-                                    <input 
-                                        type="date"
-                                        id="date"
-                                        placeholder="24 Oct, Tues"
-                                        required
-                                    >
-                                </label>
+                        <form id="create-appointment">
+                            <label>
+                                Patient Name
+                                <input 
+                                    type="text" 
+                                    id="name" 
+                                    placeholder="Jane Doe"
+                                    required
+                                >
+                            </label>
 
-                                <lable>
-                                    Time
-                                    <input 
-                                        type="time" 
-                                        id="time"
-                                        required
-                                    >
-                                </lable>
+                            <label>
+                                Patient Email
+                                <input 
+                                    type="email"
+                                    id="email"
+                                    placeholder="email@email.com"
+                                    required
+                                >
+                            </label>
 
-                                <div class="buttons">
-                                    <button type="submit">Create Appointment</button>
-                                    <button type="button" id="cancel-appointment">Cancel</button>
-                                </div>
-                            </form>
-                        </div>
+                            <label>
+                                Date
+                                <input 
+                                    type="date"
+                                    id="date"
+                                    required
+                                >
+                            </label>
+
+                            <lable>
+                                Time
+                                <input 
+                                    type="time" 
+                                    id="time"
+                                    required
+                                >
+                            </lable>
+
+                            <div class="buttons">
+                                <button type="submit">Create Appt</button>
+                                <button type="button" id="cancel-appointment">Cancel</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </section>
-
-            <section id="create-appt-container">
-                <h2>Create New Appointment</h2>
-                <form id="create-appt-form">
-                    <label>Date: 
-                        <input 
-                            type="date" 
-                            name="date" 
-                            placeholder="date" 
-                            required
-                        >
-                    </label>
-                    <label>Time:
-                        <input 
-                            type="time" 
-                            name="time" 
-                            placeholder="time" 
-                            required
-                        >
-                    </label>
-                    <label>Name:
-                        <input 
-                            type="name"
-                            name="name"
-                            placeholder="Name"
-                            required
-                        >
-                    </label>
-                    <label>Email:
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="email@email.com"
-                            required
-                        >
-                    </label>
-                    <button type="submit">Add Appointment</button>
-                </form>
-            </section>
 
             <button id="admin-logout">Logout</button>
         </div>

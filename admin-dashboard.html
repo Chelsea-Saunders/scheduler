@@ -20,8 +20,8 @@
     <link rel="stylesheet" href="./src/css/components.css">
     <link rel="stylesheet" href="./src/css/admin-dashboard.css">
     <script type="module" src="./src/js/header.mjs" defer></script>
-    <script type="module" src="./src/js/admin-dashboard.mjs" defer></script>
     <script type="module" src="./src/js/auth.mjs" defer></script>
+    <script type="module" src="./src/js/admin-dashboard.mjs" defer></script>
 </head>
 <body>
     <header>
@@ -64,15 +64,15 @@
             </nav>
         </div>
     </header>
-    <main id="admin-dashboard">
-        <div id="dashboard-container">
+    <main>
+        <section id="admin-dashboard">
             <h1>Admin Dashboard</h1>
 
             <section id="employee-container">
                 <h2>Employees</h2>
                 <button id="show-add-employee-form" class="add-new-employee">Add Employee</button>
                 <!-- hidden form -->
-                 <form id="add-employee" class="hidden">
+                <form id="add-employee" class="hidden">
                     <label>
                         Full Name:
                         <input 
@@ -113,13 +113,14 @@
                     <button type="submit">Invite Employee</button>
                     <button type="button" id="cancel-add">Cancel</button>
 
-                 </form>
+                </form>
                 <div id="employees-list-container">
             </section>
 
 
             <section id="appointments-container">
                 <h2>Appointments</h2>
+                <section id="admin-controls"></section>
                 <table id="appointments-table">
                     <thead>
                         <tr>
@@ -134,48 +135,62 @@
                 </table>
             </section>
 
-            <section id="create-appt-container">
-                <h2>Create New Appointment</h2>
-                <form id="create-appt-form">
-                    <label>Date: 
-                        <input 
-                            type="date" 
-                            name="date" 
-                            placeholder="date" 
-                            required
-                        >
-                    </label>
-                    <label>Time:
-                        <input 
-                            type="time" 
-                            name="time" 
-                            placeholder="time" 
-                            required
-                        >
-                    </label>
-                    <label>Name:
-                        <input 
-                            type="name"
-                            name="name"
-                            placeholder="Name"
-                            required
-                        >
-                    </label>
-                    <label>Email:
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="email@email.com"
-                            required
-                        >
-                    </label>
-                    <button type="submit">Add Appointment</button>
-                </form>
+            <!-- hidden modal -->
+            <section id="create-appt-container"></section>
+                <div id="create-appointment-modal" class="modal hidden" aria-hidden="true">
+                    <div class="modal-content">
+                        <h3>Create Appointment</h3>
+
+                        <form id="create-appointment">
+                            <label>
+                                Patient Name
+                                <input 
+                                    type="text" 
+                                    id="name" 
+                                    placeholder="Jane Doe"
+                                    required
+                                >
+                            </label>
+
+                            <label>
+                                Patient Email
+                                <input 
+                                    type="email"
+                                    id="email"
+                                    placeholder="email@email.com"
+                                    required
+                                >
+                            </label>
+
+                            <label>
+                                Date
+                                <input 
+                                    type="date"
+                                    id="date"
+                                    required
+                                >
+                            </label>
+
+                            <lable>
+                                Time
+                                <input 
+                                    type="time" 
+                                    id="time"
+                                    required
+                                >
+                            </lable>
+
+                            <div class="buttons">
+                                <button type="submit">Create Appt</button>
+                                <button type="button" id="cancel-appointment">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </section>
 
             <button id="admin-logout">Logout</button>
-        </div>
-
+        </section>
     </main>
     <footer>
         <div class="main-footer">
@@ -200,10 +215,5 @@
             <p id="copyright">&copy; 2025 Northwind Dental. All Rights Reserved.</p>
         </div>
     </footer>
-    <!-- load scheduler logic LAST -->
-    <script type="module">
-        import { initScheduler } from "./lib/scheduler-view.mjs";
-        initScheduler({ role: "admin" });
-    </script>
 </body>
 </html>
