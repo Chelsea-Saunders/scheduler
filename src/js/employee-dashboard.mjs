@@ -1,6 +1,6 @@
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
-import { initScheduler } from "../lib/scheduler-view.mjs";
+import { initScheduler } from "./lib/scheduler-view.mjs";
 
 // ensure user is logged in and load scheduler
 async function verifyEmployeeAccess() {

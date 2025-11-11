@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
 import { initScheduler } from "../lib/scheduler-view.mjs";
-import { applyPhoneFormatterToAll, validateEmail, validatephone } from "./form-utilities.mjs"
+import { applyPhoneFormatterToAll, validateEmail, validatePhone } from "./form-utilities.mjs"
 
 console.log("✅ admin-dashboard.mjs loaded");
 

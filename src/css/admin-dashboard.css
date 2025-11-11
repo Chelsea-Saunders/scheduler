@@ -6,7 +6,7 @@
     display: flex;
     flex-direction: column;
     margin: 2rem auto;
-    max-width: 800px;
+    max-width: 1200px;
     padding: 2rem;
     background-color: var(--bs-background-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.134);
@@ -23,6 +23,9 @@ h1 {
 }
 #employee-container {
     border: none;
+    max-width: 800px;
+    width: 500px;
+    margin: 0 auto;
 }
 #employee-dashboard {
     margin: 2rem auto;
@@ -78,6 +81,7 @@ h2 {
     justify-content: center;
     margin-bottom: 1rem;
     cursor: pointer;
+    box-shadow: none;
 }
 #admin-controls button {
     width: 60%;
@@ -106,7 +110,7 @@ h2 {
     border: none;
     border-radius: var(--bs-border-radius-medium);
     background-color: var(--bs-background-color);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.072);
+    box-shadow: none;
 }
 #create-appt-form {
     display: flex;
@@ -172,6 +176,17 @@ button:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.519);
 }
 
+/* appointment delete button */
+.delete-appt {
+    background-color: #c62828;
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--bs-border-radius-large);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
 /* add appt modal: hidden */
 .modal.hidden {
     display: none;
@@ -217,6 +232,8 @@ button:hover {
     border-radius: var(--bs-border-radius-large);
     gap: 1rem;
 }
+/* HIDDEN MODAL */
+
 @media (min-width: 400px) {
     #show-add-employee-form {
         width: 30%;
