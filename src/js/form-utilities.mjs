@@ -68,7 +68,7 @@ export function showSubmissionMessage(message) {
 // VALIDATE EMAIL FORMAT
 export function validateEmail(email) {
     if (!email) return { valid: false, message: "Email is required." };
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const isValid = emailRegex.test(email.trim());
     if (!isValid) {
         return { valid: false, message: "Please enter a valid email address." };
@@ -78,6 +78,13 @@ export function validateEmail(email) {
 // VALIDATE PHONE NUMBER 
 export function validatePhone(phone) {
     if (!phone) return { valid: false, message: "Phone number is required." };
+
+    // remove all non-digits
+    const digits = phone.replace(/\D/g, '');
+
+    if (digits.length !== 10) {
+        return { valid: false, message: "Phone number must be 10 digits." };
+    }
 
     const pattern = /^(\+?1\s?)?(\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}$/;
     const isValid = pattern.test(phone.trim());
@@ -92,7 +99,13 @@ export function validatePhone(phone) {
 export function attachPhoneFormatter(input) {
     if (!input) return;
     input.addEventListener("input", (event) => {
-        let value = event.target.value.replace(/\D/g, ''); // remove non-digits
+        // remove all non-digits
+        let value = event.target.value.replace(/\D/g, ''); 
+
+        // limit to 10 digits
+        if (value.length > 10) value = value.slice(0, 10);
+
+        // apply formatting
         if (value.length > 3 && value.length <= 6) {
             value = value.replace(/(\d{3})(\d{1,3})/, '($1) $2');
         }

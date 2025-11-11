@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabase.mjs";
 import { showMessage } from "../lib/ui.mjs";
 import { initScheduler } from "../lib/scheduler-view.mjs";
+import { applyPhoneFormatterToAll, validateEmail, validatephone } from "./form-utilities.mjs"
 
 console.log("✅ admin-dashboard.mjs loaded");
 
@@ -35,7 +36,7 @@ async function loadEmployees() {
     // populate employee list
     container.innerHTML = employees
         .map(
-            (employees) => `
+            (employee) => `
                 <div class="employee-card">
                     <h3>${employee.name}</h3>
                     <p>Email: ${employee.email}</p>
@@ -189,6 +190,23 @@ async function handleAddEmployee(event) {
         showMessage("Please fill out Name, email, phone number and position or role of new employee.", true);
         return;
     }
+
+    const phoneCheck = validateEmail(phone);
+    if (!phoneCheck.valid) {
+        showMessage(phoneCheck.message, true);
+        addEmployeeForm.querySelector('input[name="phone"]').classList.add("error");
+        return;
+    };
+
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+        showMessage(emailCheck.message, true);
+        addEmployeeForm.querySelector('input[name="email"]').classList.add("error");
+        return;
+    }
+
+    // clear previous errors
+    addEmployeeForm.querySelectorAll("input").forEach(input => input.classList.remove("error"));
     
     try {
         console.log("Creating supabase auth user...");
@@ -312,17 +330,19 @@ async function waitForElement(selector, timeout = 3000) {
 //DOM
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("✅ DOM fully loaded");
+
     const addEmployeeForm = await waitForElement("#add-employee");
-    console.log("🧾 Found addEmployeeForm:", addEmployeeForm);
     addEmployeeForm?.addEventListener("submit", handleAddEmployee);
+    
+    applyPhoneFormatterToAll();
 
     await verifyAdminAccess();
     await loadAppointments();
 
-    const form = document.getElementById("create-appt-form");
-    if (form) {
-        form.addEventListener("submit", handleCreateAppt);
-    }
+    // const form = document.getElementById("create-appt-form");
+    // if (form) {
+    //     form.addEventListener("submit", handleCreateAppt);
+    // }
 
     const logout = document.getElementById("admin-logout");
     if (logout) {
@@ -331,6 +351,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     toggleFormVisibility();
     togleAddEmployeeButton();
+    
 
     // initialize scheduler with employee role
     await initScheduler({ role: "admin" });
