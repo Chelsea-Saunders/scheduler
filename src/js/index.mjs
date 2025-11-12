@@ -114,7 +114,12 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
         });
 
         if (error) {
-            setMessage(messageDiv, error.message || "Login failed. Please try again.", true);
+            // detect common supabase auth errors
+            const msg = error.message?.toLowerCase().includes("invalid login credentials")
+                ? "Invalid email or password. Please try again."
+                : "Login failed. Please try again.";
+
+            setMessage(msg, true);
             loginForm.password.value = "";
             loginForm.password?.focus();
             return;
