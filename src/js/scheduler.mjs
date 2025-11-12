@@ -521,7 +521,7 @@ function setListMessage(list, message, isError = false) {
 // send apointment notification email
 async function sendAppointmentEmail(type, email, name, date, time) {
     try {
-        await fetch("https://northwinddentalak.com/sendmail_scheduler.php", {
+        await fetch("https://rsceb.org/sendmail_scheduler.php", {
             method: "POST", 
             headers: { "Content-Type": "application/json" }, 
             body: JSON.stringify({ 
