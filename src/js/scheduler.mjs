@@ -160,6 +160,11 @@ async function loadAppointments() {
 
                 showMessage("Appointment cancelled.");
 
+                // add fade out effect
+                item.style.transition = "opacity 0.5s ease";
+                item.style.opacity = "0";
+                setTimeout(() => item.remove(), 500);
+
                 await sendAppointmentEmail(
                     "cancel", 
                     user.email, 
@@ -167,11 +172,6 @@ async function loadAppointments() {
                     row.date, 
                     formatTime(row.time)
                 );
-
-                // add fade out effect
-                item.style.transition = "opacity 0.5s ease";
-                item.style.opacity = "0";
-                setTimeout(() => item.remove(), 500);
 
                 // small delay so supabase catches up
                 await new Promise(res => setTimeout(res, 500));
