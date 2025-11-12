@@ -15,8 +15,15 @@ function togglePasswordVisibility(button) {
     eye.style.display = isPassword ? "none" : "inline";
     eyeHidden.style.display = isPassword ? "inline" : "none";
 
-    button.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
+    button.setAttribute(
+        "aria-label", 
+        isPassword ? "Hide password" : "Show password"
+    );
+
+    input.focus();
 }
+window.togglePasswordVisibility = togglePasswordVisibility;
+
 function showCreateAccount(loginForm, createForm) {
     loginForm.style.display = "none";
     createForm.style.display = "block";

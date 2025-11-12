@@ -127,13 +127,6 @@ async function initializePasswordResetPage() {
 
     const form = getForm();
 
-    // password visibility toggles
-    document.querySelectorAll(".toggle-password-visibility").forEach(button => {
-        button.addEventListener("click", () => {
-            togglePasswordVisibility(button);
-        });
-    });
-
     // reset form (user enters email to get reset link)
     if (type !== "recovery" || !accessToken || !refreshToken) {
         console.log("Password reset request mode(no recovery token detected).");
@@ -202,5 +195,10 @@ async function initializePasswordResetPage() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".show-password").forEach(button => {
+        button.addEventListener("click", () => {
+            togglePasswordVisibility(button);
+        });
+    });
     initializePasswordResetPage();
 });
