@@ -13,9 +13,9 @@ function getConfirmPasswordInput() {
 function getSubmitButton() {
     return getForm().querySelector("button");
 }
-function redirectToLogin() {
-    window.location.href = "index.html";
-}
+// function redirectToLogin() {
+//     window.location.href = "index.html";
+// }
 
 // form submission handler
 function disableSubmitButton() {
@@ -115,7 +115,7 @@ async function initializePasswordResetPage() {
 
         // sign out to prevent redirect to dashboard
         try {
-            await supabase.auth.singOut();
+            await supabase.auth.signOut();
         } catch (error) {
             console.warn("No existing session or failed to clear:", error);
         }
@@ -145,7 +145,7 @@ async function initializePasswordResetPage() {
             button.textContent = "Sending...";
 
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + "/update-password.html", 
+                redirectTo: "https://chelsea-saunders.github.io/scheduler/update-password.html", 
             });
 
             if (error) {

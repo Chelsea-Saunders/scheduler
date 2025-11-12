@@ -7,6 +7,10 @@ async function verifyEmployeeAccess() {
     try {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error || !user) {
+            if (window.location.hash.includes("type=signup") || window.location.hash.includes("type=recovery")) {
+                console.log("[TRACE] Skipping employe reidrect for signup/recovery flow.");
+                return;
+            }
             showMessage("Please sign in to access this page.", true);
             setTimeout(() => {
                 window.location.href = "index.html";

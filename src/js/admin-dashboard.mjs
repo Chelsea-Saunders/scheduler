@@ -191,7 +191,7 @@ async function handleAddEmployee(event) {
         return;
     }
 
-    const phoneCheck = validateEmail(phone);
+    const phoneCheck = validatePhone(phone);
     if (!phoneCheck.valid) {
         showMessage(phoneCheck.message, true);
         addEmployeeForm.querySelector('input[name="phone"]').classList.add("error");
@@ -217,7 +217,7 @@ async function handleAddEmployee(event) {
             email, 
             password: crypto.randomUUID(), // temporary random password
             options: {
-                emailRedirectTo: null,
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/update-password.html",
             },
         });
 

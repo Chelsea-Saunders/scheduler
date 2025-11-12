@@ -17,6 +17,12 @@ const holidays = [
 ];
 
 export async function initScheduler({ role = "user" } = {}) {
+    // skip scheduler initialization if we're in signup/recovery link mode
+    if (window.location.hash.includes("type=signup") || window.location.hash.includes("type=recovery")) {
+        console.log("[TRACE] Skipping scheduler init for signup/recovery flow.");
+        return;
+    }
+    
     const user = await getCurrentUser();
     if (!user) {
         showMessage("User not logged in. Please log in to access the scheduler.", true);
@@ -41,6 +47,10 @@ async function getCurrentUser() {
     const user = session?.user;
 
     if (!user) {
+        if (window.location.hash.includes("type=signup") || window.location.hash.includes("type=recovery")) {
+            console.log("[TRACE] Skipping redirect for signup/recovery flow");
+            return;
+        }
         showMessage("Please log in first.", true);
         setTimeout(() => {
             window.location.href = "index.html";
