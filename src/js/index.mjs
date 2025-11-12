@@ -140,7 +140,7 @@ async function handleCreateAccount(event, createForm, loginForm) {
 
     try {
         // ensure old sessions are cleared out before signup
-        await supabase.auth.sighOut();
+        await supabase.auth.nOut();
         
         localStorage.setItem("fullName", fullName);
 
