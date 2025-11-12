@@ -160,6 +160,14 @@ async function loadAppointments() {
 
                 showMessage("Appointment cancelled.");
 
+                await sendAppointmentEmail(
+                    "cancel", 
+                    user.email, 
+                    user.user_metadata?.name || "", 
+                    row.date, 
+                    formatTime(row.time)
+                );
+
                 // add fade out effect
                 item.style.transition = "opacity 0.5s ease";
                 item.style.opacity = "0";
@@ -347,6 +355,14 @@ async function selectTimeSlot(date, time) {
             await new Promise(res => setTimeout(res, 600));
 
             // always refresh from live data after booking
+            sendAppointmentEmail(
+                "appointment", 
+                user.email, 
+                user.user_metadata?.name || "", 
+                date.toDateString(),
+                formatTime(time)
+            );
+
             await loadAppointments();
             await fetchBookedSlots(date);
             await showTimeSlots(date);
@@ -500,6 +516,26 @@ function initAuthListener() {
 function setListMessage(list, message, isError = false) {
     list.textContent = message;
     list.classList.toggle("error", isError);
+}
+
+// send apointment notification email
+async function sendAppointmentEmail(type, email, name, date, time) {
+    try {
+        await fetch("https://rsceb.org/sendmail_scheduler.php", {
+            method: "POST", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify({ 
+                type, 
+                email, 
+                name, 
+                date, 
+                time,
+            }), 
+        });
+        console.log(`${type} email send for ${email} on ${date} at ${time}`);
+    } catch (error) {
+        console.error(`Failed to send ${type} email:`, error);
+    }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
