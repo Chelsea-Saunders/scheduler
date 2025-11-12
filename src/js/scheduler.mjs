@@ -532,6 +532,20 @@ async function sendAppointmentEmail(type, email, name, date, time) {
                 time,
             }), 
         });
+
+        if (!response.ok) {
+            console.error(`Email request failed with status ${response.status}`);
+            showMessage(`Could not send ${type} email. Please contact support.`, true);
+            return;
+        }
+
+        const result = await response.json();
+
+        if (!result.ok) {
+            console.error(`Email server returned error: ${result.error} || result.message`);
+            showMessage(`Could not send ${type} email. Please contact support.`, true);
+            return;
+        }
         console.log(`${type} email send for ${email} on ${date} at ${time}`);
     } catch (error) {
         console.error(`Failed to send ${type} email:`, error);
