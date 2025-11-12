@@ -1,4 +1,6 @@
-
+* {
+    font-family: var(--bs-body-font);
+}
 footer {
     background-color: var(--bs-header-background-color);
     color: var(--bs-header-text-color);
