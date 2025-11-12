@@ -360,9 +360,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     handleSupabaseRedirect();
 
     // auto-redirect logged-in users to scheduler
-    supabase.auth.onAuthStateChange((_event, session) => {
-        if (session?.user && !window.location.pathname.includes("scheduler.html")) {
-            window.location.assign(redirect);
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_IN" && session?.user) {
+            console.log("User signed in or confirmed. Redirecting to scheduler...");
+            window.location.href = redirect;
+        }
+
+        if (event === "SIGNED_OUT") {
+            console.log("User signed out.");
         }
     });
 });
