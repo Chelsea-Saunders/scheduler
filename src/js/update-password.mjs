@@ -13,8 +13,19 @@ function getConfirmPasswordInput() {
 function getSubmitButton() {
     return getForm().querySelector("button");
 }
-function redirectToLogin() {
-    window.location.href = "index.html";
+function togglePasswordVisibility(button) {
+    const input = button.previousElementSibling;
+    const isPassword = input.type === "password";
+    const eye = button.querySelector(".icon-eye");
+    const eyeHidden = button.querySelector(".icon-eye-hidden");
+
+    input.type = isPassword ? "text" : "password";
+    eye.style.display = isPassword ? "none" : "inline";
+    eyeHidden.style.display = isPassword ? "inline" : "none";
+
+    button.setAttribute(
+        "aria-label", 
+        isPassword ? "Hide password" : "Show password");
 }
 
 // form submission handler
@@ -54,7 +65,7 @@ function handlePasswordUpdateError(error) {
     console.error("Password update failed:", error);
 
     if (!error?.message) {
-        showMessage("Could not update password. Please try again.", true);
+        showMessage("Password must be different from old password. Please try again.", true);
         return;
     }
     if (error.message.includes("different from old password")) {
@@ -115,6 +126,13 @@ async function initializePasswordResetPage() {
     const type = hashParams.get("type");
 
     const form = getForm();
+
+    // password visibility toggles
+    document.querySelectorAll(".toggle-password-visibility").forEach(button => {
+        button.addEventListener("click", () => {
+            togglePasswordVisibility(button);
+        });
+    });
 
     // reset form (user enters email to get reset link)
     if (type !== "recovery" || !accessToken || !refreshToken) {

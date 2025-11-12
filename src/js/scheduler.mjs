@@ -24,6 +24,7 @@ function setupDateButtons() {
     const thursdayContainer = document.getElementById("thursday-slots");
     const availableDays = getNextTuesThurs(15); // next 15 days
     const dateButtons = [];
+    const loadingMsg = document.querySelector("#pick-a-date .loading");
 
     availableDays.forEach(date => {
         const ymd = toHumanYMD(date); // machine friendly
@@ -35,6 +36,14 @@ function setupDateButtons() {
         const button = document.createElement("button");
         button.textContent = label; // user sees "Tue, Oct 24"
         button.dataset.ymd = ymd;   // dataset holds "2025-10-24"
+
+        if (loadingMsg) {
+            loadingMsg.classList.add("fade-out");
+            // wait for fade out then remove
+            setTimeout(() => {
+                loadingMsg.remove();
+            }, 500);
+        }
 
         // skip holidays
         if (holidays.includes(ymd)) {

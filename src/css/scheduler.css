@@ -52,7 +52,8 @@ h1 {
     flex-direction: column;
     gap: 1rem;
     margin: 1rem 0;
-    padding: 0;
+    padding: 0 0.5rem;
+    min-height: 300px;
     border: 1px solid var(--bs-border-color-light);
     border-radius: var(--bs-border-radius-medium);
     background-color: var(--bs-header-background-color);
@@ -68,6 +69,21 @@ h1 {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.284);
     transition: background-color 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s ease;
 }
+/* loading...message */
+.loading {
+    min-height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: gray;
+    font-style: italic;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+}
+.loading.fade-out {
+    opacity: 0;
+}
+/* pick-a-date buttons */
 button {
     margin: 0 0.2 0 0.2rem;
     padding: 0.4rem 1rem;
