@@ -20,3 +20,11 @@
         transform: translateY(0);
     }
 }
+
+/* reduce-motion */
+@media (prefers-reduce-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

@@ -288,3 +288,11 @@ input:focus::placeholder {
 .icon-eye-hidden {
     display: none;
 }
+
+/* reduce-motion */
+@media (prefers-reduce-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
