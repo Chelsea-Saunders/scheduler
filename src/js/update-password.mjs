@@ -159,9 +159,14 @@ async function initializePasswordResetPage() {
 
             // successful reset request
             showMessage("Check your inbox for the reset link.");
-            form.reset();
-            button.disabled = false;
-            button.textContent = "Send Reset Link";
+            setTimeout(() => {
+                if (form) form.reset();
+            }, 800);
+            
+            if (button) {
+                button.disabled = false;
+                button.textContent = "Send Reset Link";
+            }
         });
 
         return; // stop here - don't set up password update
