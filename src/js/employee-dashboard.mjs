@@ -4,6 +4,13 @@ import { initScheduler } from "./lib/scheduler-view.mjs";
 
 // ensure user is logged in and load scheduler
 async function verifyEmployeeAccess() {
+    const hash = window.location.hash;
+    if (hash.includes("type=signup") || hash.includes("type=recovery")) {
+        console.log("[TRACE] Signup/recovery flow detected - skipping employee redirect.");
+        showMessage("Please complete password setup to access the dashboard.", false);
+        return null;
+    }
+    
     try {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error || !user) {
