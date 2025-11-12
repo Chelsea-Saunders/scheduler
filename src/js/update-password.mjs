@@ -13,9 +13,6 @@ function getConfirmPasswordInput() {
 function getSubmitButton() {
     return getForm().querySelector("button");
 }
-// function redirectToLogin() {
-//     window.location.href = "index.html";
-// }
 
 // form submission handler
 function disableSubmitButton() {
@@ -111,7 +108,7 @@ async function handleFormSubmission(event) {
 async function initializePasswordResetPage() {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     if (window.location.hash.includes("type=signup")) {
-        console.log("Signup link detected - clearing any existing sessions before password setup.");
+        console.log("Signup link detected - forcing logout before password setup.");
 
         // sign out to prevent redirect to dashboard
         try {

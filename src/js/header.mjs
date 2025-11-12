@@ -41,6 +41,7 @@ export async function toggleLoginOut() {
         // skip logic for password recovery page
         if (
             window.location.href.includes("type=recovery") ||
+            window.location.href.includes("type=signup") ||
             window.location.pathname.includes("update-password.html")
         ) {
             console.log("Recovery flow detected - skipping header auth logic");
