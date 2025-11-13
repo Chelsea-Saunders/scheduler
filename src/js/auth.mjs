@@ -21,10 +21,7 @@ function setupLoginForm(loginForm) {
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email, 
-                password, 
-                options: {
-                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html",
-                },
+                password,
             });
 
             if (error) {
@@ -61,13 +58,17 @@ function setupCreateAccountForm(createForm) {
         }
 
         try {
+            console.log("Submitting signup to supabase:", email);
+
             const { data, error } = await supabase.auth.signUp({
                 email, 
                 password, 
                 options: {
-                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html",
+                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
                 },
             });
+
+            console.log("Supabase respoonse:", data, error);
 
             if (error) {
                 console.error("Sign up error:", error);
