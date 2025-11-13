@@ -72,10 +72,15 @@ function setupCreateAccountForm(createForm) {
             if (error) {
                 console.error("Sign up error:", error);
                 showSubmissionMessage("Signup failed: " + error.message, true);
-            } else {
-                showSubmissionMessage("Signup successful! Check your inbox for confirmation link.");
-                createForm.reset();
-            }
+                return;
+            } 
+
+            // successful signup
+            createForm.reset();
+            showSubmissionMessage(
+                "Account created! Please check your email to confirm your account.", 
+                false
+            );
         } catch (error) {
             console.error("Unexpected signup error:", error);
             showSubmissionMessage("Something went wrong. Please try again later.", true);
