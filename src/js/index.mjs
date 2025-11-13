@@ -209,21 +209,51 @@ async function handleCreateAccount(event, createForm, loginForm) {
         showMessage("Network error: Please try again.", true);
     }
 }
-function handleSupabaseRedirect() {
-    const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
-    const accessToken = tokenMatch ? tokenMatch[1] : null;
+async function handleSupabaseRedirect() {
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
     const type = hashParams.get("type");
 
     if (!accessToken) return;
 
-    // clear hash from URL
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+    //store session in supabase client
+    const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken, 
+        refresh_token: refreshToken,
+    });
 
-        // handle password recovery
-        if (accessToken && type === "recovery") {
-            showPasswordUpdateForm(loginForm);
-        }
+    if (error) {
+        console.error("Error setting Supabase session: ", error);
+        return
+    }
+
+    // short delay to let supabase finish setting session
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // clear hash fragment from URL
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+
+    // handle recovery seperately if needed
+    if (type === "recovery") {
+        showPasswordUpdateForm(loginForm);
+    } else {
+        // for normal signin, show welcome message and redirect
+        document.querySelector("#main-content")?.classList.remove("hidden");
+        
+        const fullName = 
+        localStorage.getItem("fullName") || 
+        data?.user?.user_metadata?.full_name || 
+        "User";
+        showMessage(`Welcome back, ${fullName}! Redirecting to scheduler...`);
+
+        setTimeout(() => {
+            const base = window.location.hostname.includes("github.io")
+                ? "/scheduler/"
+                : "./";
+            window.location.href = `${base}scheduler.html`;
+        }, 2000);
+    }
 }
 // show password update form
 function showPasswordUpdateForm(loginForm) {
