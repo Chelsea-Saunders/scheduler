@@ -156,54 +156,27 @@ async function handleCreateAccount(event, createForm, loginForm) {
         
         localStorage.setItem("fullName", fullName);
 
-        const res = await fetch("https://rsceb.org/sendmail_scheduler.php", {
-            method: "POST", 
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                type: "signup", 
-                name: fullName, 
-                email, 
-                password,
-            }),
+        const { data, error } = await supabase.auth.signUp({
+            email, 
+            password, 
+            options: {
+                data: { name: fullName }, 
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
+            }
         });
 
-        // check for http errors
-        if (!res.ok) {
-            console.error("Server returned HTTP error:", res.status, res.statusText);
-            showMessage("Server error: Please try again later.", true);
+        if (error) {
+            console.error("Signup failed:", error);
+            showMessage("Signup failed: " + error.message, true);
             return;
         }
 
-        // parse JSON safely
-        let result;
-        try {
-            result = await res.json();
-        } catch {
-            showMessage("Server returned an unexpected response. Please try again.", true);
-            console.error("Invalid JSON response from server");
-            return;
-        }
-
-        // add rate limit/supabase error message handling
-        if (result?.error && result.error.toLowerCase().includes("rate limit")) {
-            showMessage(
-                "You've requested too many confirmation emails. Please wait a few minutes before trying again.", 
-                true
-            );
-            console.warn("Rate limit triggered:", result.error);
-            return;
-        }
-
-        if (result.ok) {
+        if (data.user) {
             showMessage(`Welcome aboard, ${fullName}! Please check your inbox to confirm your account.`);
             createForm.classList.add("hidden");
             loginForm?.classList.remove("hidden");
-        } else if (result.error){
-            console.error(result.error);
-            showMessage("Signup failed: " + result.error, true);
-        } else {
-            showMessage("Request completed, but server returned no result. Please check your email.", false);
         }
+
     } catch (error) {
         console.error("Unexpected network or fetch error:", error);
         showMessage("Network error: Please try again.", true);
