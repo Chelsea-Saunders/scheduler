@@ -109,7 +109,7 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
             email, 
             password, 
             options: {
-                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html", 
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/", 
             },
         });
 
@@ -233,6 +233,16 @@ async function handleSupabaseRedirect() {
 
     // clear hash fragment from URL
     window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+
+    // only clean up "?redirect=..." if not recovery type
+    if (type !== "recovery") {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("redirect")) {
+            params.delete("redirect");
+            const cleanUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+    }
 
     // handle recovery seperately if needed
     if (type === "recovery") {
