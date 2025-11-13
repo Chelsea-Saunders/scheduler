@@ -392,8 +392,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     // auto-redirect logged-in users to scheduler
     supabase.auth.onAuthStateChange((event, session) => {
         if (event === "SIGNED_IN" && session?.user) {
-            console.log("User signed in or confirmed. Redirecting to scheduler...");
-            window.location.href = redirect;
+            // only redirect if this wansn't a new signup
+            const isNewUser = session?.user?.confirmed_at === null;
+
+            if (!isNewUser) {
+                console.log("User signed in. Redirecting to scheduler...");
+                showMessage(`Welcome back ${session.user.user_metadata.full_name || "User"}! Redirecting to scheduler...`);
+                window.location.href = redirect;
+            } else {
+                console.log("Signup detected - waiting for email confirmation.");
+                showMessage("Signup successful! Please check your email to confirm your account.");
+            }
         }
 
         if (event === "SIGNED_OUT") {
