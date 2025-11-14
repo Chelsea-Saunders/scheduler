@@ -173,6 +173,7 @@ async function handleCreateAccount(event, createForm, loginForm) {
 
         if (data.user) {
             showMessage(`Welcome aboard, ${fullName}! Please check your inbox to confirm your account.`);
+            createFrom.reset();
             createForm.classList.add("hidden");
             loginForm?.classList.remove("hidden");
         }
@@ -230,12 +231,18 @@ async function handleSupabaseRedirect() {
         "User";
         showMessage(`Welcome back, ${fullName}! Redirecting to scheduler...`);
 
-        setTimeout(() => {
-            const base = window.location.hostname.includes("github.io")
-                ? "/scheduler/"
-                : "./";
-            window.location.href = `${base}scheduler.html`;
-        }, 2000);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const { data: sessionData } = await supabase.auth.getSession();
+        const user = sessionData?.session?.user;
+
+        if (user) {
+            console.log("Email confirmed - redirecting to scheduler.");
+            window.history.replaceState({}, document.title, "index.html"); // clean url
+            window.location.href = "scheduler.html";
+        } else {
+            console.warn("No valid session found - staying on index.html");
+        }
     }
 }
 // show password update form
