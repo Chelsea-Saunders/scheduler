@@ -521,17 +521,17 @@ function setListMessage(list, message, isError = false) {
 // send apointment notification email
 async function sendAppointmentEmail(type, email, name, date, time) {
     try {
-        await fetch("https://rsceb.org/sendmail_scheduler.php", {
-            method: "POST", 
-            headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify({ 
-                type, 
-                email, 
-                name, 
-                date, 
-                time,
-            }), 
-        });
+        const response = await fetch("https://rsceb.org/php/sendmail_scheduler.php", {
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ 
+            type, 
+            email, 
+            name, 
+            date, 
+            time,
+        }),
+    });
 
         if (!response.ok) {
             console.error(`Email request failed with status ${response.status}`);
