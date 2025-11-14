@@ -519,7 +519,7 @@ function setListMessage(list, message, isError = false) {
 }
 
 // send apointment notification email
-async function sendAppointmentEmail(type, email, name, date, time) {
+async function sendAppointmentEmail(type, email, fullName, date, time) {
     try {
         const response = await fetch("https://rsceb.org/php/sendmail_scheduler.php", {
         method: "POST", 
@@ -527,7 +527,7 @@ async function sendAppointmentEmail(type, email, name, date, time) {
         body: JSON.stringify({ 
             type, 
             email, 
-            name, 
+            name: fullName, 
             date, 
             time,
         }),
