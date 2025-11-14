@@ -68,7 +68,7 @@ function setupCreateAccountForm(createForm) {
                 },
             });
 
-            console.log("Supabase respoonse:", data, error);
+            console.log("Supabase response:", data, error);
 
             if (error) {
                 console.error("Sign up error:", error);
