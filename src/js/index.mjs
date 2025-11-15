@@ -141,7 +141,7 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
 // ***** Create account submission *****
 async function handleCreateAccount(event, createForm, loginForm) {
     event.preventDefault();
-    const fullName = createForm.querySelector('input[name="name"]').value.trim();
+    const fullName = (createForm.querySelector('input[name="name"]')?.value || "").trim() || "New User";
     const email = createForm.querySelector('input[name="email"]').value.trim();
     const password = createForm.querySelector('input[name="password"]').value.trim();
 
