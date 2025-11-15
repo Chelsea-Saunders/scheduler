@@ -109,7 +109,7 @@ async function handleLogin(event, loginForm, loginButton,  redirect) {
             email, 
             password, 
             options: {
-                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/", 
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html", 
             },
         });
 
@@ -161,7 +161,7 @@ async function handleCreateAccount(event, createForm, loginForm) {
             password, 
             options: {
                 data: { name: fullName }, 
-                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
+                emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html",
             }
         });
 
