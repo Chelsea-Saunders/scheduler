@@ -358,7 +358,7 @@ async function selectTimeSlot(date, time) {
             sendAppointmentEmail(
                 "appointment", 
                 user.email, 
-                user.name || "", 
+                user.user_metadata?.name || "", 
                 date.toDateString(),
                 formatTime(time)
             );
