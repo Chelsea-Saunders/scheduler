@@ -64,7 +64,7 @@ function setupCreateAccountForm(createForm) {
                 email, 
                 password, 
                 options: {
-                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/",
+                    emailRedirectTo: "https://chelsea-saunders.github.io/scheduler/index.html",
                 },
             });
 
@@ -131,6 +131,7 @@ function setupResetForm(resetForm) {
             showSubmissionMessage("Password reset link sent to youre email. Check your inbox.");
             resetButton.textContent = "Check your inbox";
             setTimeout(() => {
+                resetForm.reset();
                 resetButton.textContent = "Send Reset Link";
                 resetButton.disabled = false;
             }, 2000);
