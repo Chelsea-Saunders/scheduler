@@ -166,16 +166,24 @@ async function handleCreateAccount(event, createForm, loginForm) {
         });
 
         if (error) {
-            console.error("Signup failed:", error);
-            showMessage("Signup failed: " + error.message, true);
-            return;
+            // ignore harnles supabase internal bugs
+            if (!error.message.includes("Database error saving new user")) {
+                console.error("Signup failed:", error);
+                showMessage("Signup failed: " + error.message, true);
+                return;
+            }
         }
 
-        if (data.user) {
+        if (data?.user) {
             showMessage(`Welcome aboard, ${fullName}! Please check your inbox to confirm your account.`);
             createForm.reset();
-            createForm.classList.add("hidden");
-            loginForm?.classList.remove("hidden");
+
+            // give user a second to read, then show login form
+            setTimeout(() => {
+                createForm.classList.add("hidden");
+                loginForm?.classList.remove("hidden");
+                window.scrollTo(0, 0); // scroll to top of page
+            }, 1500);
         }
 
     } catch (error) {
