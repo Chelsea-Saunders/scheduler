@@ -1,8 +1,26 @@
 
+/* get rid of page shifting */
+html, 
+body {
+    height: 100%;
+}
+body {
+    display: flex;
+    flex-direction: column;
+}
 main {
+    flex: 1 0 auto;
+    min-height: 0;
     max-width: 400px;
     margin: 0 auto;
 }
+footer {
+    flex-shrink: 0;
+}
+/* main {
+    max-width: 400px;
+    margin: 0 auto;
+} */
 h1 {
     font-size: 1.3rem;
     display: flex;
@@ -71,7 +89,9 @@ h1 {
 }
 /* loading...message */
 .loading {
-    min-height: 150px;
+    position: absolute;
+    inset: 0;
+    /* min-height: 150px; */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -79,6 +99,7 @@ h1 {
     font-style: italic;
     opacity: 1;
     transition: opacity 0.4s ease;
+    pointer-events: none;
 }
 .loading.fade-out {
     opacity: 0;

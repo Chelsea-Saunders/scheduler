@@ -1,6 +1,5 @@
 
 /* HEADER CONTAINER */
-
 .global-header {
     display: flex; 
     flex-direction: row;
@@ -26,6 +25,7 @@
     height: 100%;
     z-index: 2;
     transition: opacity 0.3s ease;
+    aspect-ratio: 1 / 1;
 }
 .logo {
     width: 100%;

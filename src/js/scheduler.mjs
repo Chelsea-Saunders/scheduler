@@ -26,6 +26,14 @@ function setupDateButtons() {
     const dateButtons = [];
     const loadingMsg = document.querySelector("#pick-a-date .loading");
 
+    if (loadingMsg) {
+            loadingMsg.classList.add("fade-out");
+            // wait for fade out then remove
+            setTimeout(() => {
+                loadingMsg.remove();
+            }, 500);
+        }
+
     availableDays.forEach(date => {
         const ymd = toHumanYMD(date); // machine friendly
         const label = date.toLocaleDateString("en-US", {  //human friendly
@@ -36,14 +44,6 @@ function setupDateButtons() {
         const button = document.createElement("button");
         button.textContent = label; // user sees "Tue, Oct 24"
         button.dataset.ymd = ymd;   // dataset holds "2025-10-24"
-
-        if (loadingMsg) {
-            loadingMsg.classList.add("fade-out");
-            // wait for fade out then remove
-            setTimeout(() => {
-                loadingMsg.remove();
-            }, 500);
-        }
 
         // skip holidays
         if (holidays.includes(ymd)) {
@@ -57,8 +57,11 @@ function setupDateButtons() {
             button.classList.add("selected");
             showTimeSlots(date);
         });
-        if (date.getDay() === 2) tuesdayContainer.appendChild(button);
-        else if (date.getDay() === 4) thursdayContainer.appendChild(button);
+        if (date.getDay() === 2) {
+            tuesdayContainer.appendChild(button);
+        } else if (date.getDay() === 4) {
+            thursdayContainer.appendChild(button);
+        }
         dateButtons.push(button);
     });
 }
