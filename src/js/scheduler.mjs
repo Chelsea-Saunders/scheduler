@@ -28,10 +28,9 @@ function setupDateButtons() {
 
     if (loadingMsg) {
             loadingMsg.classList.add("fade-out");
-            // wait for fade out then remove
             setTimeout(() => {
                 loadingMsg.remove();
-            }, 500);
+            }, 300);
         }
 
     availableDays.forEach(date => {
